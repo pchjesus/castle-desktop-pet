@@ -18,9 +18,10 @@ export function mountPet(root: HTMLElement, character: Character) {
     image.onerror = placeholder;
     const stage = document.createElement('div'); stage.className = 'pet-stage'; stage.append(image);
     if (isAkilaEffect) { const ember = document.createElement('span'); ember.className = 'ember'; const smoke = document.createElement('span'); smoke.className = 'smoke'; stage.append(ember, smoke); }
-    if (isWorking) { const laptop = document.createElement('div'); laptop.className = 'laptop'; laptop.setAttribute('aria-label', '노트북 작업 표시'); laptop.innerHTML = '<span class="laptop-screen"></span><span class="laptop-base"></span><span class="laptop-indicator"></span>'; stage.append(laptop); }
+    if (isWorking && !animation.frames.length) { const laptop = document.createElement('div'); laptop.className = 'laptop'; laptop.setAttribute('aria-label', '노트북 작업 표시'); laptop.innerHTML = '<span class="laptop-screen"></span><span class="laptop-base"></span><span class="laptop-indicator"></span>'; stage.append(laptop); }
     root.append(stage);
-    const stopFrames = playFrames(frames, animation.frameDurationMs, frame => { image.src = frame; });
+    const mode = state === 'firing' || state === 'dual_firing' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
+    const stopFrames = playFrames(frames, state === 'working' ? 3000 : animation.frameDurationMs, frame => { image.src = frame; }, mode, () => { stateController.set('idle'); });
     const stopWorking = isWorking ? startWorking(stage) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); };
@@ -31,6 +32,6 @@ export function mountPet(root: HTMLElement, character: Character) {
     stage.classList.remove('working-active'); stage.classList.add('working-exit');
     return true;
   });
-  const state = createState(character.initialState, transition); transition(state.get());
-  return state;
+  const stateController = createState(character.initialState, transition); transition(stateController.get());
+  return stateController;
 }
