@@ -1,0 +1,13 @@
+import { build } from 'vite';
+import { readFile, writeFile, rm } from 'node:fs/promises';
+const out = '.preview-build';
+await build({ configFile:false, build:{ outDir:out, emptyOutDir:true, assetsInlineLimit: Number.MAX_SAFE_INTEGER, cssCodeSplit:false, rollupOptions:{input:'preview-entry.html', output:{inlineDynamicImports:true}} } });
+let html = await readFile(`${out}/preview-entry.html`, 'utf8');
+const js = html.match(/<script type="module"[^>]*src="([^"]+)"[^>]*><\/script>/);
+const css = html.match(/<link rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/);
+if (!js || !css) throw new Error('Preview build assets missing');
+const resolve = path => `${out}/${path.replace(/^\//, '')}`;
+html = html.replace(js[0], `<script type="module">${await readFile(resolve(js[1]), 'utf8')}</script>`);
+html = html.replace(css[0], `<style>${await readFile(resolve(css[1]), 'utf8')}</style>`);
+await writeFile('preview.html', html);
+await rm(out, {recursive:true, force:true});
