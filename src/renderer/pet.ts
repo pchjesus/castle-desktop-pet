@@ -11,7 +11,7 @@ export function mountPet(root: HTMLElement, character: Character) {
     const animation = character.animations[state];
     const isAkilaEffect = character.id === 'akila' && (state === 'idle' || state === 'smoking');
     const isWorking = character.id === 'akila' && state === 'working';
-    const frames = (state === 'smoking' && isAkilaEffect || isWorking) && !animation.frames.length ? character.animations.idle.frames : animation.frames;
+    const frames = (state === 'smoking' && isAkilaEffect || isWorking) && !animation.frames.length ? character.animations.idle.frames : isWorking ? animation.frames.slice(0, 1) : animation.frames;
     const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n${state} 이미지 준비 중`; root.replaceChildren(el); };
     if (!frames.length) { placeholder(); return; }
     const image = document.createElement('img'); image.alt = character.name;
@@ -28,7 +28,7 @@ export function mountPet(root: HTMLElement, character: Character) {
   };
   const transition = createTransition(render, () => {
     const stage = root.querySelector<HTMLElement>('.pet-stage');
-    if (!stage || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    if (!stage || !stage.querySelector('.laptop') || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     stage.classList.remove('working-active'); stage.classList.add('working-exit');
     return true;
   });

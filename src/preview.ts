@@ -16,3 +16,16 @@ document.querySelector('#reset')!.addEventListener('click', reset);
 document.querySelectorAll<HTMLButtonElement>('[data-dialogue]').forEach(button => button.addEventListener('click', () => { dialogue.textContent = akila.dialogues[button.dataset.dialogue!][0]; }));
 pet.addEventListener('pointerdown', event => { event.preventDefault(); pet.setPointerCapture(event.pointerId); const startX = event.clientX, startY = event.clientY, left = pet.offsetLeft, top = pet.offsetTop; const move = (e: PointerEvent) => { pet.style.left = `${left + e.clientX - startX}px`; pet.style.top = `${top + e.clientY - startY}px`; clamp(); }; const end = () => { pet.removeEventListener('pointermove', move); pet.removeEventListener('pointerup', end); pet.removeEventListener('pointercancel', end); }; pet.addEventListener('pointermove', move); pet.addEventListener('pointerup', end); pet.addEventListener('pointercancel', end); });
 window.addEventListener('resize', clamp); reset();
+
+document.querySelector('#replay')!.addEventListener('click', () => { controller.set('idle'); controller.set(select.value as PetState); });
+const review = document.querySelector<HTMLSelectElement>('#review-state')!;
+for (const state of states) { const opt = document.createElement('option'); opt.value = state; opt.textContent = state; review.append(opt); }
+let reviewIndex = 0;
+const selectedFrame = document.querySelector<HTMLImageElement>('#selected-frame')!;
+const referenceFrame = document.querySelector<HTMLImageElement>('#reference-frame')!;
+referenceFrame.src = akila.animations.idle.frames[0];
+function updateReview() { const frames = akila.animations[review.value as PetState].frames; reviewIndex = frames.length ? (reviewIndex + frames.length) % frames.length : 0; selectedFrame.hidden = !frames.length; if (frames.length) selectedFrame.src = frames[reviewIndex]; document.querySelector('#frame-label')!.textContent = frames.length ? `${reviewIndex + 1} / ${frames.length}` : '프레임 없음'; }
+review.addEventListener('change', () => { reviewIndex = 0; updateReview(); });
+document.querySelector('#frame-prev')!.addEventListener('click', () => { reviewIndex--; updateReview(); });
+document.querySelector('#frame-next')!.addEventListener('click', () => { reviewIndex++; updateReview(); });
+updateReview();
