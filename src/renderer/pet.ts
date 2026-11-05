@@ -12,7 +12,7 @@ export function mountPet(root: HTMLElement, character: Character) {
     const isAkilaEffect = character.id === 'akila' && (state === 'idle' || state === 'smoking');
     const isWorking = character.id === 'akila' && state === 'working';
     const frames = (state === 'smoking' && isAkilaEffect || isWorking) && !animation.frames.length ? character.animations.idle.frames : animation.frames;
-    const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n이미지 준비 중`; root.replaceChildren(el); };
+    const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n${state} 이미지 준비 중`; root.replaceChildren(el); };
     if (!frames.length) { placeholder(); return; }
     const image = document.createElement('img'); image.alt = character.name;
     image.onerror = placeholder;
