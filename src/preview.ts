@@ -7,7 +7,7 @@ const desktop = document.querySelector<HTMLElement>('#desktop')!;
 const dialogue = document.querySelector<HTMLElement>('#dialogue')!;
 const controller = mountPet(pet, akila);
 const select = document.querySelector<HTMLSelectElement>('#state')!;
-for (const state of states) { const option = document.createElement('option'); option.value = state; option.textContent = state; select.append(option); }
+for (const state of states) { const option = document.createElement('option'); option.value = state; option.textContent = state === 'working' ? '작업 (Working)' : state; select.append(option); }
 select.addEventListener('change', () => controller.set(select.value as PetState));
 function clamp() { pet.style.left = `${Math.max(0, Math.min(pet.offsetLeft, desktop.clientWidth - pet.offsetWidth))}px`; pet.style.top = `${Math.max(0, Math.min(pet.offsetTop, desktop.clientHeight - pet.offsetHeight))}px`; }
 function reset() { pet.style.left = `${Math.max(0, desktop.clientWidth - pet.offsetWidth - 30)}px`; pet.style.top = `${Math.max(0, desktop.clientHeight - pet.offsetHeight - 30)}px`; dialogue.textContent = ''; }
