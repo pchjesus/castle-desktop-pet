@@ -3,6 +3,7 @@ import { createState } from './state';
 import { playFrames } from './animation';
 import { startEffects } from './effects';
 import { startWorking } from './working';
+import { createTransition } from './transition.mjs';
 export function mountPet(root: HTMLElement, character: Character) {
   let stop = () => {};
   const render = (state: PetState) => {
@@ -24,6 +25,12 @@ export function mountPet(root: HTMLElement, character: Character) {
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); };
   };
-  const state = createState(character.initialState, render); render(state.get());
+  const transition = createTransition(render, () => {
+    const stage = root.querySelector<HTMLElement>('.pet-stage');
+    if (!stage || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    stage.classList.remove('working-active'); stage.classList.add('working-exit');
+    return true;
+  });
+  const state = createState(character.initialState, transition); transition(state.get());
   return state;
 }
