@@ -16,3 +16,9 @@ npm start
 `npm start`는 빌드 후 Electron을 실행합니다. 캐릭터를 드래그해 이동하고 우클릭 메뉴에서 크기를 설정하거나 종료합니다. 창 위치는 Electron 사용자 데이터 디렉터리에 저장됩니다. `npm run dev`는 렌더러만 브라우저에서 확인하기 위한 Vite 서버입니다.
 
 요구사항은 [제품 명세](docs/PRODUCT_SPEC.md)를 참조하세요.
+
+## 오프라인 HTML 미리보기
+
+`npm run preview:export`로 저장소 루트의 `preview.html`을 생성합니다. 파일을 브라우저에서 직접 열면 서버와 인터넷 없이 크기, 상태, 대사와 드래그를 확인할 수 있습니다. 이는 Windows 창 동작을 검증하는 도구는 아닙니다.
+
+PNG 프레임은 `src/characters/assets/akila/<상태>/`에 넣고 이름순으로 재생합니다. 상태는 `idle`, `smoking`, `speaking`, `drawing`, `firing`이며 파일 추가 후 앱과 미리보기를 다시 빌드하세요. 이미지가 없는 상태는 임시 화면을 표시합니다.
