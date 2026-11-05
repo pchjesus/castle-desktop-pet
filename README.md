@@ -22,3 +22,5 @@ npm start
 `npm run preview:export`로 저장소 루트의 `preview.html`을 생성합니다. 파일을 브라우저에서 직접 열면 서버와 인터넷 없이 크기, 상태, 대사와 드래그를 확인할 수 있습니다. 이는 Windows 창 동작을 검증하는 도구는 아닙니다.
 
 PNG 프레임은 `src/characters/assets/akila/<상태>/`에 넣고 이름순으로 재생합니다. 상태는 `idle`, `smoking`, `speaking`, `drawing`, `firing`이며 파일 추가 후 앱과 미리보기를 다시 빌드하세요. 이미지가 없는 상태는 임시 화면을 표시합니다.
+
+아킬라의 idle 상태에는 제공된 A형 SD PNG가 표시됩니다. 나머지 상태는 전용 이미지가 준비되기 전까지 플레이스홀더를 표시합니다. 기본 총기와 향후 사격 디자인 규칙은 제품 명세를 참조하세요.
