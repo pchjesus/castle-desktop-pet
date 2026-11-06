@@ -70,6 +70,20 @@ try {
     const working = await loaded('working');
     await snapshot(size + '-working');
     record(size + '-working', { passed: true, image: working });
+    // Compare the browser's actual rendered frame URLs, not merely the files
+    // listed in the preview review panel. 000 + 002 + 003 must all display.
+    const distinctWorkingFrames = await page.evaluate(async () => {
+      const seen = new Set();
+      for (let i = 0; i < 65; i++) {
+        const img = document.querySelector('#pet .pet-stage img');
+        if (img?.complete && img.naturalWidth > 0) seen.add(img.currentSrc);
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      return seen.size;
+    });
+    assert.equal(distinctWorkingFrames, 3, 'Expected 3 distinct Working frames in subtle typing loop at ' + size);
+    await snapshot(size + '-working-typing');
+    record(size + '-working-typing-loop', { passed: true, distinctFrames: distinctWorkingFrames });
     await idle();
 
     await page.locator('#state').selectOption('drawing');
@@ -112,7 +126,7 @@ try {
 
   // Inspect every existing pose independently; the live Drawing state advances too quickly
   // to guarantee that an initial-frame screenshot captures frame 000.
-  for (const [state, count] of [['idle', 1], ['working', 2], ['drawing', 2], ['firing', 3], ['dual_firing', 3]]) {
+  for (const [state, count] of [['idle', 1], ['working', 4], ['drawing', 2], ['firing', 3], ['dual_firing', 3]]) {
     await page.locator('#review-source').selectOption('derived');
     await page.locator('#review-state').selectOption(state);
     const frame = page.locator('#selected-frame');
@@ -128,7 +142,7 @@ try {
       await page.locator('#frame-next').click();
     }
   }
-  record('all-derived-pose-frames-captured', { passed: true, count: 11 });
+  record('all-derived-pose-frames-captured', { passed: true, count: 13 });
 
   await page.locator('#state').selectOption('working');
   await loaded('working transition');
@@ -163,6 +177,13 @@ try {
   record('sequential-firing-replay', { passed: true });
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.locator('#state').selectOption('working');
+  await loaded('working reduced motion');
+  const reducedFrameBefore = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
+  await pause(1350);
+  const reducedFrameAfter = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
+  assert.equal(reducedFrameAfter, reducedFrameBefore, 'Working must remain still with reduced motion');
+  record('reduced-motion-working-still', { passed: true });
   await page.locator('#state').selectOption('firing');
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
   record('reduced-motion-firing-return', { passed: true });
