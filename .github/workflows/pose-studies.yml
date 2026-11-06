@@ -1,0 +1,31 @@
+name: Pose study — candidate frames only
+on:
+  push:
+    branches:
+      - feat/v0.3c-action-pack
+    paths:
+      - 'scripts/pose-studies.py'
+      - '.github/workflows/pose-studies.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  morph-study:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated art-study dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 pillow==11.3.0 opencv-python-headless==4.12.0.88
+      - name: Generate unapproved in-between pose studies
+        run: python scripts/pose-studies.py
+      - name: Upload candidate-only previews (never auto-merge assets)
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03c-pose-studies-unapproved
+          path: artifacts/pose-studies/
+          if-no-files-found: error
+          retention-days: 30
