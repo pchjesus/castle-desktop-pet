@@ -127,21 +127,27 @@ try {
     await idle();
 
     await page.locator('#state').selectOption('firing');
+    // Detect and pause the REAL animated CSS flash in one in-page task. The
+    // former two Playwright round trips could straddle the ~130ms flash beat,
+    // resulting in a flaky false negative after the animation had ended.
+    // Start sampling before waiting for the sprite image to load.
+    const frozenOpacity = await page.evaluate(async () => {
+      const started = performance.now();
+      while (performance.now() - started < 3500) {
+        const el = document.querySelector('.single-action .muzzle-single');
+        if (el && Number(getComputedStyle(el).opacity) > 0.55) {
+          el.style.animationPlayState = 'paused';
+          return Number(getComputedStyle(el).opacity);
+        }
+        if (!el && document.querySelector('#state')?.value === 'idle') break;
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+      return -1;
+    });
+    assert(frozenOpacity > 0.3, 'Real CSS single flash was never captured at ' + size);
     await loaded('firing');
     assert.equal(await page.locator('.single-action .muzzle-single').count(), 1, 'Single muzzle missing');
     assert.match(await page.locator('.muzzle-single').evaluate(el => getComputedStyle(el).clipPath), /^polygon\(/, 'Muzzle must be a shaped burst, not a round orb');
-    await page.waitForFunction(() => {
-      const el = document.querySelector('.muzzle-single');
-      return el && Number(getComputedStyle(el).opacity) > 0.3;
-    }, null, { timeout: 4000 });
-    // Freeze the already-active REAL CSS starburst for the capture. Without
-    // this, taking a full desktop PNG can outlast the brief animation, giving
-    // a misleading "flash" screenshot with no visible flash at all.
-    const frozenOpacity = await page.locator('.muzzle-single').evaluate(el => {
-      el.style.animationPlayState = 'paused';
-      return Number(getComputedStyle(el).opacity);
-    });
-    assert(frozenOpacity > 0.2, 'Single flash vanished before QA freeze at ' + size);
     await snapshot(size + '-firing-flash');
     const flashEl = page.locator('.muzzle-single');
     if (await flashEl.count()) await flashEl.evaluate(el => { el.style.animationPlayState = ''; });
