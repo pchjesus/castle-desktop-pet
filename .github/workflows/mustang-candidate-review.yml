@@ -1,0 +1,65 @@
+name: Mustang candidate visual QA — read only
+on:
+  push:
+    branches: [feat/v0.3c-action-pack]
+    paths:
+      - '.github/workflows/mustang-candidate-review.yml'
+      - 'src/characters/candidates/akila_mustang/**'
+      - 'design/references/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Export candidate and source unchanged; make labeled review sheet
+        shell: bash
+        run: |
+          mkdir -p artifacts/mustang-review
+          cp src/characters/candidates/akila_mustang/idle-unapproved.png artifacts/mustang-review/
+          cp design/references/akila-sheet-02.png artifacts/mustang-review/
+          python - <<'PY'
+          from PIL import Image, ImageDraw, ImageFont
+          from pathlib import Path
+          import json,hashlib
+          source=Path('design/references/akila-sheet-02.png')
+          candidate=Path('src/characters/candidates/akila_mustang/idle-unapproved.png')
+          s=Image.open(source).convert('RGBA'); c=Image.open(candidate).convert('RGBA')
+          # Keep full reference sheet visible; checkerboard reveals alpha/background remnants.
+          def checker(size):
+              image=Image.new('RGBA',size,'#e8e8e8')
+              d=ImageDraw.Draw(image)
+              for yy in range(0,size[1],20):
+                  for xx in range(0,size[0],20):
+                      if (xx//20+yy//20)%2:d.rectangle((xx,yy,xx+19,yy+19),fill='#b6bdc6')
+              return image
+          canvas=Image.new('RGB',(1440,770),'#242a33')
+          d=ImageDraw.Draw(canvas)
+          for i,(im,title) in enumerate([(s,'USER ORIGINAL: standing Mustang B'),(c,'CODEX CANDIDATE: UNAPPROVED')]):
+              im.thumbnail((680,710),Image.Resampling.LANCZOS)
+              base=checker((680,710))
+              base.alpha_composite(im,((680-im.width)//2,(710-im.height)//2))
+              canvas.paste(base.convert('RGB'),(i*720+18,44))
+              d.text((i*720+20,14),title,fill='#ffffff')
+          out=Path('artifacts/mustang-review')
+          canvas.save(out/'mustang-candidate-comparison.jpg',quality=93)
+          info={'original_sheet_sha256':hashlib.sha256(source.read_bytes()).hexdigest(),
+                'candidate_sha256':hashlib.sha256(candidate.read_bytes()).hexdigest(),
+                'candidate_resolution':list(c.size),
+                'candidate_mode':c.mode,'status':'NOT_APPROVED'}
+          (out/'report.json').write_text(json.dumps(info,indent=2),encoding='utf-8')
+          print(json.dumps(info))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mustang-candidate-visual-qa-unapproved
+          path: artifacts/mustang-review/
+          retention-days: 30
+          if-no-files-found: error
