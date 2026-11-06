@@ -291,6 +291,50 @@ try {
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
   record('reduced-motion-firing-return', { passed: true });
 
+  // B Mustang candidates are a review-only surface. Interacting with them
+  // must never change the approved A outfit in the active pet renderer.
+  const activeAFrameBeforeReview = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
+  const choices = await page.locator('#mustang-candidate option').allTextContents();
+  assert(choices.some(x => x.includes('idle-gate1b-alpha-cleanup-unapproved.png')),
+    'Cleaned Mustang candidate must be listed');
+  const mustard = page.locator('#mustang-after');
+  await page.locator('#mustang-candidate').selectOption({ label: 'idle-gate1b-alpha-cleanup-unapproved.png' });
+  await page.waitForFunction(() => {
+    const im = document.querySelector('#mustang-after');
+    return im && im.complete && im.naturalWidth === 1024 && im.naturalHeight === 1600;
+  }, null, { timeout: 10000 });
+  assert.match(await page.locator('#mustang-status').textContent(), /미승인 후보/);
+  record('mustang-unapproved-candidate-listed-and-image-loaded', { passed: true });
+
+  for (const width of [180, 240, 360]) {
+    await page.locator('#mustang-size').selectOption(String(width));
+    const panelWidth = await page.locator('.mustang-panel').first().evaluate(el => el.getBoundingClientRect().width);
+    assert(Math.abs(panelWidth - width) < 2, 'Mustang preview pane width mismatch at ' + width);
+  }
+  for (const background of ['light', 'dark', 'checker']) {
+    await page.locator('#mustang-bg').selectOption(background);
+    assert.equal(await page.locator('.mustang-panels').getAttribute('data-background'), background);
+  }
+  await page.locator('#mustang-guides').uncheck();
+  assert(await page.locator('.mustang-panels').evaluate(el => el.classList.contains('hide-guides')));
+  await page.locator('#mustang-guides').check();
+  assert(!(await page.locator('.mustang-panels').evaluate(el => el.classList.contains('hide-guides'))));
+  record('mustang-size-background-and-guides', { passed: true });
+
+  await page.locator('#mustang-candidate').selectOption({ label: 'idle-unapproved.png' });
+  await page.waitForFunction(() => {
+    const im = document.querySelector('#mustang-after');
+    return im && im.complete && im.naturalHeight === 1536;
+  }, null, { timeout: 10000 });
+  await page.locator('#mustang-candidate').selectOption({ label: 'idle-gate1b-alpha-cleanup-unapproved.png' });
+  await page.waitForFunction(() => {
+    const im = document.querySelector('#mustang-after');
+    return im && im.complete && im.naturalHeight === 1600;
+  }, null, { timeout: 10000 });
+  const activeAFrameAfterReview = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
+  assert.equal(activeAFrameAfterReview, activeAFrameBeforeReview, 'Mustang review must not alter active A pet sprite');
+  record('mustang-review-never-activates-b-outfit', { passed: true });
+
   await page.locator('#state').selectOption('speaking');
   assert.equal(await page.locator('#pet .placeholder').count(), 1, 'Missing expected speaking placeholder');
   record('speaking-placeholder-marked-unimplemented', { passed: true });
