@@ -22,3 +22,19 @@ test('outfit frame registries never fall back across outfits', async () => {
  assert.deepEqual(outfitFrames(registry,'unknown','idle'),[]);
  const copy=outfitFrames(registry,'mustang','idle'); copy.push('other'); assert.deepEqual(registry.mustang.idle,['b.png']);
 });
+
+test('B candidate review controls exist only in preview, not active A pet renderer', async () => {
+  const html = await readFile(new URL('../preview-entry.html', import.meta.url), 'utf8');
+  const preview = await readFile(new URL('../src/preview.ts', import.meta.url), 'utf8');
+  const pet = await readFile(new URL('../src/renderer/pet.ts', import.meta.url), 'utf8');
+  for (const name of [
+    'mustang-candidate', 'mustang-before', 'mustang-after',
+    'mustang-size', 'mustang-bg', 'mustang-guides', 'mustang-status'
+  ]) {
+    assert(html.includes('id="' + name + '"'), 'Missing B review UI control: ' + name);
+  }
+  assert(preview.includes("import.meta.glob('./characters/candidates/akila_mustang/*.png'"),
+    'Independent Mustang review candidate glob missing');
+  assert(!pet.includes('characters/candidates/akila_mustang'),
+    'An unapproved Mustang candidate must not be referenced from the active renderer');
+});
