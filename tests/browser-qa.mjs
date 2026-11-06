@@ -99,10 +99,35 @@ try {
       return els.length === 2 && els.some(el => Number(getComputedStyle(el).opacity) > 0.3);
     }, null, { timeout: 4500 });
     await snapshot(size + '-dual-flash');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('.dual-action .muzzle-right');
+      return el && Number(getComputedStyle(el).opacity) > 0.3;
+    }, null, { timeout: 4000 });
+    await snapshot(size + '-dual-right-flash');
     await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
     await loaded('dual firing returned idle');
     record(size + '-dual-firing', { passed: true, returnedIdle: true });
   }
+
+  // Inspect every existing pose independently; the live Drawing state advances too quickly
+  // to guarantee that an initial-frame screenshot captures frame 000.
+  for (const [state, count] of [['idle', 1], ['working', 2], ['drawing', 2], ['firing', 3], ['dual_firing', 3]]) {
+    await page.locator('#review-source').selectOption('derived');
+    await page.locator('#review-state').selectOption(state);
+    const frame = page.locator('#selected-frame');
+    await frame.evaluate(img => { img.style.width = '360px'; img.style.height = '563px'; });
+    for (let i = 0; i < count; i++) {
+      await page.waitForFunction(expected => document.querySelector('#frame-label')?.textContent?.trim() === expected,
+        (i + 1) + ' / ' + count, { timeout: 4000 });
+      await page.waitForFunction(() => {
+        const img = document.querySelector('#selected-frame');
+        return img && img.complete && img.naturalWidth > 0;
+      }, null, { timeout: 10000 });
+      await frame.screenshot({ path: resolve(out, 'pose-' + state + '-' + i + '.png') });
+      await page.locator('#frame-next').click();
+    }
+  }
+  record('all-derived-pose-frames-captured', { passed: true, count: 11 });
 
   await page.locator('#state').selectOption('working');
   await loaded('working transition');
