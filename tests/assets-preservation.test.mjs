@@ -40,3 +40,25 @@ test('all eleven aligned renderer pose files remain present', async () => {
     assert.equal(bytes.readUInt32BE(20), 1600, 'Incorrect aligned height: ' + originalFrames[i]);
   }
 });
+
+test('Working finger-tap frames are aligned and distinct while approved frame 000 is fixed', async () => {
+  const folder = '../src/characters/derived/akila/working/';
+  const approved = await readFile(new URL(folder + '000.png', import.meta.url));
+  const blobSha = createHash('sha1')
+    .update(Buffer.from('blob ' + approved.length + '\0'))
+    .update(approved).digest('hex');
+  assert.equal(blobSha, '6db61ee9ddabb6640c62202d05a6ababa579f86d',
+    'Approved Working 000 changed; do not regenerate the face, laptop, or outfit.');
+  const variants = await Promise.all(['002.png', '003.png'].map(name =>
+    readFile(new URL(folder + name, import.meta.url))));
+  const originalHash = createHash('sha256').update(approved).digest('hex');
+  const variantHashes = variants.map(buf => {
+    assert(buf.subarray(0, 8).equals(pngSignature), 'Invalid typing PNG');
+    assert.equal(buf.readUInt32BE(16), 1024, 'Width changed from approved Working');
+    assert.equal(buf.readUInt32BE(20), 1600, 'Height changed from approved Working');
+    return createHash('sha256').update(buf).digest('hex');
+  });
+  assert.notEqual(variantHashes[0], variantHashes[1], 'Two typing frames are identical');
+  assert.notEqual(variantHashes[0], originalHash, 'First typing frame is identical to 000');
+  assert.notEqual(variantHashes[1], originalHash, 'Second typing frame is identical to 000');
+});
