@@ -11,7 +11,18 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     const animation = character.animations[state];
     const isAkilaEffect = character.id === 'akila' && (state === 'idle' || state === 'smoking');
     const isWorking = character.id === 'akila' && state === 'working';
-    const frames = (state === 'smoking' && isAkilaEffect || isWorking) && !animation.frames.length ? character.animations.idle.frames : isWorking || state === 'firing' ? animation.frames.slice(0, 1) : state === 'dual_firing' ? animation.frames.slice(1, 2) : animation.frames;
+    // The old Working 001 keeps its source/derived PNG but cannot join this loop:
+    // it changes laptop orientation. 002 and 003 edit only the typing fingertips
+    // of the existing 000, so they can be cycled without moving face or laptop.
+    const workingFrames = animation.frames.length >= 4
+      ? [animation.frames[0], animation.frames[2], animation.frames[0], animation.frames[3]]
+      : animation.frames.slice(0, 1);
+    const frames = (state === 'smoking' && isAkilaEffect || isWorking) && !animation.frames.length
+      ? character.animations.idle.frames
+      : isWorking ? workingFrames
+      : state === 'firing' ? animation.frames.slice(0, 1)
+      : state === 'dual_firing' ? animation.frames.slice(1, 2)
+      : animation.frames;
     const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n${state} 이미지 준비 중`; root.replaceChildren(el); };
     if (!frames.length) { placeholder(); return; }
     const image = document.createElement('img'); image.alt = character.name;
@@ -28,8 +39,11 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     document.addEventListener('visibilitychange', visibility); visibility();
     root.append(stage);
     const mode = state === 'firing' || state === 'dual_firing' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
-    const stopFrames = playFrames(frames, (state === 'working' ? 3000 : state === 'firing' ? 1500 : state === 'dual_firing' ? 2400 : animation.frameDurationMs) / getSpeed(), frame => { image.src = frame; }, mode, () => { stateController.set('idle'); });
-    const stopWorking = isWorking ? startWorking(stage) : () => {};
+    const reduced = isWorking ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const stopFrames = playFrames(frames, (state === 'working' ? (frames.length > 1 ? 300 : 3000) : state === 'firing' ? 1500 : state === 'dual_firing' ? 2400 : animation.frameDurationMs) / getSpeed(), frame => {
+      image.src = reduced?.matches ? frames[0] : frame;
+    }, mode, () => { stateController.set('idle'); });
+    const stopWorking = isWorking ? startWorking(stage, frames[0]) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); document.removeEventListener('visibilitychange', visibility); };
   };
