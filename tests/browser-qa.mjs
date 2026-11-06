@@ -140,6 +140,27 @@ try {
     await loaded('single firing returned idle');
     record(size + '-firing', { passed: true, returnedIdle: true });
 
+    // Sample the actual production renderer, not the static review panel.
+    // The newly generated seven-step Revolver action must reach the key
+    // draw/aim/recoil/holster frames before the state is reset to Idle.
+    await page.locator('#state').selectOption('firing');
+    await page.waitForSelector('#pet .single-action[data-action-mode="revolver-frames"]', { timeout: 1500 });
+    const seenRevolverFrames = await page.evaluate(async () => {
+      const seen = new Set();
+      for (let i = 0; i < 90; i++) {
+        const el = document.querySelector('#pet .single-action[data-action-mode="revolver-frames"]');
+        if (el?.dataset.actionFrame) seen.add(el.dataset.actionFrame);
+        await new Promise(resolve => setTimeout(resolve, 22));
+      }
+      return [...seen].sort();
+    });
+    for (const n of ['0', '1', '2', '3', '4', '5', '6']) {
+      assert(seenRevolverFrames.includes(n),
+        'Revolver action skipped frame ' + n + ' at ' + size + ': ' + seenRevolverFrames.join(','));
+    }
+    assert.equal(await page.locator('#state').inputValue(), 'idle', 'Revolver sequence must finish Idle');
+    record(size + '-full-revolver-sequence', { passed: true, seenFrames: seenRevolverFrames });
+
     await page.locator('#state').selectOption('dual_firing');
     await loaded('dual_firing');
     assert.equal(await page.locator('.dual-action .muzzle').count(), 2, 'Dual muzzles missing');
@@ -210,6 +231,27 @@ try {
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
   record('sequential-firing-replay', { passed: true });
 
+  // Drawing is a three-key-pose hold; firing from that held aim skips the
+  // redundant idle/draw lead-in and starts directly from the aimed revolver.
+  await page.locator('#state').selectOption('drawing');
+  await page.waitForSelector('#pet .pet-stage[data-draw-mode="three-key-poses"]', { timeout: 1000 });
+  await page.waitForSelector('#pet .pet-stage[data-draw-frame="2"]', { timeout: 1500 });
+  await page.locator('#state').selectOption('firing');
+  await page.waitForSelector('#pet .single-action[data-action-entry="already-drawn"]', { timeout: 1000 });
+  assert.equal(await page.locator('#pet .muzzle-single').evaluate(el => getComputedStyle(el).animationName),
+    'shot-from-drawn', 'From-drawn muzzle animation must align with early recoil');
+  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 3000 });
+  record('drawing-held-aim-to-firing-without-redraw', { passed: true });
+
+  await page.locator('#state').selectOption('firing');
+  await page.waitForSelector('#pet .single-action[data-action-mode="revolver-frames"]', { timeout: 1000 });
+  await page.locator('#state').selectOption('working');
+  await page.waitForSelector('#pet .pet-stage[data-working-motion="fingertips-only"]', { timeout: 1200 });
+  await pause(1550);
+  assert.equal(await page.locator('#state').inputValue(), 'working', 'Interrupted revolver must not return to Idle later');
+  record('revolver-interrupted-by-working-no-stale-idle', { passed: true });
+  await idle();
+
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.locator('#state').selectOption('working');
   await loaded('working reduced motion');
@@ -219,6 +261,9 @@ try {
   assert.equal(reducedFrameAfter, reducedFrameBefore, 'Working must remain still with reduced motion');
   record('reduced-motion-working-still', { passed: true });
   await page.locator('#state').selectOption('firing');
+  await page.waitForSelector('#pet .single-action[data-action-mode="reduced-still"]', { timeout: 1200 });
+  assert.equal(await page.locator('.single-action .muzzle-single').evaluate(el => getComputedStyle(el).animationName),
+    'none', 'Reduced-motion should show no firing flash animation');
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
   record('reduced-motion-firing-return', { passed: true });
 
