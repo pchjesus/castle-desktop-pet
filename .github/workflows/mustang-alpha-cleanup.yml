@@ -1,0 +1,48 @@
+name: Mustang idle technical alpha cleanup — unapproved
+on:
+  push:
+    branches: [feat/v0.3c-action-pack]
+    paths:
+      - 'scripts/normalize-mustang-idle.py'
+      - '.github/workflows/mustang-alpha-cleanup.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: mustang-alpha-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  generate-candidate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check numpy==2.2.6 pillow==11.3.0
+      - name: Derive transparent aligned candidate without stretching subject
+        run: python scripts/normalize-mustang-idle.py
+      - name: Ensure approved source PNGs are unchanged
+        run: git diff --exit-code -- src/characters/assets/akila src/characters/derived/akila design/references src/characters/candidates/akila_mustang/idle-gate1b-unapproved.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mustang-gate1b-alpha-cleanup-not-approved
+          path: |
+            artifacts/mustang-alpha-cleanup/
+            src/characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png
+          retention-days: 30
+          if-no-files-found: error
+      - name: Commit cleaned candidate only to Draft development branch
+        shell: bash
+        run: |
+          git add -- src/characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png
+          if git diff --cached --quiet; then
+            echo "Clean candidate already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "art: add unapproved Mustang Idle alpha-cleanup candidate [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
