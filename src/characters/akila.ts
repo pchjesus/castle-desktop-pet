@@ -8,5 +8,8 @@ const framesFor = (source: Record<string, string>, state: string) => Object.keys
 export const originalFrames = (state: PetState) => framesFor(assets, state);
 // Dedicated closing animation, separate from the perpetual Working typing loop.
 export const workingExitFrames = framesFor(derived, 'working_exit');
+// A-type approved-source single-revolver sequence (draw/aim/recoil/holster).
+// Keep its key-pose limitations explicit; never replace source art in place.
+export const revolverActionFrames = framesFor(derived, 'revolver_action');
 const animation = (state: PetState) => ({ frames: framesFor(derived, state), frameDurationMs: 500 });
 export const akila: Character = { id:'akila', name:'아킬라', initialState:'idle', animations:{idle:animation('idle'), smoking:animation('smoking'), speaking:animation('speaking'), drawing:animation('drawing'), firing:animation('firing'), working:animation('working'), dual_firing:animation('dual_firing')}, dialogues:{testPassed:['코딩 실력은 인정하지. 감탄했다, 오픈AI.'], deploymentComplete:['남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.']} };
