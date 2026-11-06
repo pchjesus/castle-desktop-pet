@@ -1,0 +1,168 @@
+{
+  "project": "Castle Desktop Pet",
+  "updated_at": "2026-11-07",
+  "designation": "CURRENT_USER_SELECTED_B_TYPE_MUSTANG_VISUAL_CANONICAL_BASELINE",
+  "policy": [
+    "이 9개 파일은 사용자가 최신 대화에서 직접 재첨부하여 공식 기본안으로 확정했다.",
+    "캐릭터 머리/신체 비율, 의상, 포즈, 무기, 화면 배치 등은 승인된 소스를 우선한다.",
+    "과거 시트 02, Gate1B 미승인 에셋 및 이전 생성 결과는 위 9개를 덮어쓸 수 없다.",
+    "원본 바이너리는 SHA-256으로 관리하며, 기술적 정제본은 별도 이름으로 저장한다.",
+    "시각 승인과 기술적 알파 품질 승인은 다르며 JPEG는 투명 이미지가 아니다.",
+    "앱 B형 런타임 전환, PR main 병합, 배포는 별도 사용자 승인 전까지 금지한다."
+  ],
+  "assets": [
+    {
+      "source_uploaded_filename": "1000041374.png",
+      "canonical_archive_path": "approved_visual_sources/idle.png",
+      "action": "Idle",
+      "note": "기본 서 있는 포즈",
+      "size_bytes": 969882,
+      "sha256": "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976",
+      "actual_format": "PNG",
+      "dimensions": [
+        948,
+        1659
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.6592,
+      "fully_opaque_pixel_ratio": 0.0007,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041381.png",
+      "canonical_archive_path": "approved_visual_sources/sitting.png",
+      "action": "Sitting",
+      "note": "상자에 앉아 리볼버를 내린 포즈",
+      "size_bytes": 1572660,
+      "sha256": "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3",
+      "actual_format": "PNG",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.4706,
+      "fully_opaque_pixel_ratio": 0.0001,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041380.png",
+      "canonical_archive_path": "approved_visual_sources/drawing.png",
+      "action": "Drawing",
+      "note": "오른손 리볼버 낮은 조준",
+      "size_bytes": 924327,
+      "sha256": "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96",
+      "actual_format": "PNG",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.7084,
+      "fully_opaque_pixel_ratio": 0.0006,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041382.png",
+      "canonical_archive_path": "approved_visual_sources/firing.png",
+      "action": "Firing",
+      "note": "기본 단발 사격",
+      "size_bytes": 956817,
+      "sha256": "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b",
+      "actual_format": "PNG",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.6972,
+      "fully_opaque_pixel_ratio": 0.0006,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041386.png",
+      "canonical_archive_path": "approved_visual_sources/firing_dynamic.jpg",
+      "action": "Firing Dynamic",
+      "note": "움직임이 큰 보조 사격 포즈",
+      "size_bytes": 172766,
+      "sha256": "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c",
+      "actual_format": "JPEG",
+      "dimensions": [
+        984,
+        1536
+      ],
+      "mode": "RGB",
+      "transparent_pixel_ratio": 0.0,
+      "fully_opaque_pixel_ratio": 1.0,
+      "technical_status": "visually_approved_background_not_removed"
+    },
+    {
+      "source_uploaded_filename": "1000041387.png",
+      "canonical_archive_path": "approved_visual_sources/smoking.png",
+      "action": "Smoking",
+      "note": "서서 흡연하는 포즈",
+      "size_bytes": 931010,
+      "sha256": "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c",
+      "actual_format": "PNG",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.6796,
+      "fully_opaque_pixel_ratio": 0.0007,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041389.png",
+      "canonical_archive_path": "approved_visual_sources/speaking_reference.jpg",
+      "action": "Speaking",
+      "note": "말하기 7컷·표정·포즈 참고 시트",
+      "size_bytes": 499170,
+      "sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "actual_format": "JPEG",
+      "dimensions": [
+        1404,
+        1536
+      ],
+      "mode": "RGB",
+      "transparent_pixel_ratio": 0.0,
+      "fully_opaque_pixel_ratio": 1.0,
+      "technical_status": "visually_approved_background_not_removed"
+    },
+    {
+      "source_uploaded_filename": "1000041391.png",
+      "canonical_archive_path": "approved_visual_sources/working.png",
+      "action": "Working",
+      "note": "서서 노트북을 사용하는 포즈",
+      "size_bytes": 931867,
+      "sha256": "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4",
+      "actual_format": "PNG",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "mode": "RGBA",
+      "transparent_pixel_ratio": 0.681,
+      "fully_opaque_pixel_ratio": 0.0008,
+      "technical_status": "visually_approved_not_alphas_qa"
+    },
+    {
+      "source_uploaded_filename": "1000041393.png",
+      "canonical_archive_path": "approved_visual_sources/dual_firing.jpg",
+      "action": "Dual Firing",
+      "note": "쌍권총 사격 기준 포즈",
+      "size_bytes": 229551,
+      "sha256": "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7",
+      "actual_format": "JPEG",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "mode": "RGB",
+      "transparent_pixel_ratio": 0.0,
+      "fully_opaque_pixel_ratio": 1.0,
+      "technical_status": "visually_approved_background_not_removed"
+    }
+  ]
+}

@@ -8,7 +8,7 @@
 - 개인 ChatGPT 라이브러리: `/Castle Desktop Pet/castle_pet_B_canonical_20261107.zip`
 - ZIP SHA-256: `d2f7a6853ef7c1eb8e453678fa502a7b22da872381c8c46d6192ff1c6172a93e`
 - 내부 `approved_visual_sources/`: 사용자가 지정한 9개 이미지 **바이너리를 변형하지 않고** 보관. `ASSET_MANIFEST.json`에서 정확한 원래 파일 이름·SHA·크기·상태를 확인.
-- **현재 이 문서가 GitHub에 등록되어 있는 것과 PNG/JPEG 바이너리가 GitHub에 등록된 것은 다르다.** 바이너리는 이 커밋에서 GitHub 미등록. 새 채팅/코덱스가 ZIP에서 불러와 개발 브랜치에 원본 그대로 추가하고 해시 검증해야 한다.
+- **현재 이 문서가 GitHub에 등록되어 있는 것과 PNG/JPEG 바이너리가 GitHub에 등록된 것은 다르다.** 바이너리는 `design/canonical/b-mustang-20261107/approved_visual_sources/`에 원본 그대로 보존하며 검증 스크립트로 대조한다.
 
 ## 사용자 지정 기본안 — 정확한 일대일 매핑
 
