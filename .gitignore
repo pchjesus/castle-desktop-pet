@@ -1,3 +1,8 @@
 node_modules/
 dist/
 dist-electron/
+preview-assets/
+preview-offline.zip
+preview-single.html
+.preview-build/
+artifacts/

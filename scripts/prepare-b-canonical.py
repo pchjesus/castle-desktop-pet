@@ -29,3 +29,9 @@ for i in range(7):
 report['assets']['speaking_reference']={'source_sha256':digest(source),'status':'needs_manual_review','warning':'rough crops retain black background, edge alignment not verified','frames':parts}
 (OUT/'manifest.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n',encoding='utf8')
 print('Candidate manifest saved:',OUT/'manifest.json')
+
+# Optional integrated stage keeps CANONICAL-02 outputs intact and appends the action pack.
+if __name__ == '__main__':
+ import sys
+ if '--action-pack' in sys.argv:
+  subprocess.run([sys.executable, str(ROOT/'scripts/prepare-b-action-pack.py')],check=True)

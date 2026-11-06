@@ -1,0 +1,32 @@
+name: B canonical technical pack
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/prepare-b-action-pack.py'
+      - 'scripts/b-canonical-requirements.txt'
+      - 'src/characters/candidates/b-mustang-20261107/**'
+      - '.github/workflows/b-canonical-pack.yml'
+permissions:
+  contents: read
+jobs:
+  reproducibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r scripts/b-canonical-requirements.txt
+      - run: python scripts/prepare-b-action-pack.py
+      - run: cp src/characters/candidates/b-mustang-20261107/action-pack/manifest.json /tmp/b-first.json
+      - run: python scripts/prepare-b-action-pack.py
+      - run: cmp /tmp/b-first.json src/characters/candidates/b-mustang-20261107/action-pack/manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: b-canonical-technical-candidates-unapproved
+          path: src/characters/candidates/b-mustang-20261107/action-pack/

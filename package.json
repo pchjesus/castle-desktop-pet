@@ -9,7 +9,9 @@
     "build": "tsc --noEmit && vite build --base ./ && esbuild electron/main.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/main.cjs && esbuild electron/preload.ts --bundle --platform=node --format=cjs --external:electron --outfile=dist-electron/preload.cjs",
     "start": "npm run build && electron .",
     "test": "node --test tests/*.test.mjs",
-    "preview:export": "node scripts/export-preview.mjs"
+    "preview:export": "node scripts/export-preview.mjs",
+    "preview:single": "node scripts/export-preview.mjs --single",
+    "preview:package": "npm run preview:export && node scripts/package-preview.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

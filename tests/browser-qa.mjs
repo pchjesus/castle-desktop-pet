@@ -7,13 +7,12 @@ import { chromium } from 'playwright';
 const out = resolve('artifacts/visual-qa');
 mkdirSync(out, { recursive: true });
 const server = createServer((req, res) => {
-  if (req.url !== '/' && req.url !== '/preview.html') {
-    res.writeHead(404);
-    res.end('Not found');
-    return;
-  }
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  createReadStream('preview.html').pipe(res);
+  const url = new URL(req.url || '/', 'http://localhost');
+  if(url.pathname==='/favicon.ico'){res.writeHead(204);res.end();return;}
+  const name = url.pathname === '/' ? 'preview.html' : url.pathname.slice(1);
+  if (name !== 'preview.html' && !/^preview-assets\/[A-Za-z0-9_.-]+$/.test(name)) {res.writeHead(404); res.end();return;}
+  res.writeHead(200, {'Content-Type':name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.jpg')?'image/jpeg':'image/png'});
+  const stream=createReadStream(name);stream.on('error',()=>res.destroy());stream.pipe(res);
 });
 await new Promise(resolveListening => server.listen(0, '127.0.0.1', resolveListening));
 const address = server.address();
@@ -24,7 +23,7 @@ const results = [];
 const record = (name, result) => results.push({ name, ...result });
 const pause = ms => new Promise(r => setTimeout(r, ms));
 try {
-  browser = await chromium.launch({ headless: true });
+  browser = await chromium.launch({ headless: true, executablePath: process.env.CASTLE_CHROMIUM || undefined });
   const page = await browser.newPage({ viewport: { width: 1365, height: 950 }, deviceScaleFactor: 1 });
   page.on('pageerror', error => errors.push('pageerror: ' + error.message));
   page.on('console', msg => { if (msg.type() === 'error') errors.push('console: ' + msg.text()); });
@@ -350,11 +349,25 @@ try {
   await page.locator('#canonical-guides').uncheck(); assert(await page.locator('.canonical-panels').evaluate(el=>el.classList.contains('hide-guides')));
   await page.locator('#canonical-action').selectOption('speaking_reference');
   for (let i=0;i<7;i++) { await page.locator('#canonical-speaking').selectOption(String(i)); await page.waitForFunction(() => {const im=document.querySelector('#canonical-candidate');return im.complete && im.naturalWidth>0;}); }
+  await page.locator('#canonical-version').selectOption('aligned');
+  await page.locator('#canonical-action').selectOption('idle');
+  await page.waitForFunction(()=>{const im=document.querySelector('#canonical-candidate');return im.complete&&im.naturalWidth===1024;});
+  await page.locator('#canonical-version').selectOption('clean');
   record('canonical-review-controls-and-loading', {passed:true});
 
   await page.locator('#state').selectOption('speaking');
   assert.equal(await page.locator('#pet .placeholder').count(), 1, 'Missing expected speaking placeholder');
   record('speaking-placeholder-marked-unimplemented', { passed: true });
+  for(const width of [180,240,360]) {
+    await page.locator('#b-size').selectOption(String(width));
+    await page.locator('#b-action').selectOption('firing');await page.locator('#b-start').click();
+    await page.waitForFunction(()=>document.querySelector('#b-action-image').dataset.pose==='firing',null,{timeout:8000});
+    await page.locator('.b-action-review').screenshot({path:resolve(out,`b-action-${width}.png`)});
+    await page.waitForFunction(()=>document.querySelector('#b-action-image').dataset.pose==='idle',null,{timeout:8000});
+    await page.locator('#b-action').selectOption('working');await page.locator('#b-start').click();await page.locator('#b-cancel').click();
+    assert.equal(await page.locator('#b-action-image').getAttribute('data-pose'),'idle');
+  }
+  record('b-isolated-keypose-sequence', {passed:true});
   assert.deepEqual(errors, [], 'Browser console/resource errors:\n' + errors.join('\n'));
   record('browser-console-and-assets', { passed: true, errors: [] });
   writeFileSync(resolve(out, 'report.json'), JSON.stringify({ passed: true, results, errors }, null, 2));

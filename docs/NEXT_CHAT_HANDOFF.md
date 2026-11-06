@@ -55,3 +55,6 @@
 
 ## B-CANONICAL-02 기술 후보
 `src/characters/candidates/b-mustang-20261107/`에 원본과 분리된 기술 후보 및 처리 매니페스트가 있다. PNG 여섯 장은 기존 alpha를 그대로 보존하고 alpha=0인 RGB만 지웠다. JPEG 두 장은 경계 연결 RGB≤8 픽셀을 제거한 거친 이진 마스크와 별도 마스크이며 검은 의상 손실·그라데이션 잔여 및 섬광을 직접 확인해야 한다. Speaking 7개는 검은 배경이 남은 대략적 상단 시트 추출로 수동 분리·정렬이 필요하다. 어떤 후보도 시각 승인이나 런타임 연결을 의미하지 않는다. PNG alpha 정제, 1024×1600 등비 정렬, Drawing→Firing→Idle 중간 프레임은 아직 미완성이다.
+
+## B-CANONICAL-03 독립 검수
+별도 action-pack 후보 및 B형 키포즈 재생기를 추가했다. 상세 한계와 검증 방법은 `docs/B_CANONICAL_03_QA.md`. 기본 preview.html은 이미지 분리형이며 `npm run preview:package`로 ZIP을 배포 없이 로컬 생성한다. 선택 단일 HTML은 `npm run preview:single`. A형 실행은 그대로다. Dual 배경 마스크는 blocked이며 얼굴/발 일관성 및 Speaking 경계는 시각 승인되지 않았다.
