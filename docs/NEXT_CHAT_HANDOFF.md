@@ -1,7 +1,7 @@
 ## 2026-11-06 최신 포즈 승인 현황
 
 - Smoking: **사용자 시각 승인** (마지막 결과 이미지, SHA-256 `6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c`). Smoking의 PNG 바이너리는 현재 채팅에서 보존, **GitHub 미등록**. [기록](B_MUSTANG_ART_APPROVAL_2026-11-06.md).
-- Sitting: **조건부 수용**. '머리가 약간 큼' 피드백 보존. SHA-256 `f6848467c7b215c67dd8722705e5b7172a8e7002341ede14f4f4e5defb203`.
+- Sitting: **조건부 수용**. '머리가 약간 큼' 피드백 보존. SHA-256 `f6848467c7b215c67dd8722705e5b7172a8e7002341ede14f4fc4f4e5defb203`.
 - 이미지 시각 승인만 완료됨. 알파 QA, 저장소 파일 추가, 런타임 B 전환 및 Windows GUI/EXE 테스트는 미완료.
 - B형 의상 **검은 티셔츠+회색 바지**, A형 의상 **검은 셔츠+청회색 바지**, 이마 흉터/평상시 홀스터 없음.
 - 다음 작업: 승인된 Smoking/Idle 비율을 기준으로 **Working 포즈** 제작 후 별도 검수. PR #6 Draft, main 병합 금지.
