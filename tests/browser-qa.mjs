@@ -84,7 +84,26 @@ try {
     assert.equal(distinctWorkingFrames, 3, 'Expected 3 distinct Working frames in subtle typing loop at ' + size);
     await snapshot(size + '-working-typing');
     record(size + '-working-typing-loop', { passed: true, distinctFrames: distinctWorkingFrames });
-    await idle();
+
+    // A real seven-frame close should run before the Idle state is rendered.
+    await page.locator('#state').selectOption('idle');
+    await page.locator('#pet .working-exit[data-exit-mode="frames"]').waitFor({ timeout: 1000 });
+    const seenExitFrames = await page.evaluate(async () => {
+      const seen = new Set();
+      for (let i = 0; i < 38; i++) {
+        const el = document.querySelector('#pet .working-exit[data-exit-mode="frames"]');
+        if (el?.dataset.exitFrame) seen.add(el.dataset.exitFrame);
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      return [...seen].sort();
+    });
+    for (const required of ['0', '2', '4', '6']) {
+      assert(seenExitFrames.includes(required),
+        'Working exit skipped frame ' + required + ' at size ' + size + ': ' + seenExitFrames.join(','));
+    }
+    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 3000 });
+    await loaded('Working exit returned to idle');
+    record(size + '-working-close-and-idle', { passed: true, observedExitFrames: seenExitFrames });
 
     await page.locator('#state').selectOption('drawing');
     await loaded('drawing');
