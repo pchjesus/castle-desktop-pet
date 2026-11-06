@@ -1,4 +1,4 @@
-import type { Character, PetState } from '../characters/akila';
+import { workingExitFrames, type Character, type PetState } from '../characters/akila';
 import { createState } from './state';
 import { playFrames } from './animation';
 import { startEffects } from './effects';
@@ -51,7 +51,31 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
   const transition = createTransition(render, () => {
     const stage = root.querySelector<HTMLElement>('.pet-stage');
     if (!stage || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    stage.classList.remove('working-active'); stage.classList.add('working-exit');
+    const image = stage.querySelector<HTMLImageElement>('img');
+    if (character.id === 'akila' && image && workingExitFrames.length === 7) {
+      // Cancel the infinite keyboard loop. The working pose itself remains on
+      // screen while the dedicated 7-frame exit finishes (including Idle).
+      // Any Working re-selection cancels these timers via render()->stop().
+      stop();
+      stage.classList.remove('working-active');
+      stage.classList.add('working-exit');
+      stage.dataset.exitMode = 'frames';
+      stage.dataset.exitFrame = '0';
+      image.src = workingExitFrames[0];
+      const duration = 700 / Math.max(getSpeed(), 0.2);
+      const timers: ReturnType<typeof setTimeout>[] = [];
+      for (let i = 1; i < workingExitFrames.length; i++) {
+        timers.push(setTimeout(() => {
+          if (!stage.isConnected) return;
+          image.src = workingExitFrames[i];
+          stage.dataset.exitFrame = String(i);
+        }, (duration * i) / workingExitFrames.length));
+      }
+      stop = () => { for (const timer of timers) clearTimeout(timer); };
+      return duration;
+    }
+    stage.classList.remove('working-active');
+    stage.classList.add('working-exit');
     return true;
   });
   const stateController = createState(character.initialState, transition); transition(stateController.get());
