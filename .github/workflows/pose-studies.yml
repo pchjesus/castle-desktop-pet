@@ -28,6 +28,10 @@ jobs:
           mkdir -p artifacts/pose-studies/approved-reference/working-aligned
           cp src/characters/assets/akila/working/*.png artifacts/pose-studies/approved-reference/working-source/
           cp src/characters/derived/akila/working/*.png artifacts/pose-studies/approved-reference/working-aligned/
+      - name: Preserve exact Idle and Working sources for closed-laptop compositing study
+        run: |
+          mkdir -p artifacts/pose-studies/approved-reference/idle-aligned
+          cp src/characters/derived/akila/idle/000.png artifacts/pose-studies/approved-reference/idle-aligned/000.png
       - name: Upload candidate-only previews (never auto-merge assets)
         uses: actions/upload-artifact@v4
         with:
