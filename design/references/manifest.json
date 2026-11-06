@@ -1,0 +1,17 @@
+{
+  "source": "user-provided original character sheets",
+  "size_px": [
+    1536,
+    1024
+  ],
+  "references": {
+    "akila-sheet-01.png": {
+      "sha256": "aaf387b747f377cb19d32c55442e0cabdb8f66c984432969bab552ecb5891886",
+      "bytes": 3274194
+    },
+    "akila-sheet-02.png": {
+      "sha256": "e22e8bb4b90972ec921bde6b3f254d298031b148d99f0fc2d7e9e6c1d8550394",
+      "bytes": 3170277
+    }
+  }
+}

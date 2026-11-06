@@ -22,3 +22,5 @@ npm start
 앱은 `src/characters/derived/akila`의 정렬 PNG를 사용하며 `src/characters/assets/akila`의 원본을 보존합니다. Idle은 호흡과 간헐적 흡연 효과를 표시하고 Smoking은 흡연 효과를 반복합니다. Working은 첫 포즈를 유지하며 종료 시 페이드됩니다. Drawing은 조준 포즈를 유지합니다. Firing은 고정 리볼버 조준과 단발 섬광을, Dual Firing은 고정 양손 조준과 교차 섬광을 표시한 뒤 Idle로 돌아갑니다.
 
 타이핑, 노트북 닫기, 팔과 총을 꺼내거나 정리하는 중간 포즈는 아직 없습니다. 효과의 실제 시각 품질과 Windows 동작은 실행 환경에서 검증해야 합니다. 자세한 사항은 [제품 명세](docs/PRODUCT_SPEC.md)를 참조하세요.
+
+공식 기본 디자인의 목표는 B형 무스탕입니다. 아직 B형 전체 상태가 준비되지 않아 실행은 A형을 유지합니다. 기준과 전환 조건은 [디자인 기준](docs/CHARACTER_DESIGN_B_MUSTANG.md)과 [에셋 전환 계획](docs/ASSET_MIGRATION_PLAN.md)을 참조하세요.
