@@ -1,3 +1,14 @@
+# CASTLE PET — 현재 무스탕 작업 이미지 우선 원칙 (2026-11-06 정정)
+
+**최우선:** 초기 캐릭터 디자인 시트로 돌아가지 않는다. 사용자와 현재까지 제작해 온 최신 무스탕 아킬라 이미지 계열이 앞으로 모든 포즈의 시각 기준이다. 초기 `design/references/akila-sheet-01.png` 및 `akila-sheet-02.png`는 폐기 예정 레거시 참고 자료로만 간주한다. 인물·머리·몸통·다리 비율을 그 시트와 맞추려고 현재 이미지를 재작업하지 말 것.
+
+**현재 작업 마스터 후보:** `src/characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png` — 지금까지 발전시킨 최신 B형 이미지의 알파 정제본. 이를 기반으로 발전시키며, 향후 사용자가 승인한 새 이미지가 나오면 그 새 이미지를 상위 마스터로 지정한다.
+
+**승인 단계 구분:** 이 경로가 앞으로 발전시킬 이미지 기준이라는 결정과, PNG의 최종 시각 품질 승인은 별개다. `unapproved`는 사용자의 최종 아트 승인 전까지 유지한다. 과거 캐디는 원본·저작 이력 확인과 복구 목적으로만 보존한다.
+
+**금지:** 오래된 시트에 맞춰 머리를 작게 하거나 다리를 늘리는 등 현재 마스터 비율을 되돌리기, A형 블루종 이미지를 새로운 B형 포즈의 외형 기준으로 삼기, 새로운 B형 프레임 사이 A/B 외형 혼합.
+
+---
 # Castle Desktop Pet — 다음 채팅 인수인계 (2026-11-06)
 
 ## 현재 기준
@@ -8,7 +19,7 @@
 - 기술: Windows Electron + Vite + TypeScript, 단일 오프라인 `preview.html` 유지.
 
 ## 확정된 제품 / 아트
-- 사용자 제공 원본 캐디: `design/references/akila-sheet-01.png`, `akila-sheet-02.png`. 원본 SHA는 `design/references/PROVENANCE.md`에 기록.
+- 구형 디자인 시트 `design/references/akila-sheet-01.png`, `akila-sheet-02.png`: **제작 기준에서 퇴역**, 이력 참고로만 보존. 실제 기준은 **현재 최신 무스탕 마스터 후보**이며 과거 시트와의 일치 여부로 새 PNG를 평가하지 않는다.
 - **공식 목표 기본 외형:** B형 갈색 무스탕, 밝은 양털 칼라와 소매, 검은 셔츠·회색 바지·검은 부츠, 틴트 에비에이터 선글라스·수염·올백.
 - A형 올리브 블루종은 보존 및 향후 선택 의상. 현재 실제 실행은 **A형**, `outfitPolicy.active='blouson'`, `mustang.ready=false`.
 - 단발 리볼버는 **캐릭터 자신의 오른손**으로 꺼내고 조준·반동·정리. 화면상 좌우와 캐릭터 신체 기준을 혼동하지 않는다.
@@ -24,7 +35,7 @@
 - B형 **정제 PNG도 미승인**: `src/characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png` (1024×1600, 캐릭터 자체 비균일 스케일 없음).
 
 ## 남은 아트/기능
-1. **B형 Idle 공식 시각 승인**: 사용자 두 번째 시트의 서 있는 B형 비례·머리·수염·무스탕·손·부츠·담배(흡연 시) 일치 여부, 투명 경계 검사.
+1. **B형 Idle 최종 승인**: 현재 작업 마스터 후보의 얼굴·SD 비례·머리·수염·무스탕·손·부츠 및 투명 경계를 그 **현재 이미지 계열 기준으로** 검수. 과거 두 번째 시트에 비례를 되돌리지 않는다.
 2. B형 Smoking, Speaking, Working, Drawing, Firing, Dual Firing의 **의상/체형 일관된 개별 포즈 제작** 및 상태별 정렬. A/B 혼합 금지.
 3. B형 전체 상태 QA 후 **실제 B형 기본 활성화**, A형 선택 의상 전환/설정 저장.
 4. 실제 테스트/빌드/배포/오류 이벤트 기반 대사·액션 연동: 이벤트 모의실행과 진짜 연동을 반드시 구분.
@@ -40,4 +51,4 @@
 - 기존 PR #6은 Draft로 유지, 사용자가 승인하기 전 main 병합·배포 금지.
 
 ## 다음 단계 권장
-B형 Idle 시각 기준을 최종 확정한 뒤, **공식 B형 공통 모델/포즈 정렬 규칙**을 기준으로 Smoking·Working·오른손 Drawing/Firing 이미지 순서로 에셋을 확보한다. 코드는 기존 의상 로더/미리보기 재사용. 단순 PNG 정렬·알파 검사는 이 채팅에서 직접, 복잡한 로더·상태 전환·패키징은 Codex Terra Medium(필요시 High).
+현재 최신 무스탕 Idle 후보의 스타일과 비율을 사용자가 승인한 뒤, **그 현행 마스터의 공통 모델/포즈 정렬 규칙**을 기준으로 Smoking·Sitting·Working·오른손 Drawing/Firing·Dual Firing·Speaking 포즈를 확보한다. 초기 시트는 사용하지 않는다. 코드는 기존 의상 로더/미리보기 재사용. 단순 PNG 정렬·알파 검사는 이 채팅에서 직접, 복잡한 로더·상태 전환·패키징은 Codex Terra Medium(필요시 High).
