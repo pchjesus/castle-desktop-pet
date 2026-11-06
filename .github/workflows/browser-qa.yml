@@ -1,8 +1,5 @@
 name: v0.3C Browser QA
 on:
-  push:
-    branches:
-      - feat/v0.3c-action-pack
   pull_request:
     branches:
       - main
@@ -17,7 +14,7 @@ permissions:
   contents: read
 jobs:
   browser-qa:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
