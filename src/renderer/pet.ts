@@ -9,6 +9,9 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
   let previousRenderedState: PetState | undefined;
   const render = (state: PetState) => {
     const priorState = previousRenderedState;
+    // The prior Drawing state may still be taking the gun out. Only skip the
+    // draw lead-in when its actual rendered aim pose has been reached.
+    const priorDrawingFrame = root.querySelector<HTMLElement>('.pet-stage')?.dataset.drawFrame;
     previousRenderedState = state;
     stop(); root.replaceChildren(); root.dispatchEvent(new CustomEvent('pet-state', {detail: state}));
     const animation = character.animations[state];
@@ -17,7 +20,8 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     const hasRevolverArt = character.id === 'akila' && revolverActionFrames.length === 7;
     const isRevolverFiring = hasRevolverArt && state === 'firing';
     const isRevolverDrawing = hasRevolverArt && state === 'drawing';
-    const fromDrawnAim = isRevolverFiring && priorState === 'drawing';
+    const fromDrawnAim = isRevolverFiring && priorState === 'drawing' &&
+      (priorDrawingFrame === '2' || matchMedia('(prefers-reduced-motion: reduce)').matches);
     const reduced = (isWorking || isRevolverFiring || isRevolverDrawing)
       ? matchMedia('(prefers-reduced-motion: reduce)') : null;
     // The old Working 001 keeps its source/derived PNG but cannot join this loop:
