@@ -39,6 +39,8 @@ html,body,#app { margin:0; width:100%; height:100%; background:transparent; over
 @keyframes recoil-single { 0%,35%,48%,100% { transform:none } 39% { transform:rotate(-.5deg) } }
 @keyframes recoil-dual { 0%,17%,25%,32%,40%,49%,57%,64%,72%,100% { transform:none } 20%,52% { transform:rotate(-.3deg) } 35%,67% { transform:rotate(.3deg) } }
 .working-exit:not(:has(.laptop)) img { animation:working-fade .7s ease-in both; }
+/* Real Working close sprites must stay fully visible; the old fade is a fallback only. */
+.working-exit[data-exit-mode="frames"] img { animation:none !important; opacity:1 !important; }
 @keyframes working-fade { to { opacity:0; transform:translateY(1%); } }
 .action-paused img,.action-paused .muzzle { animation-play-state:paused; }
 @media (prefers-reduced-motion: reduce) { .muzzle,.single-action img,.dual-action img,.working-exit img { animation:none !important; } }
