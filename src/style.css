@@ -33,7 +33,13 @@ html,body,#app { margin:0; width:100%; height:100%; background:transparent; over
 .muzzle-right { left:78%; top:31%; animation:shot-right 2.4s linear both; }
 .single-action img { animation:recoil-single 1.5s ease-out both; transform-origin:50% 100%; }
 .dual-action img { animation:recoil-dual 2.4s ease-out both; transform-origin:50% 100%; }
-@keyframes shot-single { 0%,35%,45%,100% { opacity:0 } 37%,41% { opacity:1 } }
+/* Align the single flash with the selected revolver recoil key pose (~43%). */
+@keyframes shot-single { 0%,39%,48%,100% { opacity:0 } 41%,45% { opacity:1 } }
+@keyframes shot-from-drawn { 0%,13%,27%,100% { opacity:0 } 16%,21% { opacity:1 } }
+/* Do not rotate the complete approved character when an arm-only recoil PNG
+   already provides the motion. Retain the CSS fallback for old single shots. */
+.single-action[data-action-mode="revolver-frames"] img { animation:none !important; }
+.single-action[data-action-entry="already-drawn"] .muzzle-single { animation-name:shot-from-drawn; }
 @keyframes shot-left { 0%,17%,24%,49%,56%,100% { opacity:0 } 19%,21%,51%,53% { opacity:1 } }
 @keyframes shot-right { 0%,32%,39%,64%,71%,100% { opacity:0 } 34%,36%,66%,68% { opacity:1 } }
 @keyframes recoil-single { 0%,35%,48%,100% { transform:none } 39% { transform:rotate(-.5deg) } }
