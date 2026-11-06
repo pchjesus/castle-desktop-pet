@@ -8,8 +8,9 @@
 7. 변경 후 빌드와 기본 기능을 검증한다.
 8. 완료 보고에 변경 파일, 검증 결과, 남은 문제를 포함한다.
 
-9. **B형 아킬라 공식 시각 기준은 `design/references/akila-sheet-02.png`의 큰 무스탕 서 있는/앉은 전신이다.** `docs/AKILA_CANONICAL_SHEET_02.md`를 먼저 읽을 것. 오래된 Gate1B 후보의 머리/몸통/다리 비율을 기준으로 삼거나 이미지에서 신체 비율을 임의로 바꾸지 않는다. 1024×1600은 투명 캔버스 규격일 뿐. 최종 아트 승인 전 B 런타임 활성화와 A/B 혼합 금지. PR #6 Draft, main 병합 금지.
-
-10. 새 개발 세션에서는 `docs/NEXT_CHAT_HANDOFF.md` (2026-11-07)를 먼저 읽어라. 라이브러리 `/Castle Desktop Pet/castle_desktop_pet_B_handoff_20261107.zip`에는 **승인된 시각 원본과 미승인 기술 후보**가 구분돼 있다. Manifest의 SHA-256으로 바이너리를 확인하고 원본을 수정해 덮어쓰지 마라.
-11. **모든 B형 포즈 이마 흉터 없음 / 평상시 권총 홀스터 없음.** B형 검은 무지 티+회색 바지, A형 검은 칼라 셔츠+청회색 바지. 승인된 개별 포즈 원본의 비율/구도를 임의 재해석하지 않는다. 사용자가 선택한 Sitting 체크무늬 RGB 원본은 앱용 투명 PNG가 아니며 기술 분리본도 최종 미승인이다.
-12. CI 통과, 시각 승인, 투명 알파 통과, 앱 작동, Windows GUI 실기기 검증을 혼동하지 않는다. B형 준비 전 A형 런타임 유지, PR #6 Draft 및 main 병합 금지.
+9. **현재 B형 아킬라의 최고 아트 원본은 2026-11-07 사용자 최종 첨부 9개 이미지다.** 반드시 `docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md`와 `docs/NEXT_CHAT_HANDOFF.md`를 먼저 읽고, 라이브러리 `/Castle Desktop Pet/castle_pet_B_canonical_20261107.zip`의 9개 원본을 그대로 사용한다.
+10. 과거 `design/references/akila-sheet-02.png`는 **참고 자료**이며 현재 9개 원본의 얼굴/몸 비율·의상·자세·장비를 변경하는 근거가 될 수 없다. Gate1B 미승인 후보나 과거 Sitting/Working/Dual 재생성본도 새 원본으로 대체하지 않는다.
+11. 공식 9종: Idle, Sitting, Drawing, Firing, Firing Dynamic, Smoking, Speaking 시트, Working(서서 노트북), Dual Firing. **Sitting은 `1000041381.png` PNG RGBA가 정본**(이전 체크무늬 Sitting 폐기). Working은 `1000041391.png`의 서 있는 포즈. Dual은 `1000041393.png`의 JPEG가 정본.
+12. 이마 흉터 없음(미간 주름 허용), 평상시 홀스터 없음, B형 갈색 무스탕+검은 무지 티+회색 바지/ A형 올리브 블루종+검은 칼라 셔츠+청회색 바지. 1024×1600은 투명 캔버스 규격일 뿐 인체 비례를 강제하는 규칙이 아님.
+13. 승인 소스는 SHA-256 검증 후 **원본 보존 경로**에 쓰고 절대 덮어쓰지 않는다. PNG 알파 개선·JPEG 배경 분리·애니메이션 등 가공 결과는 별도 폴더/이름으로 저장. 이미지 시각 확정/기술 품질/상태 전환 코드/Windows 검증은 별도 절차.
+14. A형 기존 런타임 기능 유지 및 A/B 한 시퀀스 혼합 금지. PR #6 Draft 유지, 명시 승인 전 main 병합·배포 및 조기 B형 활성화 금지.
