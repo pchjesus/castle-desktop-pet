@@ -105,6 +105,19 @@ try {
     await loaded('Working exit returned to idle');
     record(size + '-working-close-and-idle', { passed: true, observedExitFrames: seenExitFrames });
 
+    // Capture the actual live sprite during exit; the review selector only
+    // lists the seven public PetState types, not the internal Working exit pack.
+    await page.locator('#state').selectOption('working');
+    await loaded('Working before exit screenshot');
+    await page.locator('#state').selectOption('idle');
+    await page.waitForSelector('#pet .working-exit[data-exit-mode="frames"]', { timeout: 1500 });
+    await page.waitForSelector('#pet .working-exit[data-exit-frame="2"]', { timeout: 1200 });
+    await snapshot(size + '-working-laptop-folding');
+    await page.waitForSelector('#pet .working-exit[data-exit-frame="4"]', { timeout: 1200 });
+    await snapshot(size + '-working-laptop-closed');
+    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 2000 });
+    record(size + '-working-close-visual-captured', { passed: true });
+
     await page.locator('#state').selectOption('drawing');
     await loaded('drawing');
     await pause(550);
