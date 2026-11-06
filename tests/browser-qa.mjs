@@ -138,6 +138,23 @@ try {
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
   record('working-to-last-request-dual-to-idle', { passed: true });
 
+  await page.locator('#state').selectOption('working');
+  await loaded('working reselect before exit');
+  await page.locator('#state').selectOption('firing');
+  await page.locator('#pet .working-exit').waitFor({ timeout: 1000 });
+  await page.locator('#state').selectOption('working');
+  await page.waitForFunction(() =>
+    document.querySelector('#state')?.value === 'working' &&
+    document.querySelector('#pet .pet-stage') &&
+    !document.querySelector('#pet .pet-stage')?.classList.contains('working-exit')
+  , null, { timeout: 2000 });
+  await pause(850);
+  assert.equal(await page.locator('#pet .single-action, #pet .dual-action').count(), 0, 'Stale firing after Working reselect');
+  assert.equal(await page.locator('#state').inputValue(), 'working', 'Working should remain active');
+  await loaded('restored working');
+  record('working-exit-cancelled-by-working-reselect', { passed: true });
+
+  await idle();
   await page.locator('#state').selectOption('firing');
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
   await page.locator('#state').selectOption('firing');
