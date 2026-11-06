@@ -1,77 +1,71 @@
-# 2026-11-06 마지막 사용자 승인 업데이트
+# Castle Desktop Pet — 새 채팅 공식 인수인계 (2026-11-07)
 
-- **Sitting 시각 원본 변경**: 사용자가 이전 Sitting을 직접 다시 첨부해 더 적절한 신체 비율로 선택. 파일 `1000041379.png` (실제 JPEG 983×1536, SHA-256 `006a5a3f8da76d6b71442a0ca6543687a7ea15a3359cca3424f7e97b3aca866a`). 체형 기준은 이 새 지정본이며, 이전 더 큰 머리의 Sitting 후보는 기준에서 제외. 체크무늬 배경은 실제 픽셀이므로 분리 필요.
-- **Working 타이핑 핵심 포즈 승인**: 상자에 앉아 노트북으로 타이핑하는 독립 그림 `아키라의_노트북_작업_포즈.png` (1003×1568, SHA-256 `5b91cbbbfd2ad16d39063dc91ae76d5a01f2661e8eddef4babe383c139b84561`). 노트북 꺼내기·닫기 등 전체 시퀀스는 아직 미승인.
-- **Smoking 시각 승인은 유지**. 시트 02, B형 갈색 무스탕/검은 무지 티/회색 바지, 이마 흉터·평상시 홀스터 없음 정책 유지.
-- 승인 원본의 GitHub PNG 바이너리 등록은 아직 미완료. 문서 상태만 변경됨. [상세 승인 기록](B_MUSTANG_ART_APPROVAL_2026-11-06.md).
-- 다음은 B형 **Drawing**(오른손 리볼버 꺼내기→낮은 조준) 포즈를 생성·시각 검수한다. 기존 A 런타임, PR Draft, main 미병합 유지.
+> **이 문서가 최신·우선 인수인계다.** 2026-11-06 이전 `Gate1B` 후보 우선/시트 02 폐기 지침과 오래된 Sitting·Working 상태 기재는 무효. 새 채팅에서 이 문서부터 읽을 것.
 
----
+## 1. GitHub·작업 제한
 
-## 2026-11-06 최신 포즈 승인 현황
+- Repository: `pchjesus/castle-desktop-pet`
+- 작업 브랜치: `feat/v0.3c-action-pack`; PR [#6](https://github.com/pchjesus/castle-desktop-pet/pull/6) **Draft**. 해당 PR의 HEAD는 시작할 때 GitHub에서 다시 조회.
+- Windows Electron + Vite + TypeScript. 현재 실행 캐릭터는 **기존 A형 블루종**. 해당 런타임의 Idle, Smoking, Working, Drawing, Firing, Dual Firing, Speaking(플레이스홀더) 및 `preview.html`·Reduced Motion·취소 처리 등 기존 기능은 유지.
+- 사용자 명시 승인 전 **main 병합/배포 금지**, B형 런타임 조기 활성화 금지. B형 프레임 누락 시 A형을 같은 시퀀스에 섞어 대체하지 말 것.
+- 기존 A형 사진/테스트/애니메이션 코드는 임의 삭제하지 말 것.
 
-- Smoking: **사용자 시각 승인** (마지막 결과 이미지, SHA-256 `6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c`). Smoking의 PNG 바이너리는 현재 채팅에서 보존, **GitHub 미등록**. [기록](B_MUSTANG_ART_APPROVAL_2026-11-06.md).
-- Sitting: **조건부 수용**. '머리가 약간 큼' 피드백 보존. SHA-256 `f6848467c7b215c67dd8722705e5b7172a8e7002341ede14f4fc4f4e5defb203`.
-- 이미지 시각 승인만 완료됨. 알파 QA, 저장소 파일 추가, 런타임 B 전환 및 Windows GUI/EXE 테스트는 미완료.
-- B형 의상 **검은 티셔츠+회색 바지**, A형 의상 **검은 셔츠+청회색 바지**, 이마 흉터/평상시 홀스터 없음.
-- 다음 작업: 승인된 Smoking/Idle 비율을 기준으로 **Working 포즈** 제작 후 별도 검수. PR #6 Draft, main 병합 금지.
+## 2. 공식 캐릭터 디자인
 
----
+- **공식 시트:** [`design/references/akila-sheet-02.png`](../design/references/akila-sheet-02.png). [상세 규칙](AKILA_CANONICAL_SHEET_02.md).
+- B형: **갈색 무스탕, 크림 양털 칼라·소매, 검은 무지 티셔츠, 중립 회색 바지, 검은 부츠**, 갈색 올백 헤어, 갈색 틴트 에비에이터 선글라스, 짙은 수염, 과묵한 표정.
+- A형: 올리브 블루종, 검은 **칼라 셔츠**, 청회색 바지.
+- **모든 일상 포즈에 이마 흉터 없음; 평상시 권총 홀스터 없음.** 이마 미간 주름은 허용하지만 흉터와 진한 이마 그림자는 불필요.
+- 1024×1600은 투명 정렬용 캔버스 권장값이지 인물 신체 비율이 아님. 인물 늘이기/다리 단축/머리 과장 금지. 사용자가 직접 승인한 개별 포즈는 해당 포즈의 아트 원본으로 보호.
+- 오른손 리볼버: 캐릭터 자신의 오른손 사용. **정면에서 화면 왼쪽**. 오른손 꺼내기→조준→사격→정리의 방향 유지. 샷건은 후속 확장.
 
-# CASTLE PET — 공식 B형 디자인 시트 02 최상위 기준 (2026-11-06 재정정)
+## 3. 최신 승인 현황 — 시각 승인 ≠ 앱 통합
 
-**사용자 최종 지시: [`design/references/akila-sheet-02.png`](../design/references/akila-sheet-02.png)에 나온 B형 갈색 무스탕 아킬라가 절대적인 시각 기준이다.** 이 사진은 이미 GitHub에 원본 시트로 등록되어 있으며, 사용자가 다시 같은 구성을 첨부해 지정했다.
+| B형 상태 | 최신 사용자 결정 | 아직 필요한 작업 |
+|---|---|---|
+| Idle | 서 있는 최신 무스탕 캐릭터 비율/외형 사용 | 이마 음영 정리 후보·알파 QA·정렬 |
+| Smoking | **시각 승인** | 연기 루프, 가장자리 알파 QA |
+| Sitting | 사용자가 **이전 체크무늬 Sitting 이미지(`1000041379.png`)를 다시 지정** | 실제 RGB JPEG에 새겨진 체크무늬 배경 분리. 기술 분리 후보 존재하지만 **이마 흉터/경계 QA** 남음 |
+| Working | **상자에 앉아 노트북을 타이핑하는 단독 키 포즈 승인** | 노트북 꺼내기/닫기/정리 프레임 미완성. 서서 타이핑하는 임의 시트를 승인본으로 혼동하지 말 것 |
+| Drawing | 오른손 리볼버 낮은 조준 키 포즈 긍정 수용 | 꺼내기/조준/복귀 중간 프레임 |
+| Firing | 단발 섬광 키 포즈 생성됨 | 팔 반동·총구 섬광 정렬·정리·원상복귀·최종 아트 QA |
+| Dual Firing | 양손 사격 핵심 포즈 긍정 수용 | 준비→교차 사격→반동→정리 등 연속프레임과 무기 종류 확인 |
+| Speaking | 흉터 제거한 표정 시트 긍정 수용, 7프레임 Speaking 루프 기술 후보 확보 | 얼굴 위치·입만 움직임 검증, 전신 Idle/대사 상태와 연결, 투명 알파 및 180/240/360px QA |
 
-**반드시 참고:** [`docs/AKILA_CANONICAL_SHEET_02.md`](AKILA_CANONICAL_SHEET_02.md). 상단 중앙의 큰 **B형 서 있는 전신**에서 머리·몸통·다리·손·부츠의 실루엣, 전체 비례, 선글라스·수염·양털·재킷을 유지한다. 왼쪽 큰 B형 앉은 전신을 Sitting 기준으로 사용한다. 우측 미니 턴어라운드의 더 짧은 SD 체형을 확대하지 않는다.
+### 주의: 이전 문서의 기술·이미지 상태 혼동 금지
 
-**이전 지침 폐기:** '초기 시트 01·02는 퇴역', 'Gate1B 기술 정제본이 후속 이미지의 신체 비율 기준', '원본 시트로 되돌리지 말라'는 오래된 원칙은 잘못된 지침이며 **전면 무효**다. 후보 PNG가 시트 02와 다르면 후보를 고쳐야 한다. 시트를 후보에 맞추지 말 것.
+- `idle-gate1b-alpha-cleanup-unapproved.png`는 오래된 **비율 불일치 기술 후보**이지 최신 아트 원본이 아님.
+- Sitting 원본을 사용자가 다시 지정한 후 과거의 `akila_B_sitting_CONDITIONALLY_ACCEPTED_original.png`는 선택된 Sitting이 **아님**.
+- Speaking용 입 루프는 `400×500` RGBA 7컷과 APNG/GIF **기술 후보**. 전신이나 실행 코드에 이미 통합되었다고 기재하지 말 것.
+- 최신 아트 원본들의 PNG가 곧바로 앱에 쓸 수 있는 고품질 투명 PNG라는 주장은 금지. 알파가 대부분 반투명인 파일도 존재. 시각 승인/알파 승인/런타임 통합/Windows 실기기 검증은 모두 별도 단계.
+- 방금 작업한 Sitting 체크무늬 배경 제거 후보는 **원본 인체 비례를 보존**했으나, 이마 우측 흉터와 헤어·부츠 가장자리의 최종 QA는 남음.
+- Drawing/Firing/Dual 핵심 그림 생성만으로 중간 프레임과 상태 전환이 완성된 것은 아님.
 
-**이미지 제작:** 원본 시트의 B형 전신을 비율 변경 없이 추출·배경 분리한다. 시트에서 큰 서 있는 B형은 오른손에 리볼버가 있으므로, 무기 없는 Idle 손은 별도 정리한다. 1024×1600은 투명 정렬 캔버스 규격일 뿐 인물 비율이 아니다. 임의 재생성/머리 확대/다리 축소/비균일 스케일링 금지. 사용자 시각 승인 전 모든 B 신규 PNG는 미승인으로 분리 보관한다.
+## 4. 새 채팅에서도 접근할 수 있는 이미지 패키지
 
-**런타임·GitHub 제한:** 기존 A형 실제 런타임 및 모든 동작 보존, B형 아트 충분히 제작 전 혼합 금지, PR #6 Draft 유지, main 병합/배포 금지.
+**개인 파일 라이브러리**: `/Castle Desktop Pet/castle_desktop_pet_B_handoff_20261107.zip` (2026-11-07 생성). 같은 파일을 이전 채팅에서 다운로드 링크로도 제공.
 
+- 패키지 SHA-256: `752a3fad59e0e4aea9b06952d71f2c9281a54f6fae228216f65a36ec79bbe6da`.
+- 26개 이미지·애니메이션·QA 파일 + 4개 인수인계/매니페스트/스크립트 문서, 총 30개 ZIP 엔트리.
+- `notes/README_KR.md`: 승인 내역·남은 작업. `notes/NEXT_CHAT_START_PROMPT.md`: 새 채팅 시작 지시문. `notes/ASSET_MANIFEST.json`: 파일별 원본 위치, SHA, 가로세로, RGBA/알파 픽셀 분포, 승인 상태.
+- `approved_sources/`에는 사용자가 확인한 **시각 원본**을 변형하지 않고 보존. `technical_candidates/`는 **미승인 정제/루프 후보**, `review_sources/`는 추가 아트 QA 필요.
+- **신규 이미지 바이너리는 아직 GitHub에 추가되지 않음.** GitHub에는 문서/기존 디자인 시트가 있고, 새 작업 단계에서 ZIP의 실제 파일을 개발 브랜치에 등록하여 SHA를 확인해야 함.
 
----
-# Castle Desktop Pet — 다음 채팅 인수인계 (2026-11-06)
+## 5. 다음 순서 (토큰 낭비·시각적 재생성 최소화)
 
-## 현재 기준
-- GitHub: `pchjesus/castle-desktop-pet`
-- 개발 브랜치: `feat/v0.3c-action-pack`, PR [#6](https://github.com/pchjesus/castle-desktop-pet/pull/6) **Draft**
-- `main` 초기 기준: `4f5804eba752461a1088d613e93ef92c582f6100`; **병합 금지**
-- 최신 HEAD는 작업 시작 전 GitHub에서 다시 확인한다.
-- 기술: Windows Electron + Vite + TypeScript, 단일 오프라인 `preview.html` 유지.
+1. 새 채팅에서 위 ZIP 및 JSON 매니페스트를 확보한 뒤, GitHub 최신 브랜치·PR 상태 재검증.
+2. 승인 원본은 변경 없이 원본 보존용 하위 폴더에 GitHub 추가, 후보는 별도 경로에 두고 사본/해시 검증. **승인된 소스와 앱용 정제 에셋을 혼동하지 않을 것.**
+3. Sitting 체크무늬 분리, 이마 흉터 국소 수정, 전체 소스의 알파·외곽 광륜·머리/발 기준선 검증. 180/240/360px 병렬 비교.
+4. **B형 Drawing→Firing→Idle**의 중간 프레임과 전환 우선 구현. 그다음 Working 노트북 전환, Dual 연속프레임, Speaking 얼굴 레이어/발화 루프, Smoking 연기 루프.
+5. 앱 기존 상태 머신/로더·오프라인 preview 재사용. B 전체 포즈가 충족되고 사용자 승인 받은 뒤에만 B 런타임으로 변경.
+6. 테스트: `npm ci && npm run build && npm test && npm run preview:export`, Chromium 180/240/360, Windows Server CI, Windows 10/11 실제 GUI, EXE 패키징 순서.
+7. Codex 개발 이벤트(테스트·빌드·배포·오류)와 대사 연결은 앱 통합 뒤에 진행. **이벤트 시뮬레이션과 실제 연동을 명확히 분리**.
 
-## 확정된 제품 / 아트
-- **공식 최상위 디자인 기준:** `design/references/akila-sheet-02.png`의 큰 B형 서 있는/앉은 전신. 후보 `idle-gate1b-alpha-cleanup-unapproved.png`는 비율이 달라 **탈락한 기술 정제 이력**이며 시각 기준이 아니다.
-- **공식 목표 기본 외형:** B형 갈색 무스탕, 밝은 양털 칼라와 소매, **검은 무지 티셔츠**·회색 바지·검은 부츠, 틴트 에비에이터 선글라스·수염·올백.
-- A형 올리브 블루종은 보존 및 향후 선택 의상. 현재 실제 실행은 **A형**, `outfitPolicy.active='blouson'`, `mustang.ready=false`.
-- 단발 리볼버는 **캐릭터 자신의 오른손**으로 꺼내고 조준·반동·정리. 화면상 좌우와 캐릭터 신체 기준을 혼동하지 않는다.
-- 1024×1600은 앱 정렬용 **투명 캔버스 권장 크기**일 뿐 캐릭터 종횡비가 아니다. 원본 인물의 신체를 세로로 늘리지 않는다.
+**Codex 권장:** Terra Medium은 파일 정리·QA·단순 연동, High는 복잡한 상태 전환·Windows 오류 분석에서 사용. 기능·검증 범위를 토큰 절약 명목으로 축소하지 않는다.
 
-## 구현 완료
-- A형 7개 상태 관리, Working 미세 손가락 타이핑→7프레임 노트북 닫기→Idle, Drawing→오른손 리볼버 조준, Firing 7프레임 키 포즈/반동/정리→Idle, 기존 쌍권총 CSS 교차 섬광.
-- Working 전환 취소, 최근 상태 우선, Reduced Motion 지원, `preview.html` 오프라인 동기화.
-- `src/characters/outfit-loader.mjs`: 의상별 프레임 조회, 빈 프레임을 다른 의상으로 대체하지 않음.
-- `src/characters/akila.ts`: 준비된 A형만 런타임 등록·활성화, 향후 B형 별도 레지스트리.
-- `preview-entry.html`, `src/preview.ts`, `src/preview.css`: B형 미승인 PNG 독립 검수 패널, 후보 선택, 180/240/360px, 격자/밝은/어두운 배경, 머리/발 가이드.
-- `scripts/normalize-mustang-idle.py`: Gate 1B의 광륜 알파 정제·1024×1600 투명 패딩. 원본 후보 RGB/체형 보존.
-- B형 **정제 PNG도 미승인**: `src/characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png` (1024×1600, 캐릭터 자체 비균일 스케일 없음).
+## 6. 관련 파일
 
-## 남은 아트/기능
-1. **B형 Idle 제작·최종 승인**: 시트 02의 큰 B형 서 있는 전신과 얼굴·머리·수염·무스탕·손·부츠 및 **원본 신체 비율**을 일치시키고, 리볼버 없는 중립 Idle 손을 제작한다. 시트 원본 추출본의 배경·주변 인물 제거 및 투명 알파를 별도 검수한다.
-2. B형 Smoking, Sitting(앉은 자세), Speaking, Working, Drawing, Firing, Dual Firing의 **의상/체형 일관된 개별 포즈 제작** 및 상태별 정렬. A/B 혼합 금지.
-3. B형 전체 상태 QA 후 **실제 B형 기본 활성화**, A형 선택 의상 전환/설정 저장.
-4. 실제 테스트/빌드/배포/오류 이벤트 기반 대사·액션 연동: 이벤트 모의실행과 진짜 연동을 반드시 구분.
-5. Windows **10/11 실기기**: 투명 항상 위 창, 드래그, 우클릭, 위치 저장, 다중 모니터/크기, 종료.
-6. Windows 실행 파일 패키징/배포. Sitting은 포즈 제작 범위에 포함하고, 샷건은 후속 확장.
-7. A형 Working 마지막 손정리, Drawing/Firing 꺼내기·정리는 아직 키 포즈 컷; Dual Firing 전신 연결 포즈, Speaking 전용 그림 미완성.
-
-## 검증 / 작업 규칙
-- 모든 기존 A형 원본 PNG, 동작, 대사 및 오프라인 HTML 보존.
-- `npm ci && npm run build && npm test && npm run preview:export` 재현. 브라우저 Chromium 180/240/360px, Windows Server 빌드 CI 확인.
-- 새 B 검수 패널의 크기·배경·가이드·후보 전환 및 **A형 라이브 펫 불변** QA 보완.
-- 이미지/아트 시각승인과 CI PASS는 별도. CI 통과만으로 무스탕 에셋 공식 승인하지 않는다.
-- 기존 PR #6은 Draft로 유지, 사용자가 승인하기 전 main 병합·배포 금지.
-
-## 다음 단계 권장
-시트 02의 큰 B형 무스탕 전신을 기준으로 새 Idle을 제작·시각 승인받은 뒤, **시트 02에서 확인되는 원본 비율과 선화**를 기준으로 Smoking·Sitting·Working·오른손 Drawing/Firing·Dual Firing·Speaking 포즈를 확보한다. 시트 02의 큰 B형 전신 비율을 상위 기준으로 사용한다. 코드는 기존 의상 로더/미리보기 재사용. 단순 PNG 정렬·알파 검사는 이 채팅에서 직접, 복잡한 로더·상태 전환·패키징은 Codex Terra Medium(필요시 High).
+- [공식 시트와 비율 규칙](AKILA_CANONICAL_SHEET_02.md)
+- [기존 사용자 승인 이력](B_MUSTANG_ART_APPROVAL_2026-11-06.md) (과거 상태가 섞여 있음. 최신 상태는 **이 문서**)
+- [에셋 전환 계획](ASSET_MIGRATION_PLAN.md)
+- [PR #6](https://github.com/pchjesus/castle-desktop-pet/pull/6)
