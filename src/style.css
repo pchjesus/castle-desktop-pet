@@ -26,8 +26,7 @@ html,body,#app { margin:0; width:100%; height:100%; background:transparent; over
 @keyframes screen-close { from { transform:scaleY(1); } to { transform:scaleY(.15); } }
 @media (prefers-reduced-motion: reduce) { .working-exit .laptop,.working-exit .laptop-screen { animation:none; } }
 /* Effects are attached to muzzle coordinates of the selected normalized poses. */
-/* Small stylized muzzle flash, not a detached round light. Keep the approved PNGs intact. */
-.muzzle { position:absolute; width:8%; aspect-ratio:1; opacity:0; pointer-events:none; clip-path:polygon(0% 48%,32% 37%,41% 5%,55% 34%,100% 49%,57% 62%,47% 97%,37% 62%); background:radial-gradient(circle,#fffce3 0%,#ffd36c 35%,#ff8527 66%,rgba(255,126,25,.35) 100%); filter:drop-shadow(0 0 2px rgba(255,153,47,.8)); }
+.muzzle { position:absolute; width:8%; aspect-ratio:1; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle,#fffbd0 0%,#ffd36c 30%,#ff7d18 58%,transparent 72%); }
 .muzzle-single { left:89%; top:32.8%; animation:shot-single 1.5s linear both; }
 .muzzle-left { left:0%; top:30%; animation:shot-left 2.4s linear both; }
 .muzzle-right { left:78%; top:31%; animation:shot-right 2.4s linear both; }
