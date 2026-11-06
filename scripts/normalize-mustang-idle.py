@@ -82,8 +82,8 @@ def main():
         "partially_transparent_pixels": int(((result[:, :, 3] > 0) & (result[:, :, 3] < 255)).sum()),
         "original_colors_preserved_where_visible": True,
         "open_design_issues": [
-            "facial and SD body proportions versus user original B sheet",
-            "missing cigarette",
+            "face, hands, shearling and silhouette fidelity to current Mustang Idle candidate",
+            "smoking-specific cigarette pose not yet authored",
             "visual approval of hair, shearling and hands",
             "consistent B-style animations for all states",
         ],
