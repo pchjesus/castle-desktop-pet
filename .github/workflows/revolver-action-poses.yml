@@ -1,0 +1,50 @@
+name: Revolver action pose builder
+on:
+  push:
+    branches:
+      - feat/v0.3c-action-pack
+    paths:
+      - 'scripts/generate-revolver-action.py'
+      - '.github/workflows/revolver-action-poses.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: revolver-poses-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  create-sprites:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated art tools
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 pillow==11.3.0 opencv-python-headless==4.12.0.88
+      - name: Create seven A-type source-preserving revolver poses
+        run: python scripts/generate-revolver-action.py
+      - name: Verify approved source PNGs are not modified
+        run: git diff --exit-code -- src/characters/assets/akila src/characters/derived/akila/idle src/characters/derived/akila/drawing src/characters/derived/akila/firing
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v03c-revolver-action-review
+          path: |
+            artifacts/revolver-action-review/
+            src/characters/derived/akila/revolver_action/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Commit only derived revolver_action sprites in Draft branch
+        shell: bash
+        run: |
+          git add -- src/characters/derived/akila/revolver_action/
+          if git diff --cached --quiet; then
+            echo "Identical generated sprites already committed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "art: add single-revolver key poses [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
