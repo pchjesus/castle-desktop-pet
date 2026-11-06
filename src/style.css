@@ -25,3 +25,20 @@ html,body,#app { margin:0; width:100%; height:100%; background:transparent; over
 @keyframes laptop-exit { 0%,55% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(10%) scale(.9); } }
 @keyframes screen-close { from { transform:scaleY(1); } to { transform:scaleY(.15); } }
 @media (prefers-reduced-motion: reduce) { .working-exit .laptop,.working-exit .laptop-screen { animation:none; } }
+/* Effects are attached to muzzle coordinates of the selected normalized poses. */
+.muzzle { position:absolute; width:8%; aspect-ratio:1; border-radius:50%; opacity:0; pointer-events:none; background:radial-gradient(circle,#fffbd0 0%,#ffd36c 30%,#ff7d18 58%,transparent 72%); }
+.muzzle-single { left:89%; top:32.8%; animation:shot-single 1.5s linear both; }
+.muzzle-left { left:0%; top:30%; animation:shot-left 2.4s linear both; }
+.muzzle-right { left:78%; top:31%; animation:shot-right 2.4s linear both; }
+.single-action img { animation:recoil-single 1.5s ease-out both; transform-origin:50% 100%; }
+.dual-action img { animation:recoil-dual 2.4s ease-out both; transform-origin:50% 100%; }
+@keyframes shot-single { 0%,35%,45%,100% { opacity:0 } 37%,41% { opacity:1 } }
+@keyframes shot-left { 0%,17%,24%,49%,56%,100% { opacity:0 } 19%,21%,51%,53% { opacity:1 } }
+@keyframes shot-right { 0%,32%,39%,64%,71%,100% { opacity:0 } 34%,36%,66%,68% { opacity:1 } }
+@keyframes recoil-single { 0%,35%,48%,100% { transform:none } 39% { transform:rotate(-.5deg) } }
+@keyframes recoil-dual { 0%,17%,25%,32%,40%,49%,57%,64%,72%,100% { transform:none } 20%,52% { transform:rotate(-.3deg) } 35%,67% { transform:rotate(.3deg) } }
+.working-exit:not(:has(.laptop)) img { animation:working-fade .7s ease-in both; }
+@keyframes working-fade { to { opacity:0; transform:translateY(1%); } }
+.action-paused img,.action-paused .muzzle { animation-play-state:paused; }
+@media (prefers-reduced-motion: reduce) { .muzzle,.single-action img,.dual-action img,.working-exit img { animation:none !important; } }
+.single-action .muzzle,.single-action img,.dual-action .muzzle,.dual-action img { animation-duration:var(--action-duration); }
