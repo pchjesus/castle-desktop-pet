@@ -1,6 +1,6 @@
 # Castle Desktop Pet
 
-> **B형 공식 디자인 원본:** [AKIRA 전체 디자인 시트 02](design/references/akila-sheet-02.png). 상단 중앙의 **갈색 무스탕 서 있는 큰 전신**과 왼쪽의 **앉은 큰 전신**이 비율·외형의 최상위 기준이다. [시트 02 개발 계약](docs/AKILA_CANONICAL_SHEET_02.md) 참고. 이전 Gate1B 정제 PNG는 미승인 이력이며 새로운 포즈의 체형 기준이 아니다.
+> **B형 무스탕 공식 아트 기본안:** 사용자가 2026-11-07 직접 확정한 [9개 이미지 목록·SHA](docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md)를 **최상위 원본**으로 사용한다. 이미지 패키지는 ChatGPT 라이브러리 `/Castle Desktop Pet/castle_pet_B_canonical_20261107.zip`에 보관. 과거 [캐릭터 시트 02](design/references/akila-sheet-02.png)와 Gate1B 후보는 하위 참고·이력용이며 승인된 9개를 덮어쓸 수 없다.
 
 Windows 10/11용 아킬라 데스크톱 펫입니다. Electron 앱은 투명한 항상 위 창, 드래그, 위치 저장 및 복구, 크기와 종료 메뉴를 제공합니다.
 
