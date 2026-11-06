@@ -1,6 +1,11 @@
 // The most recent requested state wins, including while the laptop exits.
 // Reselecting Working cancels the fade immediately; a stale pending action must
 // never fire afterward. Re-rendering restores the existing approved Working pose.
+/**
+ * @param {(state: any) => void} render
+ * @param {() => boolean | number} leave
+ * @param {number} [delay]
+ */
 export function createTransition(render, leave, delay = 700) {
   let current;
   let pending;
