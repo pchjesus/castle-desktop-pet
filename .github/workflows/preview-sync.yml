@@ -31,17 +31,30 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - name: Regenerate single-file HTML preview
-        run: npm run preview:export
-      - name: Commit generated preview only if changed
+      - name: Regenerate and commit preview from latest source (retry concurrent pushes)
         shell: bash
         run: |
-          if git diff --quiet -- preview.html; then
-            echo "Offline preview already matches source."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- preview.html
-          git commit -m "build: sync offline preview with renderer [skip ci]"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          for attempt in 1 2 3; do
+            echo "Preview synchronization attempt ${attempt}/3"
+            # Each attempt starts with the latest development branch commit:
+            # a previous checkout may be outdated by the time a large HTML
+            # preview has finished building.
+            git fetch origin "${GITHUB_REF_NAME}"
+            git reset --hard FETCH_HEAD
+            npm run preview:export
+            if git diff --quiet -- preview.html; then
+              echo "Offline preview matches current branch."
+              exit 0
+            fi
+            git add -- preview.html
+            git commit -m "build: sync offline preview with renderer [skip ci]"
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Offline preview successfully synchronized."
+              exit 0
+            fi
+            echo "Branch advanced concurrently; trying again from fresh source."
+          done
+          echo "Preview synchronization failed after 3 attempts."
+          exit 1
