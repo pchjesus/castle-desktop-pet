@@ -14,3 +14,11 @@ test('unapproved candidate is a transparent RGBA PNG and isolated from runtime',
   assert.equal(bytes.readUInt32BE(16), 1024); assert.equal(bytes.readUInt32BE(20), 1536); assert.equal(bytes[25], 6);
   assert.equal(outfitPolicy.outfits.mustang.ready, false);
 });
+test('outfit frame registries never fall back across outfits', async () => {
+ const {outfitFrames}=await import('../src/characters/outfit-loader.mjs');
+ const registry={blouson:{idle:['a.png'],firing:['a-fire.png']},mustang:{idle:['b.png']}};
+ assert.deepEqual(outfitFrames(registry,'mustang','idle'),['b.png']);
+ assert.deepEqual(outfitFrames(registry,'mustang','firing'),[]);
+ assert.deepEqual(outfitFrames(registry,'unknown','idle'),[]);
+ const copy=outfitFrames(registry,'mustang','idle'); copy.push('other'); assert.deepEqual(registry.mustang.idle,['b.png']);
+});

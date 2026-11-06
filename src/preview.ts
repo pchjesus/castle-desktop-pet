@@ -34,3 +34,20 @@ updateReview();
 
 document.querySelector('#review-source')!.addEventListener('change', () => { reviewIndex = 0; updateReview(); });
 speed.addEventListener('change', () => { const chosen = select.value as PetState; controller.set('idle'); controller.set(chosen); });
+
+// Isolated review only: candidates never enter the active character registry.
+const candidates = import.meta.glob('./characters/candidates/akila_mustang/*.png', { eager:true, query:'?url', import:'default' }) as Record<string,string>;
+const candidateNames = Object.keys(candidates).sort();
+const candidateSelect = document.querySelector<HTMLSelectElement>('#mustang-candidate')!;
+for (const path of candidateNames) { const o = document.createElement('option'); o.value = path; o.textContent = path.split('/').pop()!; candidateSelect.append(o); }
+const before = document.querySelector<HTMLImageElement>('#mustang-before')!;
+const after = document.querySelector<HTMLImageElement>('#mustang-after')!;
+const original = candidateNames.find(path => path.endsWith('/idle-unapproved.png'));
+if (original) before.src = candidates[original];
+const cleanup = candidateNames.find(path => path.endsWith('/idle-gate1b-alpha-cleanup-unapproved.png'));
+if (cleanup) candidateSelect.value = cleanup;
+function showCandidate() { const path = candidateSelect.value; after.hidden = !path; if (path) after.src = candidates[path]; document.querySelector('#mustang-status')!.textContent = path ? '미승인 후보: ' + path.split('/').pop() : '후보 없음'; }
+candidateSelect.addEventListener('change', showCandidate); showCandidate();
+document.querySelector<HTMLSelectElement>('#mustang-size')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.style.setProperty('--candidate-width', (e.target as HTMLSelectElement).value + 'px'); });
+document.querySelector<HTMLSelectElement>('#mustang-bg')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.dataset.background = (e.target as HTMLSelectElement).value; });
+document.querySelector<HTMLInputElement>('#mustang-guides')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.classList.toggle('hide-guides', !(e.target as HTMLInputElement).checked); });

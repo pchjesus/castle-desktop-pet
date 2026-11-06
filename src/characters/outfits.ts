@@ -7,3 +7,4 @@ export const outfitPolicy = Object.freeze({
     mustang: { assetRoot: 'derived/akila_mustang', ready: false },
   },
 } as const);
+
