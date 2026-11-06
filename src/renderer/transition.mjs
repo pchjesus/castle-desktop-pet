@@ -17,8 +17,10 @@ export function createTransition(render, leave, delay = 700) {
       return;
     }
     if (current === next) return;
-    if (current === 'working' && next !== 'working' && leave()) {
+    const exit = current === 'working' && next !== 'working' ? leave() : false;
+    if (exit) {
       pending = next;
+      const exitDelay = typeof exit === 'number' && Number.isFinite(exit) && exit > 0 ? exit : delay;
       timer = setTimeout(() => {
         timer = undefined;
         const requested = pending;
@@ -27,7 +29,7 @@ export function createTransition(render, leave, delay = 700) {
           current = requested;
           render(current);
         }
-      }, delay);
+      }, exitDelay);
       return;
     }
     current = next;
