@@ -82,6 +82,7 @@ try {
     await page.locator('#state').selectOption('firing');
     await loaded('firing');
     assert.equal(await page.locator('.single-action .muzzle-single').count(), 1, 'Single muzzle missing');
+    assert.match(await page.locator('.muzzle-single').evaluate(el => getComputedStyle(el).clipPath), /^polygon\(/, 'Muzzle must be a shaped burst, not a round orb');
     await page.waitForFunction(() => {
       const el = document.querySelector('.muzzle-single');
       return el && Number(getComputedStyle(el).opacity) > 0.3;
