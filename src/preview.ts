@@ -9,7 +9,7 @@ const speed = document.querySelector<HTMLSelectElement>('#speed')!;
 const controller = mountPet(pet, akila, () => Number(speed.value));
 const select = document.querySelector<HTMLSelectElement>('#state')!;
 pet.addEventListener('pet-state', event => { select.value = (event as CustomEvent<PetState>).detail; });
-for (const state of states) { const option = document.createElement('option'); option.value = state; option.textContent = state === 'working' ? '작업 (정지 포즈)' : state === 'dual_firing' ? '쌍권총 (고정 조준 효과)' : state; select.append(option); }
+for (const state of states) { const option = document.createElement('option'); option.value = state; option.textContent = state === 'working' ? '작업 (타이핑·노트북 정리)' : state === 'dual_firing' ? '쌍권총 (고정 조준 효과)' : state; select.append(option); }
 select.addEventListener('change', () => controller.set(select.value as PetState));
 function clamp() { pet.style.left = `${Math.max(0, Math.min(pet.offsetLeft, desktop.clientWidth - pet.offsetWidth))}px`; pet.style.top = `${Math.max(0, Math.min(pet.offsetTop, desktop.clientHeight - pet.offsetHeight))}px`; }
 function reset() { pet.style.left = `${Math.max(0, desktop.clientWidth - pet.offsetWidth - 30)}px`; pet.style.top = `${Math.max(0, desktop.clientHeight - pet.offsetHeight - 30)}px`; dialogue.textContent = ''; }
