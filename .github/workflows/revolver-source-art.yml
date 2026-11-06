@@ -1,0 +1,33 @@
+name: Source snapshot for revolver pose construction
+on:
+  push:
+    branches:
+      - feat/v0.3c-action-pack
+    paths:
+      - '.github/workflows/revolver-source-art.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export-sprites:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect immutable aligned and original source sprites
+        shell: bash
+        run: |
+          mkdir -p artifacts/revolver-reference/aligned artifacts/revolver-reference/original
+          for pose in idle/000.png drawing/000.png drawing/001.png firing/000.png firing/001.png firing/002.png; do
+            mkdir -p "artifacts/revolver-reference/aligned/$(dirname "$pose")"
+            mkdir -p "artifacts/revolver-reference/original/$(dirname "$pose")"
+            cp "src/characters/derived/akila/$pose" "artifacts/revolver-reference/aligned/$pose"
+            cp "src/characters/assets/akila/$pose" "artifacts/revolver-reference/original/$pose"
+          done
+          find artifacts/revolver-reference -type f | sort
+      - uses: actions/upload-artifact@v4
+        with:
+          name: revolver-approved-reference-pngs
+          path: artifacts/revolver-reference/
+          if-no-files-found: error
+          retention-days: 14
