@@ -47,3 +47,25 @@ test('working can exit again after a cancelled exit and latest request still win
   await new Promise(resolve => setTimeout(resolve, 45));
   deepStrictEqual(shown, ['working', 'working', 'dual_firing']);
 });
+
+test('custom Working exit duration is respected before latest pending state renders', async () => {
+  const shown = [];
+  const set = createTransition(state => shown.push(state), () => 35, 5);
+  set('working');
+  set('drawing');
+  await new Promise(resolve => setTimeout(resolve, 12));
+  deepStrictEqual(shown, ['working']);
+  set('firing');
+  await new Promise(resolve => setTimeout(resolve, 35));
+  deepStrictEqual(shown, ['working', 'firing']);
+});
+
+test('Working reselect cancels a customized exit timer and future actions', async () => {
+  const shown = [];
+  const set = createTransition(state => shown.push(state), () => 30, 5);
+  set('working');
+  set('firing');
+  set('working');
+  await new Promise(resolve => setTimeout(resolve, 45));
+  deepStrictEqual(shown, ['working', 'working']);
+});
