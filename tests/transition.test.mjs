@@ -23,3 +23,27 @@ test('drawing can transition to firing', () => {
   const shown = []; const set = createTransition(state => shown.push(state), () => false);
   set('drawing'); set('firing'); deepStrictEqual(shown, ['drawing', 'firing']);
 });
+
+test('reselecting working cancels the exit rather than applying a stale firing request', async () => {
+  const shown = []; let exits = 0;
+  const set = createTransition(state => shown.push(state), () => { exits++; return true; }, 20);
+  set('working');
+  set('firing');
+  set('working');
+  deepStrictEqual(shown, ['working', 'working']); // active pose is restored immediately
+  await new Promise(resolve => setTimeout(resolve, 45));
+  deepStrictEqual(shown, ['working', 'working']); // no delayed stale firing or Idle
+  deepStrictEqual(exits, 1);
+});
+
+test('working can exit again after a cancelled exit and latest request still wins', async () => {
+  const shown = [];
+  const set = createTransition(state => shown.push(state), () => true, 20);
+  set('working');
+  set('firing');
+  set('working');
+  set('drawing');
+  set('dual_firing');
+  await new Promise(resolve => setTimeout(resolve, 45));
+  deepStrictEqual(shown, ['working', 'working', 'dual_firing']);
+});
