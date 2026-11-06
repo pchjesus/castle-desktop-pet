@@ -52,3 +52,6 @@
 - [시트 02의 역사적 참고/디자인 규칙](AKILA_CANONICAL_SHEET_02.md)
 - [과거 승인 이력 — 최신 상태 아님](B_MUSTANG_ART_APPROVAL_2026-11-06.md)
 - [PR #6](https://github.com/pchjesus/castle-desktop-pet/pull/6)
+
+## B-CANONICAL-02 기술 후보
+`src/characters/candidates/b-mustang-20261107/`에 원본과 분리된 기술 후보 및 처리 매니페스트가 있다. PNG 여섯 장은 기존 alpha를 그대로 보존하고 alpha=0인 RGB만 지웠다. JPEG 두 장은 경계 연결 RGB≤8 픽셀을 제거한 거친 이진 마스크와 별도 마스크이며 검은 의상 손실·그라데이션 잔여 및 섬광을 직접 확인해야 한다. Speaking 7개는 검은 배경이 남은 대략적 상단 시트 추출로 수동 분리·정렬이 필요하다. 어떤 후보도 시각 승인이나 런타임 연결을 의미하지 않는다. PNG alpha 정제, 1024×1600 등비 정렬, Drawing→Firing→Idle 중간 프레임은 아직 미완성이다.

@@ -335,6 +335,23 @@ try {
   assert.equal(activeAFrameAfterReview, activeAFrameBeforeReview, 'Mustang review must not alter active A pet sprite');
   record('mustang-review-never-activates-b-outfit', { passed: true });
 
+  // Canonical technical review remains isolated from the active pet.
+  assert.equal(await page.locator('#canonical-action option').count(), 9);
+  for (const width of [180, 240, 360]) {
+    await page.locator('#canonical-size').selectOption(String(width));
+    assert(Math.abs(await page.locator('.canonical-panel').first().evaluate(el => el.getBoundingClientRect().width) - width) < 2);
+    for (const name of ['idle','sitting','drawing','firing','smoking','working','firing_dynamic','dual_firing','speaking_reference']) {
+      await page.locator('#canonical-action').selectOption(name);
+      await page.waitForFunction(() => [...document.querySelectorAll('#canonical-original,#canonical-candidate')].every(im => im.complete && im.naturalWidth > 0), null, {timeout:30000});
+    }
+    await page.locator('.canonical-review').screenshot({ path: resolve(out, `canonical-review-${width}.png`) });
+  }
+  for (const bg of ['light','dark','checker']) { await page.locator('#canonical-bg').selectOption(bg); assert.equal(await page.locator('.canonical-panels').getAttribute('data-background'),bg); }
+  await page.locator('#canonical-guides').uncheck(); assert(await page.locator('.canonical-panels').evaluate(el=>el.classList.contains('hide-guides')));
+  await page.locator('#canonical-action').selectOption('speaking_reference');
+  for (let i=0;i<7;i++) { await page.locator('#canonical-speaking').selectOption(String(i)); await page.waitForFunction(() => {const im=document.querySelector('#canonical-candidate');return im.complete && im.naturalWidth>0;}); }
+  record('canonical-review-controls-and-loading', {passed:true});
+
   await page.locator('#state').selectOption('speaking');
   assert.equal(await page.locator('#pet .placeholder').count(), 1, 'Missing expected speaking placeholder');
   record('speaking-placeholder-marked-unimplemented', { passed: true });

@@ -1,0 +1,264 @@
+{
+  "policy": "unapproved technical candidates; no runtime usage",
+  "operations": {
+    "png": "zero RGB only where alpha is already exactly 0; alpha unchanged; no scaling",
+    "jpeg": "border-connected pixels with each RGB channel <= 8 made transparent; binary draft mask requires manual repair, no scaling",
+    "speaking": "seven approximate top-row crops; opaque background retained; needs manual review"
+  },
+  "assets": {
+    "idle": {
+      "source_sha256": "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976",
+      "candidate": "idle.png",
+      "sha256": "3062401922c879858e16d7c74f6c16218e385f7465495bcfba06d105d3345f1b",
+      "dimensions": [
+        948,
+        1659
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        59,
+        15,
+        884,
+        1629
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "sitting": {
+      "source_sha256": "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3",
+      "candidate": "sitting.png",
+      "sha256": "19ff7c70d58621bc43761a39fd8cbcc7a461bed9bdfdeca2c33866bf9b3fa425",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        0,
+        0,
+        973,
+        1552
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "drawing": {
+      "source_sha256": "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96",
+      "candidate": "drawing.png",
+      "sha256": "89a46bd9c5ef6235ad3ff17797315da6eeaa5efe81b6498a13fe53f5df62aa11",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        0,
+        10,
+        985,
+        1568
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "firing": {
+      "source_sha256": "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b",
+      "candidate": "firing.png",
+      "sha256": "97be71fb8001ce717f367ca6990583431c935234e53b7db23804f66b1a6df945",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        43,
+        1,
+        989,
+        1550
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "smoking": {
+      "source_sha256": "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c",
+      "candidate": "smoking.png",
+      "sha256": "30cffe2bfeac55c89cd8bb60acb924b406cb487d1009e3f243d6c159e3f3b9df",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        47,
+        11,
+        965,
+        1568
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "working": {
+      "source_sha256": "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4",
+      "candidate": "working.png",
+      "sha256": "5309a181f2c1f6b9802bb45ebbe98ea0fa89f296872d262d4a91829fb2698b75",
+      "dimensions": [
+        1003,
+        1568
+      ],
+      "alpha_unchanged": true,
+      "bbox": [
+        49,
+        15,
+        957,
+        1568
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_visual_review"
+    },
+    "firing_dynamic": {
+      "source_sha256": "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c",
+      "candidate": "firing_dynamic.png",
+      "sha256": "979f58f51342a30c62c76f86366db5946047da56f37f99ab78be517d9cfe8f78",
+      "mask": "firing_dynamic-draft-mask.png",
+      "dimensions": [
+        984,
+        1536
+      ],
+      "bbox": [
+        26,
+        23,
+        907,
+        1515
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_manual_review",
+      "warning": "black threshold may erase dark details or retain gradient; inspect flash and edges"
+    },
+    "dual_firing": {
+      "source_sha256": "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7",
+      "candidate": "dual_firing.png",
+      "sha256": "86cdf0ae59dda6e518f84bbd512ffa026cdfc0dc864c05271e092cbea8bc3ffd",
+      "mask": "dual_firing-draft-mask.png",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "bbox": [
+        0,
+        0,
+        1024,
+        1536
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "status": "needs_manual_review",
+      "warning": "black threshold may erase dark details or retain gradient; inspect flash and edges"
+    },
+    "speaking_reference": {
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_manual_review",
+      "warning": "rough crops retain black background, edge alignment not verified",
+      "frames": [
+        {
+          "candidate": "speaking-01.png",
+          "sha256": "084c73a7efae0cc6c84f83fcfdbfbf2a58ad57a8d6f72ee59717b7f5e7579e7c",
+          "source_box": [
+            20,
+            55,
+            218,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-02.png",
+          "sha256": "c611bf8aa3dc3ff7f8ff340545aee3a4c6b1130047587183ea8afa334318b086",
+          "source_box": [
+            218,
+            55,
+            416,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-03.png",
+          "sha256": "ae487ae3b48c11dcf0aac49aae8e7a9774ce1244364403642938bdcfb07eca43",
+          "source_box": [
+            416,
+            55,
+            614,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-04.png",
+          "sha256": "3378f66e74a880df093d963ce045f5e73341a3e41f370eafc8530aa82bd69ce7",
+          "source_box": [
+            614,
+            55,
+            812,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-05.png",
+          "sha256": "34592051f728fe4b39884644eaddac7dad256490e56c60ea7abf01e2d033f69c",
+          "source_box": [
+            812,
+            55,
+            1010,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-06.png",
+          "sha256": "576dcb411cd43c68e97b341efc7849fc11e7e64861b438d0ed516cf3c9333374",
+          "source_box": [
+            1010,
+            55,
+            1208,
+            315
+          ],
+          "status": "needs_manual_review"
+        },
+        {
+          "candidate": "speaking-07.png",
+          "sha256": "885bf9f49aaec3cf3c3419762d0d47af0f65cbeb9cd77f69d8b1801fe343b0d3",
+          "source_box": [
+            1208,
+            55,
+            1404,
+            315
+          ],
+          "status": "needs_manual_review"
+        }
+      ]
+    }
+  }
+}

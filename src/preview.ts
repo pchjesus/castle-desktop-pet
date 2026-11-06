@@ -51,3 +51,25 @@ candidateSelect.addEventListener('change', showCandidate); showCandidate();
 document.querySelector<HTMLSelectElement>('#mustang-size')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.style.setProperty('--candidate-width', (e.target as HTMLSelectElement).value + 'px'); });
 document.querySelector<HTMLSelectElement>('#mustang-bg')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.dataset.background = (e.target as HTMLSelectElement).value; });
 document.querySelector<HTMLInputElement>('#mustang-guides')!.addEventListener('change', e => { document.querySelector<HTMLElement>('.mustang-panels')!.classList.toggle('hide-guides', !(e.target as HTMLInputElement).checked); });
+
+// Canonical source and technical candidates are review-only; they never enter the pet renderer.
+import canonicalReport from './characters/candidates/b-mustang-20261107/manifest.json';
+const canonicalSources = import.meta.glob('../design/canonical/b-mustang-20261107/approved_visual_sources/*.{png,jpg}', { eager:true, query:'?url', import:'default' }) as Record<string,string>;
+const canonicalCandidates = import.meta.glob('./characters/candidates/b-mustang-20261107/*.png', { eager:true, query:'?url', import:'default' }) as Record<string,string>;
+type CandidateEntry = {source_sha256:string; candidate?:string; sha256?:string; status:string; warning?:string; frames?:{candidate:string;sha256:string}[]};
+const entries = canonicalReport.assets as Record<string,CandidateEntry>;
+const canonicalAction = document.querySelector<HTMLSelectElement>('#canonical-action')!;
+const canonicalSpeaking = document.querySelector<HTMLSelectElement>('#canonical-speaking')!;
+for (const name of Object.keys(entries)) { const o=document.createElement('option'); o.value=name; o.textContent=name; canonicalAction.append(o); }
+for (let i=0;i<7;i++) { const o=document.createElement('option'); o.value=String(i); o.textContent=String(i+1); canonicalSpeaking.append(o); }
+const sourceImage = document.querySelector<HTMLImageElement>('#canonical-original')!;
+const candidateImage = document.querySelector<HTMLImageElement>('#canonical-candidate')!;
+function renderCanonical() { const name=canonicalAction.value; const item=entries[name]; const source=Object.keys(canonicalSources).find(p=>p.endsWith('/'+name+(name==='firing_dynamic'||name==='dual_firing'||name==='speaking_reference'?'.jpg':'.png'))); const frame=item.frames?.[Number(canonicalSpeaking.value)||0]; const file=frame?.candidate || item.candidate; const path=Object.keys(canonicalCandidates).find(p=>p.endsWith('/'+file)); sourceImage.hidden=!source;candidateImage.hidden=!path; if(source)sourceImage.src=canonicalSources[source]; if(path)candidateImage.src=canonicalCandidates[path]; canonicalSpeaking.disabled=!item.frames; document.querySelector('#canonical-original-info')!.textContent='원본 SHA-256: '+item.source_sha256; document.querySelector('#canonical-candidate-info')!.textContent='후보 SHA-256: '+(frame?.sha256 || item.sha256 || '없음'); document.querySelector('#canonical-status')!.textContent=item.status+' · '+(item.warning || '시각 검수 필요'); }
+sourceImage.addEventListener('load',()=>{document.querySelector('#canonical-original-info')!.append(` · ${sourceImage.naturalWidth}×${sourceImage.naturalHeight}`)});
+candidateImage.addEventListener('load',()=>{document.querySelector('#canonical-candidate-info')!.append(` · ${candidateImage.naturalWidth}×${candidateImage.naturalHeight}`)});
+canonicalAction.addEventListener('change',renderCanonical);canonicalSpeaking.addEventListener('change',renderCanonical);renderCanonical();
+const canonicalPanels=document.querySelector<HTMLElement>('.canonical-panels')!;
+function canonicalWidth() { const size=Number(document.querySelector<HTMLSelectElement>('#canonical-size')!.value); const zoom=Number(document.querySelector<HTMLSelectElement>('#canonical-zoom')!.value); canonicalPanels.style.setProperty('--canonical-width',size*zoom+'px'); }
+document.querySelector('#canonical-size')!.addEventListener('change',canonicalWidth);document.querySelector('#canonical-zoom')!.addEventListener('change',canonicalWidth);
+document.querySelector<HTMLSelectElement>('#canonical-bg')!.addEventListener('change',e=>{canonicalPanels.dataset.background=(e.target as HTMLSelectElement).value});
+document.querySelector<HTMLInputElement>('#canonical-guides')!.addEventListener('change',e=>{canonicalPanels.classList.toggle('hide-guides',!(e.target as HTMLInputElement).checked)});
