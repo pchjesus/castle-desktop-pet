@@ -94,6 +94,8 @@ jobs:
           (out/'gate1-alpha-report.json').write_text(json.dumps(stats,indent=2),encoding='utf8')
           print(json.dumps(stats))
           PY
+      - name: Include latest Gate 1B candidate for technical alpha evaluation
+        run: cp src/characters/candidates/akila_mustang/idle-gate1b-unapproved.png artifacts/mustang-review/
       - uses: actions/upload-artifact@v4
         with:
           name: mustang-candidate-visual-qa-unapproved
