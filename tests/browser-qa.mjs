@@ -111,12 +111,11 @@ try {
     await loaded('Working before exit screenshot');
     await page.locator('#state').selectOption('idle');
     await page.waitForSelector('#pet .working-exit[data-exit-mode="frames"]', { timeout: 1500 });
-    await page.waitForSelector('#pet .working-exit[data-exit-frame="2"]', { timeout: 1200 });
-    await snapshot(size + '-working-laptop-folding');
-    // Capturing the screenshot can take longer than the 100ms following
-    // frame interval. All frames (including 4 and 6) are verified in the
-    // separate sampled playback test above; never wait for an already-gone
-    // transient frame after taking a screenshot.
+    // This is a representative live exit screenshot, NOT a promise that a
+    // screenshot will land on a particular ~100ms transient frame. Earlier
+    // in the same test, the actual runtime's frames 0/2/4/6 were sampled and
+    // verified independently. Exact-frame waits were flaky on busy runners.
+    await snapshot(size + '-working-exit-active');
     await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 2500 });
     record(size + '-working-close-visual-captured', { passed: true });
 
