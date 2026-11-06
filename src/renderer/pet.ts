@@ -28,6 +28,7 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     const image = document.createElement('img'); image.alt = character.name;
     image.onerror = placeholder;
     const stage = document.createElement('div'); stage.className = 'pet-stage'; stage.append(image);
+    if (isWorking && frames.length > 1) stage.dataset.workingMotion = 'fingertips-only';
     if (isAkilaEffect) { const ember = document.createElement('span'); ember.className = 'ember'; const smoke = document.createElement('span'); smoke.className = 'smoke'; stage.append(ember, smoke); }
     if (isWorking && !animation.frames.length) { const laptop = document.createElement('div'); laptop.className = 'laptop'; laptop.setAttribute('aria-label', '노트북 작업 표시'); laptop.innerHTML = '<span class="laptop-screen"></span><span class="laptop-base"></span><span class="laptop-indicator"></span>'; stage.append(laptop); }
     if ((state === 'firing' || state === 'dual_firing') && frames.length) {
