@@ -1,12 +1,14 @@
-import { akila, states, type PetState } from './characters/akila';
+import { akila, states, originalFrames, type PetState } from './characters/akila';
 import { mountPet } from './renderer/pet';
 import './style.css';
 import './preview.css';
 const pet = document.querySelector<HTMLElement>('#pet')!;
 const desktop = document.querySelector<HTMLElement>('#desktop')!;
 const dialogue = document.querySelector<HTMLElement>('#dialogue')!;
-const controller = mountPet(pet, akila);
+const speed = document.querySelector<HTMLSelectElement>('#speed')!;
+const controller = mountPet(pet, akila, () => Number(speed.value));
 const select = document.querySelector<HTMLSelectElement>('#state')!;
+pet.addEventListener('pet-state', event => { select.value = (event as CustomEvent<PetState>).detail; });
 for (const state of states) { const option = document.createElement('option'); option.value = state; option.textContent = state === 'working' ? '작업 (Working)' : state === 'dual_firing' ? '쌍권총 (준비 중)' : state; select.append(option); }
 select.addEventListener('change', () => controller.set(select.value as PetState));
 function clamp() { pet.style.left = `${Math.max(0, Math.min(pet.offsetLeft, desktop.clientWidth - pet.offsetWidth))}px`; pet.style.top = `${Math.max(0, Math.min(pet.offsetTop, desktop.clientHeight - pet.offsetHeight))}px`; }
@@ -17,15 +19,18 @@ document.querySelectorAll<HTMLButtonElement>('[data-dialogue]').forEach(button =
 pet.addEventListener('pointerdown', event => { event.preventDefault(); pet.setPointerCapture(event.pointerId); const startX = event.clientX, startY = event.clientY, left = pet.offsetLeft, top = pet.offsetTop; const move = (e: PointerEvent) => { pet.style.left = `${left + e.clientX - startX}px`; pet.style.top = `${top + e.clientY - startY}px`; clamp(); }; const end = () => { pet.removeEventListener('pointermove', move); pet.removeEventListener('pointerup', end); pet.removeEventListener('pointercancel', end); }; pet.addEventListener('pointermove', move); pet.addEventListener('pointerup', end); pet.addEventListener('pointercancel', end); });
 window.addEventListener('resize', clamp); reset();
 
-document.querySelector('#replay')!.addEventListener('click', () => { controller.set('idle'); controller.set(select.value as PetState); });
+document.querySelector('#replay')!.addEventListener('click', () => { const chosen = select.value as PetState; controller.set('idle'); controller.set(chosen); });
 const review = document.querySelector<HTMLSelectElement>('#review-state')!;
 for (const state of states) { const opt = document.createElement('option'); opt.value = state; opt.textContent = state; review.append(opt); }
 let reviewIndex = 0;
 const selectedFrame = document.querySelector<HTMLImageElement>('#selected-frame')!;
 const referenceFrame = document.querySelector<HTMLImageElement>('#reference-frame')!;
 referenceFrame.src = akila.animations.idle.frames[0];
-function updateReview() { const frames = akila.animations[review.value as PetState].frames; reviewIndex = frames.length ? (reviewIndex + frames.length) % frames.length : 0; selectedFrame.hidden = !frames.length; if (frames.length) selectedFrame.src = frames[reviewIndex]; document.querySelector('#frame-label')!.textContent = frames.length ? `${reviewIndex + 1} / ${frames.length}` : '프레임 없음'; }
+function updateReview() { const frames = document.querySelector<HTMLSelectElement>('#review-source')!.value === 'original' ? originalFrames(review.value as PetState) : akila.animations[review.value as PetState].frames; reviewIndex = frames.length ? (reviewIndex + frames.length) % frames.length : 0; selectedFrame.hidden = !frames.length; if (frames.length) selectedFrame.src = frames[reviewIndex]; document.querySelector('#frame-label')!.textContent = frames.length ? `${reviewIndex + 1} / ${frames.length}` : '프레임 없음'; }
 review.addEventListener('change', () => { reviewIndex = 0; updateReview(); });
 document.querySelector('#frame-prev')!.addEventListener('click', () => { reviewIndex--; updateReview(); });
 document.querySelector('#frame-next')!.addEventListener('click', () => { reviewIndex++; updateReview(); });
 updateReview();
+
+document.querySelector('#review-source')!.addEventListener('change', () => { reviewIndex = 0; updateReview(); });
+speed.addEventListener('change', () => { const chosen = select.value as PetState; controller.set('idle'); controller.set(chosen); });
