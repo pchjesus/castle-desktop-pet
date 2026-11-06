@@ -135,7 +135,17 @@ try {
       const el = document.querySelector('.muzzle-single');
       return el && Number(getComputedStyle(el).opacity) > 0.3;
     }, null, { timeout: 4000 });
+    // Freeze the already-active REAL CSS starburst for the capture. Without
+    // this, taking a full desktop PNG can outlast the brief animation, giving
+    // a misleading "flash" screenshot with no visible flash at all.
+    const frozenOpacity = await page.locator('.muzzle-single').evaluate(el => {
+      el.style.animationPlayState = 'paused';
+      return Number(getComputedStyle(el).opacity);
+    });
+    assert(frozenOpacity > 0.2, 'Single flash vanished before QA freeze at ' + size);
     await snapshot(size + '-firing-flash');
+    const flashEl = page.locator('.muzzle-single');
+    if (await flashEl.count()) await flashEl.evaluate(el => { el.style.animationPlayState = ''; });
     await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
     await loaded('single firing returned idle');
     record(size + '-firing', { passed: true, returnedIdle: true });
