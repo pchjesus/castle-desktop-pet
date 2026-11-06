@@ -1,0 +1,51 @@
+name: Working exit PNGs — approved A-type sources
+on:
+  push:
+    branches:
+      - feat/v0.3c-action-pack
+    paths:
+      - 'scripts/generate-working-exit.py'
+      - '.github/workflows/working-exit-poses.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: working-exit-art-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  export:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated image preparation dependencies
+        run: python -m pip install --disable-pip-version-check numpy==2.2.6 pillow==11.3.0 opencv-python-headless==4.12.0.88
+      - name: Render Working stop, closing laptop, settle, Idle
+        run: python scripts/generate-working-exit.py
+      - name: Check approved source assets unchanged
+        run: git diff --exit-code -- src/characters/assets/akila src/characters/derived/akila/idle src/characters/derived/akila/working
+      - name: Export exact animation frames and review sheet
+        uses: actions/upload-artifact@v4
+        with:
+          name: working-exit-source-preserving-art
+          path: |
+            artifacts/working-exit-review/
+            src/characters/derived/akila/working_exit/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Commit new derived frames to the development branch only
+        shell: bash
+        run: |
+          git add -- src/characters/derived/akila/working_exit/
+          if git diff --cached --quiet; then
+            echo "Generated sprites already match."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "art: add approved-source Working close and return frames [skip ci]"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
