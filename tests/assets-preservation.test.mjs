@@ -62,3 +62,18 @@ test('Working finger-tap frames are aligned and distinct while approved frame 00
   assert.notEqual(variantHashes[0], originalHash, 'First typing frame is identical to 000');
   assert.notEqual(variantHashes[1], originalHash, 'Second typing frame is identical to 000');
 });
+
+test('all seven Working close-and-tidy sprites are valid, aligned PNGs', async () => {
+  const paths = Array.from({ length: 7 }, (_, i) =>
+    '../src/characters/derived/akila/working_exit/' + String(i).padStart(3, '0') + '.png');
+  const hashes = new Set();
+  for (const path of paths) {
+    const bytes = await readFile(new URL(path, import.meta.url));
+    assert(bytes.length > 100000, 'Unexpected small or missing Working exit sprite: ' + path);
+    assert(bytes.subarray(0, 8).equals(pngSignature), 'Invalid Working exit PNG: ' + path);
+    assert.equal(bytes.readUInt32BE(16), 1024, 'Wrong PNG width: ' + path);
+    assert.equal(bytes.readUInt32BE(20), 1600, 'Wrong PNG height: ' + path);
+    hashes.add(createHash('sha256').update(bytes).digest('hex'));
+  }
+  assert.equal(hashes.size, 7, 'All exit frames should be distinct encoded assets');
+});
