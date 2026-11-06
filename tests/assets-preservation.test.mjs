@@ -77,3 +77,30 @@ test('all seven Working close-and-tidy sprites are valid, aligned PNGs', async (
   }
   assert.equal(hashes.size, 7, 'All exit frames should be distinct encoded assets');
 });
+
+test('seven approved-source single-revolver frames preserve exact key art and alignment', async () => {
+  // Git blob SHA checks both the generated sequence and immutable originals.
+  // A changed direction or substituted weapon must not silently pass asset QA.
+  const expected = [
+    '2399e228fe1231fe798853070630609446c7e079', // approved idle
+    'f32bfd4d864c3d3c00123a5a948cb90751cd3a81', // approved draw
+    'd636e902ea865cceb51239e8fb5d3365eea75a32', // approved aim right
+    '5eec85c1e7c46fd79fd62c8fcdcbf9f93d23432e', // local recoil
+    'd636e902ea865cceb51239e8fb5d3365eea75a32', // aim recovery
+    'f32bfd4d864c3d3c00123a5a948cb90751cd3a81', // return to holster
+    '2399e228fe1231fe798853070630609446c7e079', // approved idle
+  ];
+  for (let i = 0; i < expected.length; i++) {
+    const path = '../src/characters/derived/akila/revolver_action/' +
+      String(i).padStart(3, '0') + '.png';
+    const bytes = await readFile(new URL(path, import.meta.url));
+    assert(bytes.length > 500000, 'Revolver pose too small/missing: ' + path);
+    assert(bytes.subarray(0, 8).equals(pngSignature), 'Invalid revolver PNG: ' + path);
+    assert.equal(bytes.readUInt32BE(16), 1024, 'Incorrect width: ' + path);
+    assert.equal(bytes.readUInt32BE(20), 1600, 'Incorrect height: ' + path);
+    const blob = createHash('sha1').update(Buffer.from('blob ' + bytes.length + '\0'))
+      .update(bytes).digest('hex');
+    assert.equal(blob, expected[i], 'Approved revolver action pose drift at frame ' + i);
+  }
+  assert.notEqual(expected[2], expected[3], 'Recoil must actually change the arm');
+});
