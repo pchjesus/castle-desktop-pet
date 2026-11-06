@@ -253,6 +253,15 @@ try {
   await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 3000 });
   record('drawing-held-aim-to-firing-without-redraw', { passed: true });
 
+  // A quick click on Firing while Drawing has *not yet* reached its aim
+  // frame must use the full action, not pretend the revolver is already out.
+  await page.locator('#state').selectOption('drawing');
+  await page.waitForSelector('#pet .pet-stage[data-draw-frame="0"]', { timeout: 1000 });
+  await page.locator('#state').selectOption('firing');
+  await page.waitForSelector('#pet .single-action[data-action-entry="full"]', { timeout: 1000 });
+  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
+  record('drawing-interrupted-before-aim-uses-full-fire-sequence', { passed: true });
+
   await page.locator('#state').selectOption('firing');
   await page.waitForSelector('#pet .single-action[data-action-mode="revolver-frames"]', { timeout: 1000 });
   await page.locator('#state').selectOption('working');
