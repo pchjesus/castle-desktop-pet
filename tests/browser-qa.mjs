@@ -113,9 +113,11 @@ try {
     await page.waitForSelector('#pet .working-exit[data-exit-mode="frames"]', { timeout: 1500 });
     await page.waitForSelector('#pet .working-exit[data-exit-frame="2"]', { timeout: 1200 });
     await snapshot(size + '-working-laptop-folding');
-    await page.waitForSelector('#pet .working-exit[data-exit-frame="4"]', { timeout: 1200 });
-    await snapshot(size + '-working-laptop-closed');
-    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 2000 });
+    // Capturing the screenshot can take longer than the 100ms following
+    // frame interval. All frames (including 4 and 6) are verified in the
+    // separate sampled playback test above; never wait for an already-gone
+    // transient frame after taking a screenshot.
+    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 2500 });
     record(size + '-working-close-visual-captured', { passed: true });
 
     await page.locator('#state').selectOption('drawing');
