@@ -17,7 +17,7 @@ npm start
 
 `npm start`는 빌드 후 Electron을 실행합니다. 우클릭 메뉴에서 크기를 설정하거나 종료합니다. 위치는 Electron 사용자 데이터 디렉터리에 저장됩니다. `npm run dev`는 렌더러 확인용 Vite 서버입니다.
 
-## 오프라인 미리보기
+**최근 인수인계(2026-11-07):** [NEXT_CHAT_HANDOFF.md](docs/NEXT_CHAT_HANDOFF.md)에 B형 무스탕 포즈별 사용자 승인, 미승인 알파 정제, 사용자 라이브러리 자산 ZIP 및 향후 상태 전환 QA 순서를 기록했다. 이 문서가 기존 B형 Gate1B 지침보다 우선한다.\n\n## 오프라인 미리보기
 
 `npm run preview:export`로 단일 `preview.html`을 생성합니다. 브라우저에서 상태·크기·대사·드래그, 원본과 정렬본의 프레임 비교 및 속도를 확인할 수 있습니다. Windows 창 자체의 검증을 대체하지 않습니다.
 
