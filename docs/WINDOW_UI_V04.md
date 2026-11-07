@@ -1,0 +1,4 @@
+# Window UI refinement — v0.4 (2026-11-07)
+User-approved later B Mustang appearance is retained unchanged. Native title text was visible above the character on the user's Windows 11 screen, despite pre-existing `frame:false`. This patch reinforces the borderless transparent BrowserWindow configuration and adds an explicit native-frame-size check to Windows smoke tests. Real Windows 11 GUI review is still necessary.
+Default 180px instead of 240px. Right-click lets users choose 120–360px, with smaller/larger commands and Ctrl +/- shortcuts. Size choice persists, stays within display work areas, and keeps bottom alignment. Old untouched 240×300 default migrates once; explicit v2 sizes are retained.
+Codex/ChatGPT automatic event integration is future work; manual B diagnostic poses remain available. Do not embed OpenAI API keys or use ChatGPT web session scraping. First integration target: Codex lifecycle hooks or app-server events via local-only bridge.
