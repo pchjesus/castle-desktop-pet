@@ -1,3 +1,4 @@
+import { outfitPolicy } from '../characters/outfits';
 import { workingExitFrames, revolverActionFrames, type Character, type PetState } from '../characters/akila';
 import { createState } from './state';
 import { playFrames } from './animation';
@@ -15,9 +16,9 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     previousRenderedState = state;
     stop(); root.replaceChildren(); root.dispatchEvent(new CustomEvent('pet-state', {detail: state}));
     const animation = character.animations[state];
-    const isAkilaEffect = character.id === 'akila' && (state === 'idle' || state === 'smoking');
+    const isAkilaEffect = character.id === 'akila' && outfitPolicy.active !== 'mustang' && (state === 'idle' || state === 'smoking');
     const isWorking = character.id === 'akila' && state === 'working';
-    const hasRevolverArt = character.id === 'akila' && revolverActionFrames.length === 7;
+    const hasRevolverArt = character.id === 'akila' && outfitPolicy.active !== 'mustang' && revolverActionFrames.length === 7;
     const isRevolverFiring = hasRevolverArt && state === 'firing';
     const isRevolverDrawing = hasRevolverArt && state === 'drawing';
     const fromDrawnAim = isRevolverFiring && priorState === 'drawing' &&
@@ -55,7 +56,7 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     if (isRevolverDrawing) stage.dataset.drawMode = 'three-key-poses';
     if (isAkilaEffect) { const ember = document.createElement('span'); ember.className = 'ember'; const smoke = document.createElement('span'); smoke.className = 'smoke'; stage.append(ember, smoke); }
     if (isWorking && !animation.frames.length) { const laptop = document.createElement('div'); laptop.className = 'laptop'; laptop.setAttribute('aria-label', '노트북 작업 표시'); laptop.innerHTML = '<span class="laptop-screen"></span><span class="laptop-base"></span><span class="laptop-indicator"></span>'; stage.append(laptop); }
-    if ((state === 'firing' || state === 'dual_firing') && frames.length) {
+    if (outfitPolicy.active !== 'mustang' && (state === 'firing' || state === 'dual_firing') && frames.length) {
       stage.classList.add(state === 'firing' ? 'single-action' : 'dual-action');
       const actionSeconds = isRevolverFiring && !reduced?.matches
         ? (frames.length * 0.19) : state === 'firing' ? 1.5 : 2.4;
@@ -77,7 +78,7 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
       if (isRevolverFiring) stage.dataset.actionFrame = String(actionFrameIndex++);
       if (isRevolverDrawing) stage.dataset.drawFrame = String(actionFrameIndex++);
     }, mode, () => { stateController.set('idle'); });
-    const stopWorking = isWorking ? startWorking(stage, frames[0]) : () => {};
+    const stopWorking = isWorking && outfitPolicy.active !== 'mustang' ? startWorking(stage, frames[0]) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); document.removeEventListener('visibilitychange', visibility); };
   };
