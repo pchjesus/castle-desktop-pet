@@ -5,5 +5,9 @@ contextBridge.exposeInMainWorld('pet',{
   const listener=(_event:Electron.IpcRendererEvent,state:string)=>callback(state);
   ipcRenderer.on('pet:action',listener);
   return ()=>ipcRenderer.removeListener('pet:action',listener);
- }
+ },
+ setPassthrough:(ignore:boolean)=>ipcRenderer.send('pet:passthrough',ignore),
+ dragStart:()=>ipcRenderer.send('pet:drag-start'),
+ dragMove:()=>ipcRenderer.send('pet:drag-move'),
+ dragEnd:()=>ipcRenderer.send('pet:drag-end')
 });

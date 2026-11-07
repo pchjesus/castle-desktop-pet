@@ -72,8 +72,41 @@ app.whenReady().then(() => {
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   win.loadFile(join(__dirname, '../dist/index.html'));
   win.on('moved', save); win.on('resize', save); win.on('close', save);
-  win.webContents.on('context-menu', showMenu);
-  ipcMain.on('show-menu', showMenu);
+  // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
+  let ignoresPointer=false;
+  let menuRequests=0;
+  let hitChanges=0;
+  type DragStart={bounds:Electron.Rectangle;point:Electron.Point};
+  let drag:DragStart|null=null;
+  function endDrag(){
+    if(!drag)return;
+    drag=null;save();
+  }
+  const isPet=(event:Electron.IpcMainEvent)=>event.sender===win.webContents&&!win.isDestroyed();
+  ipcMain.on('show-menu',(event)=>{
+    if(!isPet(event))return;
+    menuRequests++;
+    if(!process.argv.includes('--qa-smoke'))showMenu();
+  });
+  ipcMain.on('pet:passthrough',(event,ignore)=>{
+    if(!isPet(event)||typeof ignore!=='boolean'||drag)return;
+    if(ignore===ignoresPointer)return;
+    ignoresPointer=ignore;hitChanges++;
+    win.setIgnoreMouseEvents(ignore,ignore?{forward:true}:{});
+  });
+  ipcMain.on('pet:drag-start',(event)=>{
+    if(!isPet(event))return;
+    if(ignoresPointer){win.setIgnoreMouseEvents(false);ignoresPointer=false;}
+    drag={bounds:win.getBounds(),point:screen.getCursorScreenPoint()};
+  });
+  ipcMain.on('pet:drag-move',(event)=>{
+    if(!isPet(event)||!drag)return;
+    const point=screen.getCursorScreenPoint();
+    const desired=fit({...drag.bounds,x:drag.bounds.x+point.x-drag.point.x,y:drag.bounds.y+point.y-drag.point.y});
+    win.setPosition(desired.x,desired.y);
+  });
+  ipcMain.on('pet:drag-end',(event)=>{if(isPet(event))endDrag();});
+  win.on('blur',endDrag);
   win.webContents.on('before-input-event',(event,input)=>{
     if(input.type!=='keyDown'||!input.control) return;
     if(input.key==='-'||input.key==='Subtract'){event.preventDefault();changeSizeBy(-1);}
@@ -97,8 +130,35 @@ app.whenReady().then(() => {
         win.webContents.send('pet:action','drawing');
         const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
         win.webContents.send('pet:action','idle');
-        if (!interactions.repeatChecked || !interactions.cancelledToIdle || !resizeChecked || !chrome.passed || !manualPoseChecked) throw Error('B/window/live pose QA readiness failed: '+JSON.stringify({resizeChecked,chrome,manualPoseChecked,interactions}));
-        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,nativeFrameless:chrome,...result,...interactions}));app.quit();
+        // A synthetic client event proves the pixel-gated right click reaches
+        // the preload IPC bridge without creating a native popup in headless QA.
+        const mouseQa=await win.webContents.executeJavaScript(`new Promise(resolve=>{
+          const image=document.querySelector('#app .pet-stage img');
+          let ticks=0;const timer=setInterval(()=>{
+            if(!image?.complete||!image.naturalWidth){if(++ticks>60){clearInterval(timer);resolve({success:false,reason:'no idle image'});}return;}
+            clearInterval(timer);
+            const rect=image.getBoundingClientRect();
+            const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
+            const context=c.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0);
+            const alpha=context.getImageData(0,0,c.width,c.height).data;
+            let found=null;
+            for(let y=Math.floor(c.height*.2);y<Math.floor(c.height*.8)&&!found;y+=8){
+              for(let x=Math.floor(c.width*.2);x<Math.floor(c.width*.8);x+=8){
+                if(alpha[(y*c.width+x)*4+3]>=128){found={x:rect.left+(x+.5)*rect.width/c.width,y:rect.top+(y+.5)*rect.height/c.height};break;}
+              }
+            }
+            if(!found){resolve({success:false,reason:'no opaque pixel'});return;}
+            document.dispatchEvent(new MouseEvent('mousemove',{bubbles:true,clientX:rect.left+1,clientY:rect.top+1}));
+            document.dispatchEvent(new MouseEvent('mousemove',{bubbles:true,clientX:found.x,clientY:found.y}));
+            document.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true,clientX:found.x,clientY:found.y}));
+            resolve({success:true,point:found});
+          },100);
+        })`);
+        if (!interactions.repeatChecked || !interactions.cancelledToIdle || !resizeChecked || !chrome.passed || !manualPoseChecked || !mouseQa.success)
+          throw Error('B/window/live pose/mouse QA readiness failed: '+JSON.stringify({resizeChecked,chrome,manualPoseChecked,mouseQa,interactions}));
+        await new Promise(resolve=>setTimeout(resolve,100));
+        if(menuRequests<1||hitChanges<1)throw Error('Alpha menu/hit-test IPC not received: '+JSON.stringify({menuRequests,hitChanges}));
+        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,menuRequests,hitChanges,mouseQa,nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
     });
     setTimeout(()=>app.exit(2),20000).unref();
