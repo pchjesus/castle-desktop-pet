@@ -1,40 +1,18 @@
-# Castle Desktop Pet
+# Castle Desktop Pet — Later A/B Canonical Project
 
-> **B형 무스탕 공식 아트 기본안:** 사용자가 2026-11-07 직접 확정한 [9개 이미지 목록·SHA](docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md)를 **최상위 원본**으로 사용한다. 이미지 패키지는 ChatGPT 라이브러리 `/Castle Desktop Pet/castle_pet_B_canonical_20261107.zip`에 보관. 과거 [캐릭터 시트 02](design/references/akila-sheet-02.png)와 Gate1B 후보는 하위 참고·이력용이며 승인된 9개를 덮어쓸 수 없다.
+Windows Electron desktop pet derived from the user's **later A/B character designs**, not the initial prototype.
 
-Windows 10/11용 아킬라 데스크톱 펫입니다. Electron 앱은 투명한 항상 위 창, 드래그, 위치 저장 및 복구, 크기와 종료 메뉴를 제공합니다.
+## What opens
+- **QA desktop default: later B / brown mustang**. The exact nine 2026-11-07 user-approved original images are immutable in `design/canonical/b-mustang-20261107/approved_visual_sources/`. The desktop window displays derivatives in `src/characters/candidates/b-mustang-20261107/action-pack-v04/`. Pixel cleanup remains subject to visual review.
+- **Later A / blouson** is the distinct character in `design/references/akila-sheet-02.png`. A standalone later-A runtime sprite pack has **not** been approved or populated. Never substitute early prototype assets for later A.
+- Dual Firing is blocked due to mask remnants; face-only Speaking is a separate diagnostic, not a whole-body sprite.
 
-## 개발
+## Initial prototype archive
+The initial prototype and all pre-migration runtime sources are preserved on branch **`archive/initial-prototype-20261107`**. They must not appear in current runtime or current main content.
 
-Node.js 22 이상에서 다음을 실행합니다.
+## QA
+`npm ci && npm run build && npm test && npm run preview:package`
 
-```sh
-npm ci
-npm run build
-npm test
-npm start
-```
+Run `npm start` for B as the visible QA desktop pet. `preview.html` and `preview-offline.zip` contain B visual comparisons and user-entered notes. Windows QA executable is generated on GitHub Actions and remains unapproved.
 
-`npm start`는 빌드 후 Electron을 실행합니다. 우클릭 메뉴에서 크기를 설정하거나 종료합니다. 위치는 Electron 사용자 데이터 디렉터리에 저장됩니다. `npm run dev`는 렌더러 확인용 Vite 서버입니다.
-
-**최근 인수인계(2026-11-07):** [NEXT_CHAT_HANDOFF.md](docs/NEXT_CHAT_HANDOFF.md)에 B형 무스탕 포즈별 사용자 승인, 미승인 알파 정제, 사용자 라이브러리 자산 ZIP 및 향후 상태 전환 QA 순서를 기록했다. 이 문서가 기존 B형 Gate1B 지침보다 우선한다.
-
-## 오프라인 미리보기
-
-`npm run preview:export`로 단일 `preview.html`을 생성합니다. 브라우저에서 상태·크기·대사·드래그, 원본과 정렬본의 프레임 비교 및 속도를 확인할 수 있습니다. Windows 창 자체의 검증을 대체하지 않습니다.
-
-앱은 `src/characters/derived/akila`의 **A형 정렬 PNG**를 사용하며 `src/characters/assets/akila`의 원본을 보존합니다. Idle은 호흡과 간헐적 흡연 효과를 표시하고 Smoking은 흡연 효과를 반복합니다. Working은 승인된 원본에서 파생한 손가락 미세 타이핑 루프와 7프레임 노트북 닫기·Idle 복귀를 제공합니다. Drawing은 리볼버 꺼내기→조준 포즈를 유지하고, Firing은 7프레임 꺼내기·조준·국소 반동·정리 후 Idle로 돌아갑니다. Dual Firing은 고정 양손 조준 PNG와 교차 섬광·반동을 표시한 뒤 Idle로 복귀합니다.
-
-**시각적 한계:** Working의 마지막 손 정리와 Drawing/Firing에서 팔을 꺼내거나 집어넣는 과정은 아직 부드러운 관절별 중간 그림이 아닌 키 포즈 전환입니다. Dual Firing도 전용 꺼내기·정리 포즈가 없습니다. Speaking은 별도 그림이 없어 플레이스홀더입니다. CI/Chromium 통과는 Windows 10/11 실제 투명 창·다중 모니터 실기기 검증이나 모든 동작의 시각적 완성을 뜻하지 않습니다. 자세한 사항은 [제품 명세](docs/PRODUCT_SPEC.md)와 [리볼버 액션 기록](docs/REVOLVER_ACTION_V03C.md)을 참조하세요.
-
-공식 기본 디자인의 목표는 B형 무스탕입니다. 아직 B형 전체 상태가 준비되지 않아 실행은 A형을 유지합니다. 기준과 전환 조건은 [디자인 기준](docs/CHARACTER_DESIGN_B_MUSTANG.md)과 [에셋 전환 계획](docs/ASSET_MIGRATION_PLAN.md)을 참조하세요.
-
-오프라인 미리보기의 B형 독립 검수 영역에서는 미승인 후보를 정제 전 이미지와 나란히 비교하고 180/240/360px, 배경과 머리·발 가이드 표시를 조절할 수 있습니다. 가이드는 확정된 해부학적 기준선이 아닙니다. B형 상태 에셋은 의상별로 분리 등록하며 미등록 상태에 A형을 대신 사용하지 않습니다.
-
-오프라인 미리보기의 「2026-11-07 공식 B형 정제 검수」에서 원본과 기술 후보를 비교할 수 있습니다. PNG 알파는 아직 그대로이며, JPEG 이진 마스크와 Speaking 7개 크롭은 수동 보정이 필요합니다. 이 화면의 후보는 실행용 또는 시각 승인된 스프라이트가 아닙니다.
-
-B-CANONICAL-03 독립 동작팩은 키포즈 전환 후보입니다. `npm run preview:package`로 `preview-offline.zip`을 만들고 압축을 푼 폴더의 `preview.html`을 여세요. `preview-assets`를 HTML과 함께 유지해야 합니다. `npm run preview:single`은 큰 단일 `preview-single.html`을 선택적으로 생성하며 Git에 저장하지 않습니다. 기본 HTML은 작게 유지하고 큰 이미지는 필요할 때 상대경로로 읽습니다.
-
-새 B형 동작팩 영역은 A형 라이브 펫과 분리되어 시작·반복·전체 재생·일시정지·취소와 Idle 복귀를 제공합니다. 팔·손의 실제 중간 동작을 생성한 것은 아니며, 특히 Dual Firing 마스크는 blocked 상태입니다. Speaking은 전신에 합성하지 않은 얼굴 루프입니다.
-
-Windows QA는 Actions의 `castle-pet-windows-qa-unapproved` 아티팩트를 압축 해제해 `electron.exe`로 실행합니다. A형 우클릭 메뉴의 「B형 진단 검수 · 미승인」으로 B형 후보를 확인할 수 있습니다. 자세한 수동 검수·로그 절차는 [Windows QA 안내](docs/WINDOWS_QA_PACKAGE.md), 이미지 보정의 한계와 마스크 수정은 [04 검수 보고](docs/B_CANONICAL_04_QA.md)를 참조하세요.
+Do not equate CI pass with visual approval. No GitHub Release or Pages deployment is authorized.

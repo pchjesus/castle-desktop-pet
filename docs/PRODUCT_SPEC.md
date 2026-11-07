@@ -1,11 +1,4 @@
-# Castle Desktop Pet 제품 명세
-
-Windows 10/11용 아킬라 데스크톱 펫. 투명한 항상 위 창, 드래그, 위치 저장·복구, 크기 설정, 우클릭 메뉴 및 다중 모니터 작업 영역 보정을 제공한다.
-
-아킬라는 A형 원작 밀착 SD로 뒤로 넘긴 머리, 짙은 수염, 에비에이터 선글라스, 밝은 라인이 있는 올리브 재킷, 검은 셔츠, 회색 바지와 검은 군화를 착용한다. 담배를 입에 물고 무표정하며 과묵하다. 승인된 원본은 보존한다.
-
-상태는 idle, smoking, speaking, working, drawing, firing, dual_firing이다. 대사는 데이터로 유지하며 외부 이벤트와 연결하지 않는다. Idle은 미세한 호흡과 간헐적 담배 효과, Smoking은 반복 흡연 효과를 표시한다. Working은 정지 작업 포즈를 표시하며 다른 상태 요청 시 퇴장 후 마지막 선택 상태로 이동한다. Drawing은 리볼버 조준 포즈를 유지한다.
-
-Firing은 리볼버 한 정, Dual Firing은 리볼버 한 정과 글록 스타일 반자동 권총 한 정을 사용한다. 각각 고정 조준 포즈 위 섬광과 미세한 반동을 한 번 표시하고 idle로 복귀한다. 리볼버 실린더와 총열을 구분한다. 타이핑, 노트북 닫기와 팔·총을 꺼내고 정리하는 실제 중간 포즈는 미구현이다.
-
-앱과 단일 오프라인 HTML은 공통 렌더러와 1024×1600 정렬 포즈를 사용한다. 원본 PNG를 보존하며 HTML에서 원본과 정렬본을 비교할 수 있다. 실제 시각 품질, 다중 모니터 및 Windows 실기기 동작은 해당 환경에서 검증해야 한다. 음성, 효과음, 외부 이벤트 연동, 자동 실행, 설치 파일과 GitHub Pages 배포는 범위 밖이다.
+# Castle Desktop Pet — product specification
+Windows Electron desktop pet. Later B mustang is the QA desktop default using approved nine original art sources and their technical derivatives. The initial prototype is **not** the later A outfit. Later A blouson appearance is preserved in `design/references/akila-sheet-02.png`, without falsely aliasing old sprite assets.
+The pet is frameless, transparent, always-on-top, drag-movable and has position restore, size menu and display boundaries. Right-click opens separate B technical/visual review. Idle, smoking, drawing, firing, working and sitting B key poses are available in the desktop QA runtime. Dual Firing is blocked and Speaking is face-only in diagnostics. Missing poses are never crossfilled from the initial prototype.
+B visual art review, exact Windows 10/11 GUI and final app integration remain pending. Historical builds belong only on `archive/initial-prototype-20261107`.

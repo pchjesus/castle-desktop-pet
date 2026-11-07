@@ -1,18 +1,7 @@
-# B형 에셋 전환 계획
+# Later A/B asset integration — current state
+Later A blouson and later B mustang are **distinct from the initial prototype**. Initial prototype assets and old QA docs have been archived outside current main.
 
-**공식 기준:** [2026-11-07 승인 이미지 9종](B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md)이다. 원본의 신체 비율·그림체·의상·포즈를 재해석하지 않는다. 시트 02는 보조 참고 자료이며 Gate1B는 과거 기술 검수 후보이다. 공식 원본은 `design/canonical/b-mustang-20261107/`에 보존한다.
-
-Sitting은 과거 체크무늬 이미지가 아닌 최신 RGBA 원본이며, Working은 서서 노트북을 사용하는 원본, Dual Firing은 최종 지정 JPEG다. 원본을 수정하지 않고 파생 에셋을 별도로 만든다. 현재 런타임은 A형이며 B형 상태가 완성되기 전 A/B 이미지를 섞지 않는다.
-
-| 상태 | 필요한 B형 포즈·전환 | 현재 |
-|---|---|---|
-| idle | 무기 없는 서 있는 전신, 일정한 머리·발 기준 | 승인 원본 보존, 기술 검수 대기 |
-| sitting (pose) | 2026-11-07 승인된 RGBA 앉은 자세. 별도 런타임 상태 추가는 앱 통합 단계에서 결정 | 미구현 |
-| smoking | idle에서 담배 불빛·연기로 진입하고 복귀 | 미구현 |
-| speaking | 무표정 기준 발화·종료 포즈 | 미구현 |
-| working | 노트북 등장·타이핑·닫기와 양손 연결, idle 복귀 | 미구현 |
-| drawing | 오른손으로 리볼버를 꺼내 조준 유지 | 미구현 |
-| firing | 오른손 조준·발사·반동·정리, idle 복귀 | 미구현 |
-| dual_firing | 리볼버와 반자동 권총 양손 조준·교차 사격·정리 | 미구현 |
-
-7개 기본 상태와 Sitting 포즈가 일관성을 만족하고 크기별·브라우저·Windows 검증을 통과한 뒤에만 기본 실행을 B로 전환한다. 준비되지 않은 상태를 A형으로 대체하지 않는다. A형은 별도 에셋과 실행 설정을 보존하여 복구한다. Sitting은 이번 B형 포즈 제작 단계에 포함한다. Shotgun은 후속 확장이다.
+B's 9 exact original images: `design/canonical/b-mustang-20261107/approved_visual_sources/`. Derivative app QA sprites: `src/characters/candidates/b-mustang-20261107/action-pack-v04/`.
+B QA visible on startup; final visual approval remains pending. Dual mask blocked; Speaking face-only; no cross-outfit fallback.
+A visual reference: `design/references/akila-sheet-02.png`; A later standalone runtime sprites still needed. Do not repurpose old `derived/akila` as A.
+Maintain 180/240/360px QA, offline previews, Windows portable smoke, transparency and correct skin/hair/coat ratios.

@@ -1,40 +1,36 @@
-import { test } from 'node:test';
-import { strict as assert } from 'node:assert';
-import { readFile } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
-import { transform } from 'esbuild';
-const file = await readFile(new URL('../src/characters/outfits.ts', import.meta.url), 'utf8');
-const {code} = await transform(file, {loader:'ts', format:'esm'});
-const {outfitPolicy} = await import(`data:text/javascript;base64,${Buffer.from(code).toString('base64')}`);
-test('unapproved B outfit is not the active runtime outfit', () => { assert.equal(outfitPolicy.targetDefault,'mustang'); assert.equal(outfitPolicy.active,'blouson'); assert.equal(outfitPolicy.outfits.mustang.ready,false); assert.notEqual(outfitPolicy.outfits.blouson.assetRoot,outfitPolicy.outfits.mustang.assetRoot); });
-test('approved original idle is unchanged', async () => { const bytes=await readFile(new URL('../src/characters/assets/akila/idle/000.png',import.meta.url)); assert.equal(createHash('sha256').update(bytes).digest('hex'),'76db768dbdc64db00a96b0ac8bceaa7f9424cc19d6248895f1521acb0d2dcd30'); });
-test('unapproved candidate is a transparent RGBA PNG and isolated from runtime', async () => {
-  const bytes = await readFile(new URL('../src/characters/candidates/akila_mustang/idle-unapproved.png', import.meta.url));
-  assert.equal(bytes.subarray(1,4).toString(), 'PNG');
-  assert.equal(bytes.readUInt32BE(16), 1024); assert.equal(bytes.readUInt32BE(20), 1536); assert.equal(bytes[25], 6);
-  assert.equal(outfitPolicy.outfits.mustang.ready, false);
+import {test} from 'node:test';
+import {strict as assert} from 'node:assert';
+import {readFile} from 'node:fs/promises';
+import {transform} from 'esbuild';
+const raw=await readFile(new URL('../src/characters/outfits.ts',import.meta.url),'utf8');
+const {code}=await transform(raw,{loader:'ts',format:'esm'});
+const {outfitPolicy}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+test('only the later B outfit starts by default in QA and later A is not spoofed',()=>{
+ assert.equal(outfitPolicy.targetDefault,'mustang');
+ assert.equal(outfitPolicy.active,'mustang');
+ assert.equal(outfitPolicy.outfits.blouson.ready,false);
+ assert.equal(outfitPolicy.outfits.mustang.ready,false); // not visually approved
+ assert.notEqual(outfitPolicy.outfits.blouson.assetRoot,outfitPolicy.outfits.mustang.assetRoot);
 });
-test('outfit frame registries never fall back across outfits', async () => {
+test('runtime source never imports initial prototype sprites',async()=>{
+ const runtime=await readFile(new URL('../src/characters/akila.ts',import.meta.url),'utf8');
+ assert(!/['"]\.\/derived\/akila/.test(runtime));
+ assert(!/['"]\.\/assets\/akila/.test(runtime));
+ assert(runtime.includes("action-pack-v04"));
+ assert(runtime.includes("blouson:Object.fromEntries(states.map(state=>[state,[]]))"));
+});
+test('outfit frame loader is isolated and does not substitute missing A/B poses',async()=>{
  const {outfitFrames}=await import('../src/characters/outfit-loader.mjs');
- const registry={blouson:{idle:['a.png'],firing:['a-fire.png']},mustang:{idle:['b.png']}};
- assert.deepEqual(outfitFrames(registry,'mustang','idle'),['b.png']);
- assert.deepEqual(outfitFrames(registry,'mustang','firing'),[]);
+ const registry={blouson:{idle:[]},mustang:{idle:['b-idle.png'],firing:['b-fire.png']}};
+ assert.deepEqual(outfitFrames(registry,'mustang','idle'),['b-idle.png']);
+ assert.deepEqual(outfitFrames(registry,'blouson','firing'),[]);
  assert.deepEqual(outfitFrames(registry,'unknown','idle'),[]);
- const copy=outfitFrames(registry,'mustang','idle'); copy.push('other'); assert.deepEqual(registry.mustang.idle,['b.png']);
 });
-
-test('B candidate review controls exist only in preview, not active A pet renderer', async () => {
-  const html = await readFile(new URL('../preview-entry.html', import.meta.url), 'utf8');
-  const preview = await readFile(new URL('../src/preview.ts', import.meta.url), 'utf8');
-  const pet = await readFile(new URL('../src/renderer/pet.ts', import.meta.url), 'utf8');
-  for (const name of [
-    'mustang-candidate', 'mustang-before', 'mustang-after',
-    'mustang-size', 'mustang-bg', 'mustang-guides', 'mustang-status'
-  ]) {
-    assert(html.includes('id="' + name + '"'), 'Missing B review UI control: ' + name);
-  }
-  assert(preview.includes("import.meta.glob('./characters/candidates/akila_mustang/*.png'"),
-    'Independent Mustang review candidate glob missing');
-  assert(!pet.includes('characters/candidates/akila_mustang'),
-    'An unapproved Mustang candidate must not be referenced from the active renderer');
+test('user comparison controls survive while legacy prototype review panel is removed',async()=>{
+ const html=await readFile(new URL('../preview-entry.html',import.meta.url),'utf8');
+ for(const id of ['canonical-action','canonical-candidate','canonical-side-03','canonical-side-04','canonical-speaking','canonical-guides','state']){
+   assert(html.includes('id="'+id+'"'),id);
+ }
+ assert(!html.includes('class="mustang-review"'));
+ assert(!html.includes('class="frame-review"'));
 });

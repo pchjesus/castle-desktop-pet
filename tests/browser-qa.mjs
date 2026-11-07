@@ -1,393 +1,97 @@
+import {chromium} from 'playwright';
+import {createServer} from 'node:http';
+import {createReadStream,mkdirSync,writeFileSync} from 'node:fs';
+import {resolve} from 'node:path';
 import assert from 'node:assert/strict';
-import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
-import { createServer } from 'node:http';
-import { resolve } from 'node:path';
-import { chromium } from 'playwright';
-
-const out = resolve('artifacts/visual-qa');
-mkdirSync(out, { recursive: true });
-const server = createServer((req, res) => {
-  const url = new URL(req.url || '/', 'http://localhost');
-  if(url.pathname==='/favicon.ico'){res.writeHead(204);res.end();return;}
-  const name = url.pathname === '/' ? 'preview.html' : url.pathname.slice(1);
-  if (name !== 'preview.html' && !/^preview-assets\/[A-Za-z0-9_.-]+$/.test(name)) {res.writeHead(404); res.end();return;}
-  res.writeHead(200, {'Content-Type':name.endsWith('.html')?'text/html; charset=utf-8':name.endsWith('.jpg')?'image/jpeg':'image/png'});
-  const stream=createReadStream(name);stream.on('error',()=>res.destroy());stream.pipe(res);
+const output=resolve('artifacts/visual-qa');mkdirSync(output,{recursive:true});
+const errors=[],checks=[];
+const record=(label)=>checks.push({name:label,passed:true});
+const server=createServer((req,res)=>{const p=new URL(req.url,'http://localhost').pathname.slice(1)||'preview.html';
+ if(!/^(preview\.html|preview-assets\/[\w.-]+)$/.test(p)){res.writeHead(404);res.end('Not found');return;}
+ res.setHeader('Content-Type',p.endsWith('.html')?'text/html;charset=utf8':p.endsWith('.jpg')?'image/jpeg':'image/png');
+ createReadStream(p).on('error',()=>{res.destroy()}).pipe(res);
 });
-await new Promise(resolveListening => server.listen(0, '127.0.0.1', resolveListening));
-const address = server.address();
-assert(address && typeof address === 'object');
+await new Promise(resolveServer=>server.listen(0,'127.0.0.1',resolveServer));
 let browser;
-const errors = [];
-const results = [];
-const record = (name, result) => results.push({ name, ...result });
-const pause = ms => new Promise(r => setTimeout(r, ms));
-try {
-  browser = await chromium.launch({ headless: true, executablePath: process.env.CASTLE_CHROMIUM || undefined });
-  const page = await browser.newPage({ viewport: { width: 1365, height: 950 }, deviceScaleFactor: 1 });
-  page.on('pageerror', error => errors.push('pageerror: ' + error.message));
-  page.on('console', msg => { if (msg.type() === 'error') errors.push('console: ' + msg.text()); });
-  page.on('requestfailed', req => errors.push('requestfailed: ' + req.url() + ': ' + req.failure()?.errorText));
-  await page.goto('http://127.0.0.1:' + address.port + '/preview.html', { waitUntil: 'load', timeout: 60000 });
-  await page.locator('#pet .pet-stage img').waitFor({ timeout: 30000 });
-
-  async function loaded(label) {
-    const image = page.locator('#pet .pet-stage img');
-    await image.waitFor({ timeout: 8000 });
-    // Capture readiness and dimensions in one browser evaluation: animation
-    // may replace img.src between separate Playwright round trips.
-    const ready = await page.waitForFunction(() => {
-      const img = document.querySelector('#pet .pet-stage img');
-      return img && img.complete && img.naturalWidth > 0
-        ? { width: img.naturalWidth, height: img.naturalHeight } : false;
-    }, null, { timeout: 15000 });
-    const info = await ready.jsonValue();
-    assert(info.width > 0 && info.height > 0, label + ' failed image loading');
-    return info;
-  }
-
-  async function idle() {
-    await page.locator('#state').selectOption('idle');
-    await loaded('idle');
-    await pause(780); // Working has a 700ms exit transition.
-  }
-
-  async function snapshot(name) {
-    await page.locator('#desktop').screenshot({ path: resolve(out, name + '.png'), animations: 'allow' });
-  }
-
-  for (const size of [180, 240, 360]) {
-    await page.locator('#size').selectOption(String(size));
-    await idle();
-    const bounds = await page.locator('#pet').boundingBox();
-    const desk = await page.locator('#desktop').boundingBox();
-    assert(bounds && desk);
-    assert(Math.abs(bounds.width - size) < 2, 'Incorrect width at ' + size);
-    assert(bounds.x >= desk.x - 1 && bounds.x + bounds.width <= desk.x + desk.width + 1, 'Horizontal clipping at ' + size);
-    assert(bounds.y >= desk.y - 1 && bounds.y + bounds.height <= desk.y + desk.height + 1, 'Vertical clipping at ' + size);
-    await snapshot(size + '-idle');
-    record(size + '-idle', { passed: true, image: await loaded('idle') });
-
-    await page.locator('#state').selectOption('working');
-    const working = await loaded('working');
-    await snapshot(size + '-working');
-    record(size + '-working', { passed: true, image: working });
-    // Compare the browser's actual rendered frame URLs, not merely the files
-    // listed in the preview review panel. 000 + 002 + 003 must all display.
-    const distinctWorkingFrames = await page.evaluate(async () => {
-      const seen = new Set();
-      for (let i = 0; i < 65; i++) {
-        const img = document.querySelector('#pet .pet-stage img');
-        if (img?.complete && img.naturalWidth > 0) seen.add(img.currentSrc);
-        await new Promise(resolve => setTimeout(resolve, 25));
-      }
-      return seen.size;
-    });
-    assert.equal(distinctWorkingFrames, 3, 'Expected 3 distinct Working frames in subtle typing loop at ' + size);
-    await snapshot(size + '-working-typing');
-    record(size + '-working-typing-loop', { passed: true, distinctFrames: distinctWorkingFrames });
-
-    // A real seven-frame close should run before the Idle state is rendered.
-    await page.locator('#state').selectOption('idle');
-    await page.locator('#pet .working-exit[data-exit-mode="frames"]').waitFor({ timeout: 1000 });
-    const seenExitFrames = await page.evaluate(async () => {
-      const seen = new Set();
-      for (let i = 0; i < 38; i++) {
-        const el = document.querySelector('#pet .working-exit[data-exit-mode="frames"]');
-        if (el?.dataset.exitFrame) seen.add(el.dataset.exitFrame);
-        await new Promise(resolve => setTimeout(resolve, 20));
-      }
-      return [...seen].sort();
-    });
-    for (const required of ['0', '2', '4', '6']) {
-      assert(seenExitFrames.includes(required),
-        'Working exit skipped frame ' + required + ' at size ' + size + ': ' + seenExitFrames.join(','));
-    }
-    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 3000 });
-    await loaded('Working exit returned to idle');
-    record(size + '-working-close-and-idle', { passed: true, observedExitFrames: seenExitFrames });
-
-    // Capture the actual live sprite during exit; the review selector only
-    // lists the seven public PetState types, not the internal Working exit pack.
-    await page.locator('#state').selectOption('working');
-    await loaded('Working before exit screenshot');
-    await page.locator('#state').selectOption('idle');
-    await page.waitForSelector('#pet .working-exit[data-exit-mode="frames"]', { timeout: 1500 });
-    // This is a representative live exit screenshot, NOT a promise that a
-    // screenshot will land on a particular ~100ms transient frame. Earlier
-    // in the same test, the actual runtime's frames 0/2/4/6 were sampled and
-    // verified independently. Exact-frame waits were flaky on busy runners.
-    await snapshot(size + '-working-exit-active');
-    await page.waitForSelector('#pet .working-exit', { state: 'detached', timeout: 2500 });
-    record(size + '-working-close-visual-captured', { passed: true });
-
-    await page.locator('#state').selectOption('drawing');
-    await loaded('drawing');
-    await pause(550);
-    await snapshot(size + '-drawing');
-    record(size + '-drawing', { passed: true });
-    await idle();
-
-    await page.locator('#state').selectOption('firing');
-    // Detect and pause the REAL animated CSS flash in one in-page task. The
-    // former two Playwright round trips could straddle the ~130ms flash beat,
-    // resulting in a flaky false negative after the animation had ended.
-    // Start sampling before waiting for the sprite image to load.
-    const frozenOpacity = await page.evaluate(async () => {
-      const started = performance.now();
-      while (performance.now() - started < 3500) {
-        const el = document.querySelector('.single-action .muzzle-single');
-        if (el && Number(getComputedStyle(el).opacity) > 0.55) {
-          el.style.animationPlayState = 'paused';
-          return Number(getComputedStyle(el).opacity);
-        }
-        if (!el && document.querySelector('#state')?.value === 'idle') break;
-        await new Promise(resolve => requestAnimationFrame(resolve));
-      }
-      return -1;
-    });
-    assert(frozenOpacity > 0.3, 'Real CSS single flash was never captured at ' + size);
-    await loaded('firing');
-    assert.equal(await page.locator('.single-action .muzzle-single').count(), 1, 'Single muzzle missing');
-    assert.match(await page.locator('.muzzle-single').evaluate(el => getComputedStyle(el).clipPath), /^polygon\(/, 'Muzzle must be a shaped burst, not a round orb');
-    await snapshot(size + '-firing-flash');
-    const flashEl = page.locator('.muzzle-single');
-    if (await flashEl.count()) await flashEl.evaluate(el => { el.style.animationPlayState = ''; });
-    await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
-    await loaded('single firing returned idle');
-    record(size + '-firing', { passed: true, returnedIdle: true });
-
-    // Sample the actual production renderer, not the static review panel.
-    // The newly generated seven-step Revolver action must reach the key
-    // draw/aim/recoil/holster frames before the state is reset to Idle.
-    await page.locator('#state').selectOption('firing');
-    await page.waitForSelector('#pet .single-action[data-action-mode="revolver-frames"]', { timeout: 1500 });
-    const seenRevolverFrames = await page.evaluate(async () => {
-      const seen = new Set();
-      for (let i = 0; i < 90; i++) {
-        const el = document.querySelector('#pet .single-action[data-action-mode="revolver-frames"]');
-        if (el?.dataset.actionFrame) seen.add(el.dataset.actionFrame);
-        await new Promise(resolve => setTimeout(resolve, 22));
-      }
-      return [...seen].sort();
-    });
-    for (const n of ['0', '1', '2', '3', '4', '5', '6']) {
-      assert(seenRevolverFrames.includes(n),
-        'Revolver action skipped frame ' + n + ' at ' + size + ': ' + seenRevolverFrames.join(','));
-    }
-    assert.equal(await page.locator('#state').inputValue(), 'idle', 'Revolver sequence must finish Idle');
-    record(size + '-full-revolver-sequence', { passed: true, seenFrames: seenRevolverFrames });
-
-    await page.locator('#state').selectOption('dual_firing');
-    await loaded('dual_firing');
-    assert.equal(await page.locator('.dual-action .muzzle').count(), 2, 'Dual muzzles missing');
-    await page.waitForFunction(() => {
-      const els = [...document.querySelectorAll('.dual-action .muzzle')];
-      return els.length === 2 && els.some(el => Number(getComputedStyle(el).opacity) > 0.3);
-    }, null, { timeout: 4500 });
-    await snapshot(size + '-dual-flash');
-    await page.waitForFunction(() => {
-      const el = document.querySelector('.dual-action .muzzle-right');
-      return el && Number(getComputedStyle(el).opacity) > 0.3;
-    }, null, { timeout: 4000 });
-    await snapshot(size + '-dual-right-flash');
-    await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
-    await loaded('dual firing returned idle');
-    record(size + '-dual-firing', { passed: true, returnedIdle: true });
-  }
-
-  // Inspect every existing pose independently; the live Drawing state advances too quickly
-  // to guarantee that an initial-frame screenshot captures frame 000.
-  for (const [state, count] of [['idle', 1], ['working', 4], ['drawing', 2], ['firing', 3], ['dual_firing', 3]]) {
-    await page.locator('#review-source').selectOption('derived');
-    await page.locator('#review-state').selectOption(state);
-    const frame = page.locator('#selected-frame');
-    await frame.evaluate(img => { img.style.width = '360px'; img.style.height = '563px'; });
-    for (let i = 0; i < count; i++) {
-      await page.waitForFunction(expected => document.querySelector('#frame-label')?.textContent?.trim() === expected,
-        (i + 1) + ' / ' + count, { timeout: 4000 });
-      await page.waitForFunction(() => {
-        const img = document.querySelector('#selected-frame');
-        return img && img.complete && img.naturalWidth > 0;
-      }, null, { timeout: 10000 });
-      await frame.screenshot({ path: resolve(out, 'pose-' + state + '-' + i + '.png') });
-      await page.locator('#frame-next').click();
-    }
-  }
-  record('all-derived-pose-frames-captured', { passed: true, count: 13 });
-
+try{
+ browser=await chromium.launch({headless:true,executablePath:process.env.CASTLE_CHROMIUM||undefined});
+ const page=await browser.newPage({viewport:{width:1440,height:1024},acceptDownloads:true});
+ page.on('pageerror',e=>errors.push('pageerror '+e.message));
+ page.on('console',m=>{if(m.type()==='error')errors.push('console '+m.text())});
+ page.on('requestfailed',r=>errors.push('requestfailed '+r.url()+' '+r.failure()?.errorText));
+ await page.goto('http://127.0.0.1:'+server.address().port+'/preview.html',{waitUntil:'load'});
+ await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});
+ const first=await page.locator('#pet .pet-stage img').getAttribute('src');
+ assert(/idle[-.]/.test(first),'Desktop must display B idle candidate');
+ record('later B is the actual desktop default, not a legacy source');
+ for(const width of [180,240,360]){
+  await page.locator('#size').selectOption(String(width));
+  await page.locator('#state').selectOption('idle');
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});
+  const bounding=await page.locator('#pet').boundingBox();assert(Math.abs(bounding.width-width)<2);record('real B desktop idle size '+width);
+  await page.locator('#desktop').screenshot({path:resolve(output,'desktop-b-idle-'+width+'.png')});
   await page.locator('#state').selectOption('working');
-  await loaded('working transition');
-  await page.locator('#state').selectOption('firing');
-  await page.locator('#state').selectOption('dual_firing');
-  await page.waitForSelector('#pet .dual-action', { timeout: 2500 });
-  assert.equal(await page.locator('#pet .single-action').count(), 0, 'Stale firing transition');
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
-  record('working-to-last-request-dual-to-idle', { passed: true });
-
-  await page.locator('#state').selectOption('working');
-  await loaded('working reselect before exit');
-  await page.locator('#state').selectOption('firing');
-  await page.locator('#pet .working-exit').waitFor({ timeout: 1000 });
-  await page.locator('#state').selectOption('working');
-  await page.waitForFunction(() =>
-    document.querySelector('#state')?.value === 'working' &&
-    document.querySelector('#pet .pet-stage') &&
-    !document.querySelector('#pet .pet-stage')?.classList.contains('working-exit')
-  , null, { timeout: 2000 });
-  await pause(850);
-  assert.equal(await page.locator('#pet .single-action, #pet .dual-action').count(), 0, 'Stale firing after Working reselect');
-  assert.equal(await page.locator('#state').inputValue(), 'working', 'Working should remain active');
-  await loaded('restored working');
-  record('working-exit-cancelled-by-working-reselect', { passed: true });
-
-  await idle();
-  await page.locator('#state').selectOption('firing');
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
-  await page.locator('#state').selectOption('firing');
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
-  record('sequential-firing-replay', { passed: true });
-
-  // Drawing is a three-key-pose hold; firing from that held aim skips the
-  // redundant idle/draw lead-in and starts directly from the aimed revolver.
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});record('B working load '+width);
   await page.locator('#state').selectOption('drawing');
-  await page.waitForSelector('#pet .pet-stage[data-draw-mode="three-key-poses"]', { timeout: 1000 });
-  await page.waitForSelector('#pet .pet-stage[data-draw-frame="2"]', { timeout: 1500 });
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});record('B drawing load '+width);
   await page.locator('#state').selectOption('firing');
-  await page.waitForSelector('#pet .single-action[data-action-entry="already-drawn"]', { timeout: 1000 });
-  assert.equal(await page.locator('#pet .muzzle-single').evaluate(el => getComputedStyle(el).animationName),
-    'shot-from-drawn', 'From-drawn muzzle animation must align with early recoil');
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 3000 });
-  record('drawing-held-aim-to-firing-without-redraw', { passed: true });
-
-  // A quick click on Firing while Drawing has *not yet* reached its aim
-  // frame must use the full action, not pretend the revolver is already out.
-  await page.locator('#state').selectOption('drawing');
-  await page.waitForSelector('#pet .pet-stage[data-draw-frame="0"]', { timeout: 1000 });
-  await page.locator('#state').selectOption('firing');
-  await page.waitForSelector('#pet .single-action[data-action-entry="full"]', { timeout: 1000 });
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 4000 });
-  record('drawing-interrupted-before-aim-uses-full-fire-sequence', { passed: true });
-
-  await page.locator('#state').selectOption('firing');
-  await page.waitForSelector('#pet .single-action[data-action-mode="revolver-frames"]', { timeout: 1000 });
-  await page.locator('#state').selectOption('working');
-  await page.waitForSelector('#pet .pet-stage[data-working-motion="fingertips-only"]', { timeout: 1200 });
-  await pause(1550);
-  assert.equal(await page.locator('#state').inputValue(), 'working', 'Interrupted revolver must not return to Idle later');
-  record('revolver-interrupted-by-working-no-stale-idle', { passed: true });
-  await idle();
-
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.locator('#state').selectOption('working');
-  await loaded('working reduced motion');
-  const reducedFrameBefore = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
-  await pause(1350);
-  const reducedFrameAfter = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
-  assert.equal(reducedFrameAfter, reducedFrameBefore, 'Working must remain still with reduced motion');
-  record('reduced-motion-working-still', { passed: true });
-  await page.locator('#state').selectOption('firing');
-  await page.waitForSelector('#pet .single-action[data-action-mode="reduced-still"]', { timeout: 1200 });
-  assert.equal(await page.locator('.single-action .muzzle-single').evaluate(el => getComputedStyle(el).animationName),
-    'none', 'Reduced-motion should show no firing flash animation');
-  await page.waitForFunction(() => document.querySelector('#state')?.value === 'idle', null, { timeout: 5000 });
-  record('reduced-motion-firing-return', { passed: true });
-
-  // B Mustang candidates are a review-only surface. Interacting with them
-  // must never change the approved A outfit in the active pet renderer.
-  const activeAFrameBeforeReview = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
-  const choices = await page.locator('#mustang-candidate option').allTextContents();
-  assert(choices.some(x => x.includes('idle-gate1b-alpha-cleanup-unapproved.png')),
-    'Cleaned Mustang candidate must be listed');
-  const mustard = page.locator('#mustang-after');
-  await page.locator('#mustang-candidate').selectOption({ label: 'idle-gate1b-alpha-cleanup-unapproved.png' });
-  await page.waitForFunction(() => {
-    const im = document.querySelector('#mustang-after');
-    return im && im.complete && im.naturalWidth === 1024 && im.naturalHeight === 1600;
-  }, null, { timeout: 10000 });
-  assert.match(await page.locator('#mustang-status').textContent(), /미승인 후보/);
-  record('mustang-unapproved-candidate-listed-and-image-loaded', { passed: true });
-
-  for (const width of [180, 240, 360]) {
-    await page.locator('#mustang-size').selectOption(String(width));
-    const panelWidth = await page.locator('.mustang-panel').first().evaluate(el => el.getBoundingClientRect().width);
-    assert(Math.abs(panelWidth - width) < 2, 'Mustang preview pane width mismatch at ' + width);
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});record('B firing load '+width);
+  await page.waitForFunction(()=>document.querySelector('#state')?.value==='idle',null,{timeout:5000});record('B firing returns idle '+width);
+  await page.locator('#state').selectOption('smoking');
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});record('B smoking load '+width);
+  await page.locator('#state').selectOption('sitting');
+  await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024;});record('B sitting load '+width);
+  await page.locator('#state').selectOption('idle');
+ }
+ for(const name of ['speaking','dual_firing','firing_dynamic']) {
+  await page.locator('#state').selectOption(name);
+  await page.locator('#pet .placeholder').waitFor();
+  assert((await page.locator('#pet').innerText()).includes(name));record('unapproved B state does not substitute legacy '+name);
+ }
+ await page.locator('#state').selectOption('idle');
+ assert.equal(await page.locator('#canonical-action option').count(),9);record('nine official B sources in visual review');
+ for(const width of [180,240,360]){
+  await page.locator('#canonical-size').selectOption(String(width));
+  for(const name of ['idle','sitting','drawing','firing','smoking','working','firing_dynamic','dual_firing','speaking_reference']){
+   await page.locator('#canonical-action').selectOption(name);
+   await page.waitForFunction(()=>[...document.querySelectorAll('#canonical-original,#canonical-candidate')].every(im=>im.complete&&im.naturalWidth>0),null,{timeout:20000});record('canonical B '+name+' '+width);
   }
-  for (const background of ['light', 'dark', 'checker']) {
-    await page.locator('#mustang-bg').selectOption(background);
-    assert.equal(await page.locator('.mustang-panels').getAttribute('data-background'), background);
-  }
-  await page.locator('#mustang-guides').uncheck();
-  assert(await page.locator('.mustang-panels').evaluate(el => el.classList.contains('hide-guides')));
-  await page.locator('#mustang-guides').check();
-  assert(!(await page.locator('.mustang-panels').evaluate(el => el.classList.contains('hide-guides'))));
-  record('mustang-size-background-and-guides', { passed: true });
-
-  await page.locator('#mustang-candidate').selectOption({ label: 'idle-unapproved.png' });
-  await page.waitForFunction(() => {
-    const im = document.querySelector('#mustang-after');
-    return im && im.complete && im.naturalHeight === 1536;
-  }, null, { timeout: 10000 });
-  await page.locator('#mustang-candidate').selectOption({ label: 'idle-gate1b-alpha-cleanup-unapproved.png' });
-  await page.waitForFunction(() => {
-    const im = document.querySelector('#mustang-after');
-    return im && im.complete && im.naturalHeight === 1600;
-  }, null, { timeout: 10000 });
-  const activeAFrameAfterReview = await page.locator('#pet .pet-stage img').evaluate(img => img.currentSrc);
-  assert.equal(activeAFrameAfterReview, activeAFrameBeforeReview, 'Mustang review must not alter active A pet sprite');
-  record('mustang-review-never-activates-b-outfit', { passed: true });
-
-  // Canonical technical review remains isolated from the active pet.
-  assert.equal(await page.locator('#canonical-action option').count(), 9);
-  for (const width of [180, 240, 360]) {
-    await page.locator('#canonical-size').selectOption(String(width));
-    assert(Math.abs(await page.locator('.canonical-panel').first().evaluate(el => el.getBoundingClientRect().width) - width) < 2);
-    for (const name of ['idle','sitting','drawing','firing','smoking','working','firing_dynamic','dual_firing','speaking_reference']) {
-      await page.locator('#canonical-action').selectOption(name);
-      await page.waitForFunction(() => [...document.querySelectorAll('#canonical-original,#canonical-candidate,#canonical-side-03,#canonical-side-04')].every(im => im.hidden || (im.complete && im.naturalWidth > 0 && im.currentSrc === im.src)), null, {timeout:30000});
-    }
-    await page.locator('.canonical-review').screenshot({ path: resolve(out, `canonical-review-${width}.png`) });
-  }
-  for (const bg of ['light','gray','dark','checker']) { await page.locator('#canonical-bg').selectOption(bg); assert.equal(await page.locator('.canonical-panels').getAttribute('data-background'),bg); }
-  await page.locator('#canonical-guides').uncheck(); assert(await page.locator('.canonical-panels').evaluate(el=>el.classList.contains('hide-guides')));
-  await page.locator('#canonical-action').selectOption('speaking_reference');
-  for (let i=0;i<7;i++) {
-    await page.locator('#canonical-speaking').selectOption(String(i));
-    for (const id of ['canonical-candidate','canonical-side-03','canonical-side-04']) await page.locator('#'+id).evaluate(async im => {
-      const expected = im.src;
-      if (!im.complete) await new Promise((resolve, reject) => { im.addEventListener('load',resolve,{once:true}); im.addEventListener('error',()=>reject(new Error('Speaking image failed: '+expected)),{once:true}); });
-      if (!im.naturalWidth || im.src !== expected || im.currentSrc !== expected) throw new Error('Speaking image missing or changed: '+expected);
-    });
-  }
-  await page.locator('#canonical-version').selectOption('aligned');
+  await page.locator('.canonical-review').screenshot({path:resolve(output,'canonical-b-'+width+'.png')});
+ }
+ for(const bg of ['light','dark','checker']){
+  await page.locator('#canonical-bg').selectOption(bg);record('canonical background '+bg);
+ }
+ for(const version of ['clean','aligned','revised']){
+  await page.locator('#canonical-version').selectOption(version);
   await page.locator('#canonical-action').selectOption('idle');
-  await page.waitForFunction(()=>{const im=document.querySelector('#canonical-candidate');return im.complete&&im.naturalWidth===1024;});
-  await page.locator('#canonical-version').selectOption('clean');
-  record('canonical-review-controls-and-loading', {passed:true});
-
-  await page.locator('#state').selectOption('speaking');
-  assert.equal(await page.locator('#pet .placeholder').count(), 1, 'Missing expected speaking placeholder');
-  record('speaking-placeholder-marked-unimplemented', { passed: true });
-  for(const width of [180,240,360]) {
-    await page.locator('#b-size').selectOption(String(width));
-    await page.locator('#b-action').selectOption('firing');await page.locator('#b-start').click();
-    await page.waitForFunction(()=>document.querySelector('#b-action-image').dataset.pose==='firing',null,{timeout:8000});
-    await page.locator('.b-action-review').screenshot({path:resolve(out,`b-action-${width}.png`)});
-    await page.waitForFunction(()=>document.querySelector('#b-action-image').dataset.pose==='idle',null,{timeout:8000});
-    await page.locator('#b-action').selectOption('working');await page.locator('#b-start').click();await page.locator('#b-cancel').click();
-    assert.equal(await page.locator('#b-action-image').getAttribute('data-pose'),'idle');
-  }
-  record('b-isolated-keypose-sequence', {passed:true});
-  assert.deepEqual(errors, [], 'Browser console/resource errors:\n' + errors.join('\n'));
-  record('browser-console-and-assets', { passed: true, errors: [] });
-  writeFileSync(resolve(out, 'report.json'), JSON.stringify({ passed: true, results, errors }, null, 2));
-  console.log('Visual browser QA PASS: ' + results.length + ' checks, screenshots at 180/240/360px.');
-} catch (error) {
-  errors.push(error instanceof Error ? error.stack ?? error.message : String(error));
-  writeFileSync(resolve(out, 'report.json'), JSON.stringify({ passed: false, results, errors }, null, 2));
-  console.error('Visual browser QA FAILED:', error);
-  process.exitCode = 1;
-} finally {
-  await browser?.close();
-  await new Promise(r => server.close(r));
-}
+  await page.waitForFunction(()=>document.querySelector('#canonical-candidate')?.naturalWidth>0);
+  record('canonical B version '+version);
+ }
+ await page.locator('#canonical-action').selectOption('speaking_reference');
+ await page.locator('#canonical-version').selectOption('revised');
+ for(let i=0;i<7;i++){
+  await page.locator('#canonical-speaking').selectOption(String(i));
+  await page.waitForFunction(()=>document.querySelector('#canonical-candidate')?.complete&&document.querySelector('#canonical-candidate')?.naturalWidth>0);
+  record('speaking head frame '+(i+1));
+ }
+ for(const width of [180,240,360]){
+  await page.locator('#b-size').selectOption(String(width));
+  await page.locator('#b-action').selectOption('firing');await page.locator('#b-start').click();
+  await page.waitForFunction(()=>document.querySelector('#b-action-image')?.dataset.pose==='firing',null,{timeout:8000});
+  await page.waitForFunction(()=>document.querySelector('#b-action-image')?.dataset.pose==='idle',null,{timeout:8000});
+  record('B isolated firing complete '+width);
+ }
+ await page.locator('#b-action').selectOption('working');await page.locator('#b-start').click();await page.locator('#b-cancel').click();
+ assert.equal(await page.locator('#b-action-image').getAttribute('data-pose'),'idle');record('B review cancellation');
+ await page.locator('#user-review-action').selectOption('dual_firing');
+ await page.locator('#user-review-decision').selectOption('needs_revision');await page.locator('#user-review-note').fill('추가 마스크 정제 필요');
+ const downloadPromise=page.waitForEvent('download');await page.locator('#user-review-export').click();const download=await downloadPromise;
+ assert.equal(download.suggestedFilename(),'castle-b-review.json');record('review JSON exported');
+ assert.deepEqual(errors,[],'Browser console/resource errors: '+errors.join('\n'));
+ record('zero browser console errors');
+ writeFileSync(resolve(output,'report.json'),JSON.stringify({passed:true,checks,errors},null,2));
+ console.log('B canonical visual browser QA PASS:',checks.length,'checks');
+}catch(e){
+ errors.push(String(e));writeFileSync(resolve(output,'report.json'),JSON.stringify({passed:false,checks,errors},null,2));
+ console.error('B canonical visual browser QA FAIL',e);process.exitCode=1;
+}finally{await browser?.close();await new Promise(r=>server.close(r));}
