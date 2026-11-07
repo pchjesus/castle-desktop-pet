@@ -43,7 +43,9 @@ app.whenReady().then(() => {
     qa.webContents.once('did-finish-load', async () => {
       try {
         const result = await qa.webContents.executeJavaScript(`new Promise((resolve,reject)=>{let n=0;const timer=setInterval(()=>{const a=document.querySelector('#pet .pet-stage img'),b=document.querySelector('#b-action-image');if(a?.complete&&a.naturalWidth&&b?.complete&&b.naturalWidth){clearInterval(timer);resolve({aLoaded:true,bReviewLoaded:true,bWidth:b.naturalWidth});}else if(++n>100){clearInterval(timer);reject(Error('image readiness timeout'));}},100);})`);
-        writeFileSync(reportFile,JSON.stringify({passed:true,...result}));app.quit();
+        const interactions = await qa.webContents.executeJavaScript(`(()=>{const select=document.querySelector('#b-action'),repeat=document.querySelector('#b-repeat');select.value='working';repeat.checked=true;document.querySelector('#b-start').click();document.querySelector('#b-cancel').click();return {repeatChecked:repeat.checked,cancelledToIdle:document.querySelector('#b-action-image').dataset.pose==='idle'};})()`);
+        if (!interactions.repeatChecked || !interactions.cancelledToIdle) throw Error('B review interaction failed');
+        writeFileSync(reportFile,JSON.stringify({passed:true,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,error:String(error)}));app.exit(1); }
     });
     setTimeout(()=>app.exit(2),20000).unref();

@@ -344,14 +344,21 @@ try {
     assert(Math.abs(await page.locator('.canonical-panel').first().evaluate(el => el.getBoundingClientRect().width) - width) < 2);
     for (const name of ['idle','sitting','drawing','firing','smoking','working','firing_dynamic','dual_firing','speaking_reference']) {
       await page.locator('#canonical-action').selectOption(name);
-      await page.waitForFunction(() => [...document.querySelectorAll('#canonical-original,#canonical-candidate')].every(im => im.complete && im.naturalWidth > 0), null, {timeout:30000});
+      await page.waitForFunction(() => [...document.querySelectorAll('#canonical-original,#canonical-candidate,#canonical-side-03,#canonical-side-04')].every(im => im.hidden || (im.complete && im.naturalWidth > 0 && im.currentSrc === im.src)), null, {timeout:30000});
     }
     await page.locator('.canonical-review').screenshot({ path: resolve(out, `canonical-review-${width}.png`) });
   }
-  for (const bg of ['light','dark','checker']) { await page.locator('#canonical-bg').selectOption(bg); assert.equal(await page.locator('.canonical-panels').getAttribute('data-background'),bg); }
+  for (const bg of ['light','gray','dark','checker']) { await page.locator('#canonical-bg').selectOption(bg); assert.equal(await page.locator('.canonical-panels').getAttribute('data-background'),bg); }
   await page.locator('#canonical-guides').uncheck(); assert(await page.locator('.canonical-panels').evaluate(el=>el.classList.contains('hide-guides')));
   await page.locator('#canonical-action').selectOption('speaking_reference');
-  for (let i=0;i<7;i++) { await page.locator('#canonical-speaking').selectOption(String(i)); await page.waitForFunction(() => {const im=document.querySelector('#canonical-candidate');return im.complete && im.naturalWidth>0;}); }
+  for (let i=0;i<7;i++) {
+    await page.locator('#canonical-speaking').selectOption(String(i));
+    for (const id of ['canonical-candidate','canonical-side-03','canonical-side-04']) await page.locator('#'+id).evaluate(async im => {
+      const expected = im.src;
+      if (!im.complete) await new Promise((resolve, reject) => { im.addEventListener('load',resolve,{once:true}); im.addEventListener('error',()=>reject(new Error('Speaking image failed: '+expected)),{once:true}); });
+      if (!im.naturalWidth || im.src !== expected || im.currentSrc !== expected) throw new Error('Speaking image missing or changed: '+expected);
+    });
+  }
   await page.locator('#canonical-version').selectOption('aligned');
   await page.locator('#canonical-action').selectOption('idle');
   await page.waitForFunction(()=>{const im=document.querySelector('#canonical-candidate');return im.complete&&im.naturalWidth===1024;});

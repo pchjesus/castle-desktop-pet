@@ -32,6 +32,8 @@ jobs:
         run: node tests/browser-qa.mjs
       - name: B action review QA
         run: node tests/b-action-browser-qa.mjs
+      - name: Review export and image cancellation QA
+        run: node tests/b05-review-browser-qa.mjs
       - name: File offline verification
         run: node tests/offline-preview-qa.mjs
       - name: Package offline review
@@ -45,5 +47,6 @@ jobs:
             artifacts/visual-qa/
             artifacts/offline-qa/
             artifacts/b-action-qa/
+            artifacts/b05-review/
             preview-offline.zip
           if-no-files-found: warn

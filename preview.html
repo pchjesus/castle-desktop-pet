@@ -2,386 +2,386 @@
   (function() {
     const a = document.createElement("link").relList;
     if (a && a.supports && a.supports("modulepreload")) return;
-    for (const t of document.querySelectorAll('link[rel="modulepreload"]')) n(t);
-    new MutationObserver((t) => {
-      for (const s of t) if (s.type === "childList") for (const r of s.addedNodes) r.tagName === "LINK" && r.rel === "modulepreload" && n(r);
+    for (const n of document.querySelectorAll('link[rel="modulepreload"]')) t(n);
+    new MutationObserver((n) => {
+      for (const o of n) if (o.type === "childList") for (const s of o.addedNodes) s.tagName === "LINK" && s.rel === "modulepreload" && t(s);
     }).observe(document, { childList: true, subtree: true });
-    function i(t) {
-      const s = {};
-      return t.integrity && (s.integrity = t.integrity), t.referrerPolicy && (s.referrerPolicy = t.referrerPolicy), t.crossOrigin === "use-credentials" ? s.credentials = "include" : t.crossOrigin === "anonymous" ? s.credentials = "omit" : s.credentials = "same-origin", s;
+    function i(n) {
+      const o = {};
+      return n.integrity && (o.integrity = n.integrity), n.referrerPolicy && (o.referrerPolicy = n.referrerPolicy), n.crossOrigin === "use-credentials" ? o.credentials = "include" : n.crossOrigin === "anonymous" ? o.credentials = "omit" : o.credentials = "same-origin", o;
     }
-    function n(t) {
-      if (t.ep) return;
-      t.ep = true;
-      const s = i(t);
-      fetch(t.href, s);
+    function t(n) {
+      if (n.ep) return;
+      n.ep = true;
+      const o = i(n);
+      fetch(n.href, o);
     }
   })();
-  const ea = "" + new URL("idle-gate1-unapproved-DhLz_C4a.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const aa = "" + new URL("idle-gate1b-alpha-cleanup-unapproved-Cx21Ypy2.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const na = "" + new URL("idle-gate1b-unapproved-exJbq96J.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ta = "" + new URL("idle-unapproved-C4kFdZg8.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const me = "" + new URL("drawing-PIl5k2lA.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ve = "" + new URL("dual_firing-mask-Cz1hMlds.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const he = "" + new URL("dual_firing-seeds-Duh9dnLE.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ke = "" + new URL("dual_firing-uncertainty-CVISg0Dv.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const we = "" + new URL("dual_firing-Dcr1GdzQ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ye = "" + new URL("firing-543mij7p.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Le = "" + new URL("firing_dynamic-mask-KvvomWgo.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const xe = "" + new URL("firing_dynamic-seeds-Cav6iN66.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Re = "" + new URL("firing_dynamic-uncertainty-D42i1cUD.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ue = "" + new URL("firing_dynamic-DeJN2D5h.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ee = "" + new URL("idle-BocjVRQV.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Se = "" + new URL("sitting-Cb-j-Fr2.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const qe = "" + new URL("smoking-3jZqpXJY.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ce = "" + new URL("speaking-01-CgBnbBm6.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const je = "" + new URL("speaking-02-CDZ3jvb0.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ze = "" + new URL("speaking-03-CA9v9h9c.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const $e = "" + new URL("speaking-04-BxztRqfT.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const De = "" + new URL("speaking-05-D6MtB6PW.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Me = "" + new URL("speaking-06-Dlog3ymQ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Be = "" + new URL("speaking-07-DFL7Ovy_.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ne = "" + new URL("working-CP9L41KW.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ia = "" + new URL("drawing-ST4FDJcu.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ca = "" + new URL("dual_firing-mask-DGSqgIOI.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const sa = "" + new URL("dual_firing-uncertainty-C171JK39.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ra = "" + new URL("dual_firing-B2IzHrxJ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const oa = "" + new URL("firing-D5bo6CqN.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const da = "" + new URL("firing_dynamic-mask-yNEW4WjM.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const la = "" + new URL("firing_dynamic-uncertainty-CA4qrNyt.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ga = "" + new URL("firing_dynamic-B-jESvTv.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const fa = "" + new URL("idle-ONvS81iT.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ua = "" + new URL("sitting-B6XhTq-z.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const pa = "" + new URL("smoking-BZKG8svu.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const _a = "" + new URL("speaking-01-C7GDmq7d.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ba = "" + new URL("speaking-02-BcrHuVpc.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ma = "" + new URL("speaking-03-DHsCpuE1.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const va = "" + new URL("speaking-04-y8WtaxA-.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ha = "" + new URL("speaking-05-D5s17lPF.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ka = "" + new URL("speaking-06-DS6QaArp.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const wa = "" + new URL("speaking-07-C3reQ2xX.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ya = "" + new URL("working-B7OYcmml.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const La = "" + new URL("drawing-Dug7kPpK.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const xa = "" + new URL("dual_firing-hVQMsXzS.jpg", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ra = "" + new URL("firing-CvfEWags.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ua = "" + new URL("firing_dynamic-JDDoeLy0.jpg", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ea = "" + new URL("idle-BLyJB2kb.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Sa = "" + new URL("sitting-CjS0yGlz.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const qa = "" + new URL("smoking-CB8WymJB.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ca = "" + new URL("speaking_reference-D17zTxux.jpg", new URL("./preview-assets/", document.baseURI).href).href;
-  const ja = "" + new URL("working-Dknq93J2.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const za = "" + new URL("drawing-D5FiFwYP.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const $a = "" + new URL("dual_firing-draft-mask-BAuDRhg5.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Da = "" + new URL("dual_firing-BZp0Wv2u.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ma = "" + new URL("firing-n0Yhnqaw.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ba = "" + new URL("firing_dynamic-draft-mask-BVQDVE88.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Na = "" + new URL("firing_dynamic-Ddd9Ylws.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Fa = "" + new URL("idle-Cgjx9eCU.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Oa = "" + new URL("sitting-8YX5UwCV.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Wa = "" + new URL("smoking-DSriW6Zp.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ta = "" + new URL("speaking-01-CE1M-y2N.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Pa = "" + new URL("speaking-02-9Bykl9RR.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ya = "" + new URL("speaking-03-CpcG8owu.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Aa = "" + new URL("speaking-04-CumH2wm0.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ia = "" + new URL("speaking-05-BGvHuBt-.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ga = "" + new URL("speaking-06-Yg6Y2LjX.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Xa = "" + new URL("speaking-07-CZoZ2a2x.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ha = "" + new URL("working-CkAvl8N6.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Qa = "" + new URL("000-ZRmx7_Of.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ja = "" + new URL("000-BAzzYEaZ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Za = "" + new URL("000-FAUekvXh.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ka = "" + new URL("001--ZsX5cPv.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Va = "" + new URL("002-CBYhaA9P.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const en = "" + new URL("000-BAzzYEaZ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const an = "" + new URL("001-Cv_ce20U.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const nn = "" + new URL("002-DysMfNed.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const tn = "" + new URL("000-wRLGnP1I.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const cn = "" + new URL("000-5akUFRJK.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const sn = "" + new URL("001-D-_RU3of.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const rn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const on = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const dn = "" + new URL("000-BxnsIwra.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const ln = "" + new URL("001-BXlUF7It.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const gn = "" + new URL("002-BdmUhLe4.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const fn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const un = "" + new URL("001-DoHejQvs.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const pn = "" + new URL("002-CIWkkxj3.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const _n = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const bn = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const mn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const vn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const hn = "" + new URL("003-I2CW-5VZ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const kn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const wn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const yn = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Ln = "" + new URL("000-DTo3sE0o.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const xn = "" + new URL("001-CjXN7uSz.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Rn = "" + new URL("002-CmzREaAe.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Un = "" + new URL("003-_lqCksRY.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const En = "" + new URL("000-DTo3sE0o.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Sn = "" + new URL("001-nBcejUaB.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const qn = "" + new URL("002-CvVXSDkY.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Cn = "" + new URL("003-BjnC5aQM.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const jn = "" + new URL("004-CVc67xN3.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const zn = "" + new URL("005-C8R12QUQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ga = "" + new URL("idle-gate1-unapproved-DhLz_C4a.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ua = "" + new URL("idle-gate1b-alpha-cleanup-unapproved-Cx21Ypy2.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const pa = "" + new URL("idle-gate1b-unapproved-exJbq96J.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const fa = "" + new URL("idle-unapproved-C4kFdZg8.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ue = "" + new URL("drawing-PIl5k2lA.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ee = "" + new URL("dual_firing-mask-Cz1hMlds.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Se = "" + new URL("dual_firing-seeds-Duh9dnLE.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const qe = "" + new URL("dual_firing-uncertainty-CVISg0Dv.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ce = "" + new URL("dual_firing-Dcr1GdzQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const je = "" + new URL("firing-543mij7p.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ze = "" + new URL("firing_dynamic-mask-KvvomWgo.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const $e = "" + new URL("firing_dynamic-seeds-Cav6iN66.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const De = "" + new URL("firing_dynamic-uncertainty-D42i1cUD.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ne = "" + new URL("firing_dynamic-DeJN2D5h.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Oe = "" + new URL("idle-BocjVRQV.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Me = "" + new URL("sitting-Cb-j-Fr2.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Be = "" + new URL("smoking-3jZqpXJY.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Fe = "" + new URL("speaking-01-CgBnbBm6.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const We = "" + new URL("speaking-02-CDZ3jvb0.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Te = "" + new URL("speaking-03-CA9v9h9c.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ie = "" + new URL("speaking-04-BxztRqfT.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Pe = "" + new URL("speaking-05-D6MtB6PW.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ae = "" + new URL("speaking-06-Dlog3ymQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ye = "" + new URL("speaking-07-DFL7Ovy_.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Je = "" + new URL("working-CP9L41KW.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const _a = "" + new URL("drawing-ST4FDJcu.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ba = "" + new URL("dual_firing-mask-DGSqgIOI.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ma = "" + new URL("dual_firing-uncertainty-C171JK39.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const va = "" + new URL("dual_firing-B2IzHrxJ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ha = "" + new URL("firing-D5bo6CqN.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ka = "" + new URL("firing_dynamic-mask-yNEW4WjM.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const wa = "" + new URL("firing_dynamic-uncertainty-CA4qrNyt.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ya = "" + new URL("firing_dynamic-B-jESvTv.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const La = "" + new URL("idle-ONvS81iT.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const xa = "" + new URL("sitting-B6XhTq-z.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ra = "" + new URL("smoking-BZKG8svu.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ua = "" + new URL("speaking-01-C7GDmq7d.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ea = "" + new URL("speaking-02-BcrHuVpc.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Sa = "" + new URL("speaking-03-DHsCpuE1.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const qa = "" + new URL("speaking-04-y8WtaxA-.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ca = "" + new URL("speaking-05-D5s17lPF.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ja = "" + new URL("speaking-06-DS6QaArp.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const za = "" + new URL("speaking-07-C3reQ2xX.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const $a = "" + new URL("working-B7OYcmml.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Da = "" + new URL("drawing-Dug7kPpK.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Na = "" + new URL("dual_firing-hVQMsXzS.jpg", new URL("./preview-assets/", document.baseURI).href).href;
+  const Oa = "" + new URL("firing-CvfEWags.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ma = "" + new URL("firing_dynamic-JDDoeLy0.jpg", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ba = "" + new URL("idle-BLyJB2kb.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Fa = "" + new URL("sitting-CjS0yGlz.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Wa = "" + new URL("smoking-CB8WymJB.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ta = "" + new URL("speaking_reference-D17zTxux.jpg", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ia = "" + new URL("working-Dknq93J2.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Pa = "" + new URL("drawing-D5FiFwYP.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Aa = "" + new URL("dual_firing-draft-mask-BAuDRhg5.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ya = "" + new URL("dual_firing-BZp0Wv2u.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ja = "" + new URL("firing-n0Yhnqaw.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ha = "" + new URL("firing_dynamic-draft-mask-BVQDVE88.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ga = "" + new URL("firing_dynamic-Ddd9Ylws.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Xa = "" + new URL("idle-Cgjx9eCU.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Qa = "" + new URL("sitting-8YX5UwCV.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Za = "" + new URL("smoking-DSriW6Zp.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Va = "" + new URL("speaking-01-CE1M-y2N.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ka = "" + new URL("speaking-02-9Bykl9RR.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const en = "" + new URL("speaking-03-CpcG8owu.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const an = "" + new URL("speaking-04-CumH2wm0.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const nn = "" + new URL("speaking-05-BGvHuBt-.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const tn = "" + new URL("speaking-06-Yg6Y2LjX.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const cn = "" + new URL("speaking-07-CZoZ2a2x.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const sn = "" + new URL("working-CkAvl8N6.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const rn = "" + new URL("000-ZRmx7_Of.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const on = "" + new URL("000-BAzzYEaZ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const dn = "" + new URL("000-FAUekvXh.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const ln = "" + new URL("001--ZsX5cPv.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const gn = "" + new URL("002-CBYhaA9P.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const un = "" + new URL("000-BAzzYEaZ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const pn = "" + new URL("001-Cv_ce20U.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const fn = "" + new URL("002-DysMfNed.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const _n = "" + new URL("000-wRLGnP1I.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const bn = "" + new URL("000-5akUFRJK.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const mn = "" + new URL("001-D-_RU3of.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const vn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const hn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const kn = "" + new URL("000-BxnsIwra.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const wn = "" + new URL("001-BXlUF7It.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const yn = "" + new URL("002-BdmUhLe4.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Ln = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const xn = "" + new URL("001-DoHejQvs.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Rn = "" + new URL("002-CIWkkxj3.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Un = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const En = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Sn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const qn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Cn = "" + new URL("003-I2CW-5VZ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const jn = "" + new URL("000-rnG7dDF7.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const zn = "" + new URL("000-0-5nhuqQ.png", new URL("./preview-assets/", document.baseURI).href).href;
   const $n = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
-  const Dn = Object.freeze({ targetDefault: "mustang", active: "blouson", outfits: { blouson: { assetRoot: "derived/akila", ready: true }, mustang: { assetRoot: "derived/akila_mustang", ready: false } } });
-  function Mn(e, a, i) {
-    var t;
-    const n = (t = e[a]) == null ? void 0 : t[i];
-    return Array.isArray(n) ? [...n] : [];
+  const Dn = "" + new URL("000-DTo3sE0o.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Nn = "" + new URL("001-CjXN7uSz.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const On = "" + new URL("002-CmzREaAe.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Mn = "" + new URL("003-_lqCksRY.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Bn = "" + new URL("000-DTo3sE0o.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Fn = "" + new URL("001-nBcejUaB.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Wn = "" + new URL("002-CvVXSDkY.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Tn = "" + new URL("003-BjnC5aQM.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const In = "" + new URL("004-CVc67xN3.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Pn = "" + new URL("005-C8R12QUQ.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const An = "" + new URL("000-lbxWKi0y.png", new URL("./preview-assets/", document.baseURI).href).href;
+  const Yn = Object.freeze({ targetDefault: "mustang", active: "blouson", outfits: { blouson: { assetRoot: "derived/akila", ready: true }, mustang: { assetRoot: "derived/akila_mustang", ready: false } } });
+  function Jn(e, a, i) {
+    var n;
+    const t = (n = e[a]) == null ? void 0 : n[i];
+    return Array.isArray(t) ? [...t] : [];
   }
-  const P = ["idle", "smoking", "speaking", "drawing", "firing", "working", "dual_firing"];
-  const Bn = Object.assign({ "./preview-assets/akila/drawing/000.png": Qa, "./preview-assets/akila/drawing/001.png": Ja, "./preview-assets/akila/dual_firing/000.png": Za, "./preview-assets/akila/dual_firing/001.png": Ka, "./preview-assets/akila/dual_firing/002.png": Va, "./preview-assets/akila/firing/000.png": en, "./preview-assets/akila/firing/001.png": an, "./preview-assets/akila/firing/002.png": nn, "./preview-assets/akila/idle/000.png": tn, "./preview-assets/akila/working/000.png": cn, "./preview-assets/akila/working/001.png": sn });
-  const V = Object.assign({ "./derived/akila/drawing/000.png": rn, "./derived/akila/drawing/001.png": on, "./derived/akila/dual_firing/000.png": dn, "./derived/akila/dual_firing/001.png": ln, "./derived/akila/dual_firing/002.png": gn, "./derived/akila/firing/000.png": fn, "./derived/akila/firing/001.png": un, "./derived/akila/firing/002.png": pn, "./derived/akila/idle/000.png": _n, "./derived/akila/revolver_action/000.png": bn, "./derived/akila/revolver_action/001.png": mn, "./derived/akila/revolver_action/002.png": vn, "./derived/akila/revolver_action/003.png": hn, "./derived/akila/revolver_action/004.png": kn, "./derived/akila/revolver_action/005.png": wn, "./derived/akila/revolver_action/006.png": yn, "./derived/akila/working/000.png": Ln, "./derived/akila/working/001.png": xn, "./derived/akila/working/002.png": Rn, "./derived/akila/working/003.png": Un, "./derived/akila/working_exit/000.png": En, "./derived/akila/working_exit/001.png": Sn, "./derived/akila/working_exit/002.png": qn, "./derived/akila/working_exit/003.png": Cn, "./derived/akila/working_exit/004.png": jn, "./derived/akila/working_exit/005.png": zn, "./derived/akila/working_exit/006.png": $n });
-  const N = (e, a) => Object.keys(e).filter((i) => i.includes(`/${a}/`)).sort().map((i) => e[i]);
-  const Nn = Object.assign({});
-  const Fn = { blouson: Object.fromEntries(P.map((e) => [e, N(V, e)])), mustang: Object.fromEntries(P.map((e) => [e, N(Nn, e)])) };
-  const On = (e) => N(Bn, e);
-  const $ = N(V, "working_exit");
-  const S = N(V, "revolver_action");
-  const E = (e) => ({ frames: Mn(Fn, Dn.active, e), frameDurationMs: 500 });
-  const G = { name: "\uC544\uD0AC\uB77C", initialState: "idle", animations: { idle: E("idle"), smoking: E("smoking"), speaking: E("speaking"), drawing: E("drawing"), firing: E("firing"), working: E("working"), dual_firing: E("dual_firing") }, dialogues: { testPassed: ["\uCF54\uB529 \uC2E4\uB825\uC740 \uC778\uC815\uD558\uC9C0. \uAC10\uD0C4\uD588\uB2E4, \uC624\uD508AI."], deploymentComplete: ["\uB0A8\uC774 \uB9DD\uAC00\uB728\uB9AC\uAC8C \uB458 \uBC14\uC5D0\uC57C.. \uBA3C\uC800 \uC791\uC5C5\uBD80\uD130, \uCC98\uB9AC\uD55C\uB2E4."] } };
-  function Wn(e, a) {
+  const J = ["idle", "smoking", "speaking", "drawing", "firing", "working", "dual_firing"];
+  const Hn = Object.assign({ "./preview-assets/akila/drawing/000.png": rn, "./preview-assets/akila/drawing/001.png": on, "./preview-assets/akila/dual_firing/000.png": dn, "./preview-assets/akila/dual_firing/001.png": ln, "./preview-assets/akila/dual_firing/002.png": gn, "./preview-assets/akila/firing/000.png": un, "./preview-assets/akila/firing/001.png": pn, "./preview-assets/akila/firing/002.png": fn, "./preview-assets/akila/idle/000.png": _n, "./preview-assets/akila/working/000.png": bn, "./preview-assets/akila/working/001.png": mn });
+  const se = Object.assign({ "./derived/akila/drawing/000.png": vn, "./derived/akila/drawing/001.png": hn, "./derived/akila/dual_firing/000.png": kn, "./derived/akila/dual_firing/001.png": wn, "./derived/akila/dual_firing/002.png": yn, "./derived/akila/firing/000.png": Ln, "./derived/akila/firing/001.png": xn, "./derived/akila/firing/002.png": Rn, "./derived/akila/idle/000.png": Un, "./derived/akila/revolver_action/000.png": En, "./derived/akila/revolver_action/001.png": Sn, "./derived/akila/revolver_action/002.png": qn, "./derived/akila/revolver_action/003.png": Cn, "./derived/akila/revolver_action/004.png": jn, "./derived/akila/revolver_action/005.png": zn, "./derived/akila/revolver_action/006.png": $n, "./derived/akila/working/000.png": Dn, "./derived/akila/working/001.png": Nn, "./derived/akila/working/002.png": On, "./derived/akila/working/003.png": Mn, "./derived/akila/working_exit/000.png": Bn, "./derived/akila/working_exit/001.png": Fn, "./derived/akila/working_exit/002.png": Wn, "./derived/akila/working_exit/003.png": Tn, "./derived/akila/working_exit/004.png": In, "./derived/akila/working_exit/005.png": Pn, "./derived/akila/working_exit/006.png": An });
+  const F = (e, a) => Object.keys(e).filter((i) => i.includes(`/${a}/`)).sort().map((i) => e[i]);
+  const Gn = Object.assign({});
+  const Xn = { blouson: Object.fromEntries(J.map((e) => [e, F(se, e)])), mustang: Object.fromEntries(J.map((e) => [e, F(Gn, e)])) };
+  const Qn = (e) => F(Hn, e);
+  const N = F(se, "working_exit");
+  const C = F(se, "revolver_action");
+  const q = (e) => ({ frames: Jn(Xn, Yn.active, e), frameDurationMs: 500 });
+  const Z = { name: "\uC544\uD0AC\uB77C", initialState: "idle", animations: { idle: q("idle"), smoking: q("smoking"), speaking: q("speaking"), drawing: q("drawing"), firing: q("firing"), working: q("working"), dual_firing: q("dual_firing") }, dialogues: { testPassed: ["\uCF54\uB529 \uC2E4\uB825\uC740 \uC778\uC815\uD558\uC9C0. \uAC10\uD0C4\uD588\uB2E4, \uC624\uD508AI."], deploymentComplete: ["\uB0A8\uC774 \uB9DD\uAC00\uB728\uB9AC\uAC8C \uB458 \uBC14\uC5D0\uC57C.. \uBA3C\uC800 \uC791\uC5C5\uBD80\uD130, \uCC98\uB9AC\uD55C\uB2E4."] } };
+  function Zn(e, a) {
     let i = e;
-    return { get: () => i, set(n) {
-      i = n, a(i);
+    return { get: () => i, set(t) {
+      i = t, a(i);
     } };
   }
-  function Tn(e, a, i, n = "loop", t = () => {
+  function Vn(e, a, i, t = "loop", n = () => {
   }) {
-    let s = 0, r, o = false;
+    let o = 0, s, r = false;
     const c = matchMedia("(prefers-reduced-motion: reduce)"), u = () => {
-      clearTimeout(r), r = void 0;
+      clearTimeout(s), s = void 0;
     }, g = () => {
-      u(), !(o || document.hidden) && (r = setTimeout(d, c.matches ? 1e3 : a));
+      u(), !(r || document.hidden) && (s = setTimeout(d, c.matches ? 1e3 : a));
     }, d = () => {
-      s + 1 < e.length ? (i(e[++s]), g()) : n === "once" ? t() : n === "loop" && (s = 0, i(e[s]), g());
-    }, f = () => {
-      document.hidden ? u() : (n !== "hold" || s < e.length - 1) && g();
+      o + 1 < e.length ? (i(e[++o]), g()) : t === "once" ? n() : t === "loop" && (o = 0, i(e[o]), g());
+    }, p = () => {
+      document.hidden ? u() : (t !== "hold" || o < e.length - 1) && g();
     };
-    return document.addEventListener("visibilitychange", f), c.addEventListener("change", f), i(e[0]), (e.length > 1 || n === "once") && g(), () => {
-      o = true, u(), document.removeEventListener("visibilitychange", f), c.removeEventListener("change", f);
+    return document.addEventListener("visibilitychange", p), c.addEventListener("change", p), i(e[0]), (e.length > 1 || t === "once") && g(), () => {
+      r = true, u(), document.removeEventListener("visibilitychange", p), c.removeEventListener("change", p);
     };
   }
-  function Pn(e, a) {
+  function Kn(e, a) {
     const i = matchMedia("(prefers-reduced-motion: reduce)");
-    let n, t, s = false;
-    const r = () => {
-      clearTimeout(n), clearTimeout(t), e.classList.remove("breathing", "puff");
-    }, o = () => {
-      r(), !(s || document.hidden || i.matches) && (e.classList.add("breathing"), n = setTimeout(() => {
-        e.classList.add("puff"), t = setTimeout(() => {
-          e.classList.remove("puff"), o();
+    let t, n, o = false;
+    const s = () => {
+      clearTimeout(t), clearTimeout(n), e.classList.remove("breathing", "puff");
+    }, r = () => {
+      s(), !(o || document.hidden || i.matches) && (e.classList.add("breathing"), t = setTimeout(() => {
+        e.classList.add("puff"), n = setTimeout(() => {
+          e.classList.remove("puff"), r();
         }, 2600);
       }, a === "idle" ? 3e4 + Math.random() * 3e4 : 4e3));
     };
-    return document.addEventListener("visibilitychange", o), i.addEventListener("change", o), o(), () => {
-      s = true, r(), document.removeEventListener("visibilitychange", o), i.removeEventListener("change", o);
+    return document.addEventListener("visibilitychange", r), i.addEventListener("change", r), r(), () => {
+      o = true, s(), document.removeEventListener("visibilitychange", r), i.removeEventListener("change", r);
     };
   }
-  function Yn(e, a) {
-    const i = matchMedia("(prefers-reduced-motion: reduce)"), n = () => {
+  function et(e, a) {
+    const i = matchMedia("(prefers-reduced-motion: reduce)"), t = () => {
       if (e.classList.toggle("working-active", !document.hidden && !i.matches), i.matches && a) {
-        const t = e.querySelector("img");
-        t && (t.src = a);
+        const n = e.querySelector("img");
+        n && (n.src = a);
       }
     };
-    return document.addEventListener("visibilitychange", n), i.addEventListener("change", n), n(), () => {
-      e.classList.remove("working-active"), document.removeEventListener("visibilitychange", n), i.removeEventListener("change", n);
+    return document.addEventListener("visibilitychange", t), i.addEventListener("change", t), t(), () => {
+      e.classList.remove("working-active"), document.removeEventListener("visibilitychange", t), i.removeEventListener("change", t);
     };
   }
-  function An(e, a, i = 700) {
-    let n, t, s;
-    return function(o) {
-      if (s) {
-        t = o, o === n && (clearTimeout(s), s = void 0, t = void 0, e(n));
+  function at(e, a, i = 700) {
+    let t, n, o;
+    return function(r) {
+      if (o) {
+        n = r, r === t && (clearTimeout(o), o = void 0, n = void 0, e(t));
         return;
       }
-      if (n === o) return;
-      const c = n === "working" && o !== "working" ? a() : false;
+      if (t === r) return;
+      const c = t === "working" && r !== "working" ? a() : false;
       if (c) {
-        t = o;
+        n = r;
         const u = typeof c == "number" && Number.isFinite(c) && c > 0 ? c : i;
-        s = setTimeout(() => {
-          s = void 0;
-          const g = t;
-          t = void 0, g !== n && (n = g, e(n));
+        o = setTimeout(() => {
+          o = void 0;
+          const g = n;
+          n = void 0, g !== t && (t = g, e(t));
         }, u);
         return;
       }
-      n = o, e(o);
+      t = r, e(r);
     };
   }
-  function In(e, a, i = () => 1) {
-    let n = () => {
-    }, t;
-    const r = An((c) => {
-      var de;
-      const u = t, g = (de = e.querySelector(".pet-stage")) == null ? void 0 : de.dataset.drawFrame;
-      t = c, n(), e.replaceChildren(), e.dispatchEvent(new CustomEvent("pet-state", { detail: c }));
-      const d = a.animations[c], f = c === "idle" || c === "smoking", h = c === "working", k = S.length === 7, w = k && c === "firing", z = k && c === "drawing", se = w && u === "drawing" && (g === "2" || matchMedia("(prefers-reduced-motion: reduce)").matches), m = h || w || z ? matchMedia("(prefers-reduced-motion: reduce)") : null, Xe = d.frames.length >= 4 ? [d.frames[0], d.frames[2], d.frames[0], d.frames[3]] : d.frames.slice(0, 1), He = se ? S.slice(2) : S, x = (c === "smoking" && f || h) && !d.frames.length ? a.animations.idle.frames : h ? Xe : w ? m != null && m.matches ? S.slice(2, 3) : He : z ? m != null && m.matches ? S.slice(2, 3) : S.slice(0, 3) : c === "firing" ? d.frames.slice(0, 1) : c === "dual_firing" ? d.frames.slice(1, 2) : d.frames, re = () => {
+  function nt(e, a, i = () => 1) {
+    let t = () => {
+    }, n;
+    const s = at((c) => {
+      var ve;
+      const u = n, g = (ve = e.querySelector(".pet-stage")) == null ? void 0 : ve.dataset.drawFrame;
+      n = c, t(), e.replaceChildren(), e.dispatchEvent(new CustomEvent("pet-state", { detail: c }));
+      const d = a.animations[c], p = c === "idle" || c === "smoking", h = c === "working", k = C.length === 7, w = k && c === "firing", D = k && c === "drawing", _e = w && u === "drawing" && (g === "2" || matchMedia("(prefers-reduced-motion: reduce)").matches), m = h || w || D ? matchMedia("(prefers-reduced-motion: reduce)") : null, ia = d.frames.length >= 4 ? [d.frames[0], d.frames[2], d.frames[0], d.frames[3]] : d.frames.slice(0, 1), ca = _e ? C.slice(2) : C, R = (c === "smoking" && p || h) && !d.frames.length ? a.animations.idle.frames : h ? ia : w ? m != null && m.matches ? C.slice(2, 3) : ca : D ? m != null && m.matches ? C.slice(2, 3) : C.slice(0, 3) : c === "firing" ? d.frames.slice(0, 1) : c === "dual_firing" ? d.frames.slice(1, 2) : d.frames, be = () => {
         const v = document.createElement("div");
         v.className = "placeholder", v.textContent = `${a.name}
 ${c} \uC774\uBBF8\uC9C0 \uC900\uBE44 \uC911`, e.replaceChildren(v);
       };
-      if (!x.length) {
-        re();
+      if (!R.length) {
+        be();
         return;
       }
-      const W = document.createElement("img");
-      W.alt = a.name, W.onerror = re;
+      const A = document.createElement("img");
+      A.alt = a.name, A.onerror = be;
       const b = document.createElement("div");
-      if (b.className = "pet-stage", b.append(W), h && x.length > 1 && (b.dataset.workingMotion = "fingertips-only"), w && (b.dataset.actionMode = m != null && m.matches ? "reduced-still" : "revolver-frames", b.dataset.actionEntry = se ? "already-drawn" : "full"), z && (b.dataset.drawMode = "three-key-poses"), f) {
+      if (b.className = "pet-stage", b.append(A), h && R.length > 1 && (b.dataset.workingMotion = "fingertips-only"), w && (b.dataset.actionMode = m != null && m.matches ? "reduced-still" : "revolver-frames", b.dataset.actionEntry = _e ? "already-drawn" : "full"), D && (b.dataset.drawMode = "three-key-poses"), p) {
         const v = document.createElement("span");
         v.className = "ember";
-        const T = document.createElement("span");
-        T.className = "smoke", b.append(v, T);
+        const Y = document.createElement("span");
+        Y.className = "smoke", b.append(v, Y);
       }
       if (h && !d.frames.length) {
         const v = document.createElement("div");
         v.className = "laptop", v.setAttribute("aria-label", "\uB178\uD2B8\uBD81 \uC791\uC5C5 \uD45C\uC2DC"), v.innerHTML = '<span class="laptop-screen"></span><span class="laptop-base"></span><span class="laptop-indicator"></span>', b.append(v);
       }
-      if ((c === "firing" || c === "dual_firing") && x.length) {
+      if ((c === "firing" || c === "dual_firing") && R.length) {
         b.classList.add(c === "firing" ? "single-action" : "dual-action");
-        const v = w && !(m != null && m.matches) ? x.length * 0.19 : c === "firing" ? 1.5 : 2.4;
+        const v = w && !(m != null && m.matches) ? R.length * 0.19 : c === "firing" ? 1.5 : 2.4;
         b.style.setProperty("--action-duration", `${v / Math.max(i(), 0.2)}s`);
-        for (const T of c === "firing" ? ["single"] : ["left", "right"]) {
-          const le = document.createElement("span");
-          le.className = `muzzle muzzle-${T}`, b.append(le);
+        for (const Y of c === "firing" ? ["single"] : ["left", "right"]) {
+          const he = document.createElement("span");
+          he.className = `muzzle muzzle-${Y}`, b.append(he);
         }
       }
-      const J = () => b.classList.toggle("action-paused", document.hidden);
-      document.addEventListener("visibilitychange", J), J(), e.append(b);
-      const Qe = c === "firing" || c === "dual_firing" ? "once" : c === "drawing" ? "hold" : "loop", Je = c === "working" ? x.length > 1 ? 300 : 3e3 : w ? 190 : z ? 320 : c === "firing" ? 1500 : c === "dual_firing" ? 2400 : d.frameDurationMs;
-      let oe = 0;
-      const Ze = Tn(x, Je / Math.max(i(), 0.2), (v) => {
-        W.src = m != null && m.matches ? x[0] : v, w && (b.dataset.actionFrame = String(oe++)), z && (b.dataset.drawFrame = String(oe++));
-      }, Qe, () => {
-        o.set("idle");
-      }), Ke = h ? Yn(b, x[0]) : () => {
-      }, Ve = f ? Pn(b, c) : () => {
+      const te = () => b.classList.toggle("action-paused", document.hidden);
+      document.addEventListener("visibilitychange", te), te(), e.append(b);
+      const sa = c === "firing" || c === "dual_firing" ? "once" : c === "drawing" ? "hold" : "loop", ra = c === "working" ? R.length > 1 ? 300 : 3e3 : w ? 190 : D ? 320 : c === "firing" ? 1500 : c === "dual_firing" ? 2400 : d.frameDurationMs;
+      let me = 0;
+      const oa = Vn(R, ra / Math.max(i(), 0.2), (v) => {
+        A.src = m != null && m.matches ? R[0] : v, w && (b.dataset.actionFrame = String(me++)), D && (b.dataset.drawFrame = String(me++));
+      }, sa, () => {
+        r.set("idle");
+      }), da = h ? et(b, R[0]) : () => {
+      }, la = p ? Kn(b, c) : () => {
       };
-      n = () => {
-        Ze(), Ve(), Ke(), document.removeEventListener("visibilitychange", J);
+      t = () => {
+        oa(), la(), da(), document.removeEventListener("visibilitychange", te);
       };
     }, () => {
       const c = e.querySelector(".pet-stage");
       if (!c || document.hidden || matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
       const u = c.querySelector("img");
-      if (u && $.length === 7) {
-        n(), c.classList.remove("working-active"), c.classList.add("working-exit"), c.dataset.exitMode = "frames", c.dataset.exitFrame = "0", u.src = $[0];
+      if (u && N.length === 7) {
+        t(), c.classList.remove("working-active"), c.classList.add("working-exit"), c.dataset.exitMode = "frames", c.dataset.exitFrame = "0", u.src = N[0];
         const g = 700 / Math.max(i(), 0.2), d = [];
-        for (let f = 1; f < $.length; f++) d.push(setTimeout(() => {
-          c.isConnected && (u.src = $[f], c.dataset.exitFrame = String(f));
-        }, g * f / $.length));
-        return n = () => {
-          for (const f of d) clearTimeout(f);
+        for (let p = 1; p < N.length; p++) d.push(setTimeout(() => {
+          c.isConnected && (u.src = N[p], c.dataset.exitFrame = String(p));
+        }, g * p / N.length));
+        return t = () => {
+          for (const p of d) clearTimeout(p);
         }, g;
       }
       return c.classList.remove("working-active"), c.classList.add("working-exit"), true;
-    }), o = Wn(a.initialState, r);
-    return r(o.get()), o;
+    }), r = Zn(a.initialState, s);
+    return s(r.get()), r;
   }
-  const Gn = { idle: { source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", candidate: "idle.png", sha256: "3062401922c879858e16d7c74f6c16218e385f7465495bcfba06d105d3345f1b", dimensions: [948, 1659], alpha_unchanged: true, bbox: [59, 15, 884, 1629], scale: [1, 1], status: "needs_visual_review" }, sitting: { source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", candidate: "sitting.png", sha256: "19ff7c70d58621bc43761a39fd8cbcc7a461bed9bdfdeca2c33866bf9b3fa425", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [0, 0, 973, 1552], scale: [1, 1], status: "needs_visual_review" }, drawing: { source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", candidate: "drawing.png", sha256: "89a46bd9c5ef6235ad3ff17797315da6eeaa5efe81b6498a13fe53f5df62aa11", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [0, 10, 985, 1568], scale: [1, 1], status: "needs_visual_review" }, firing: { source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", candidate: "firing.png", sha256: "97be71fb8001ce717f367ca6990583431c935234e53b7db23804f66b1a6df945", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [43, 1, 989, 1550], scale: [1, 1], status: "needs_visual_review" }, smoking: { source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", candidate: "smoking.png", sha256: "30cffe2bfeac55c89cd8bb60acb924b406cb487d1009e3f243d6c159e3f3b9df", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [47, 11, 965, 1568], scale: [1, 1], status: "needs_visual_review" }, working: { source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", candidate: "working.png", sha256: "5309a181f2c1f6b9802bb45ebbe98ea0fa89f296872d262d4a91829fb2698b75", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [49, 15, 957, 1568], scale: [1, 1], status: "needs_visual_review" }, firing_dynamic: { source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", candidate: "firing_dynamic.png", sha256: "979f58f51342a30c62c76f86366db5946047da56f37f99ab78be517d9cfe8f78", mask: "firing_dynamic-draft-mask.png", dimensions: [984, 1536], bbox: [26, 23, 907, 1515], scale: [1, 1], status: "needs_manual_review", warning: "black threshold may erase dark details or retain gradient; inspect flash and edges" }, dual_firing: { source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", candidate: "dual_firing.png", sha256: "86cdf0ae59dda6e518f84bbd512ffa026cdfc0dc864c05271e092cbea8bc3ffd", mask: "dual_firing-draft-mask.png", dimensions: [1024, 1536], bbox: [0, 0, 1024, 1536], scale: [1, 1], status: "needs_manual_review", warning: "black threshold may erase dark details or retain gradient; inspect flash and edges" }, speaking_reference: { source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_manual_review", warning: "rough crops retain black background, edge alignment not verified", frames: [{ candidate: "speaking-01.png", sha256: "084c73a7efae0cc6c84f83fcfdbfbf2a58ad57a8d6f72ee59717b7f5e7579e7c", source_box: [20, 55, 218, 315], status: "needs_manual_review" }, { candidate: "speaking-02.png", sha256: "c611bf8aa3dc3ff7f8ff340545aee3a4c6b1130047587183ea8afa334318b086", source_box: [218, 55, 416, 315], status: "needs_manual_review" }, { candidate: "speaking-03.png", sha256: "ae487ae3b48c11dcf0aac49aae8e7a9774ce1244364403642938bdcfb07eca43", source_box: [416, 55, 614, 315], status: "needs_manual_review" }, { candidate: "speaking-04.png", sha256: "3378f66e74a880df093d963ce045f5e73341a3e41f370eafc8530aa82bd69ce7", source_box: [614, 55, 812, 315], status: "needs_manual_review" }, { candidate: "speaking-05.png", sha256: "34592051f728fe4b39884644eaddac7dad256490e56c60ea7abf01e2d033f69c", source_box: [812, 55, 1010, 315], status: "needs_manual_review" }, { candidate: "speaking-06.png", sha256: "576dcb411cd43c68e97b341efc7849fc11e7e64861b438d0ed516cf3c9333374", source_box: [1010, 55, 1208, 315], status: "needs_manual_review" }, { candidate: "speaking-07.png", sha256: "885bf9f49aaec3cf3c3419762d0d47af0f65cbeb9cd77f69d8b1801fe343b0d3", source_box: [1208, 55, 1404, 315], status: "needs_manual_review" }] } };
-  const Xn = { assets: Gn };
-  const Hn = { idle: { file: "idle.png", sha256: "9d02398ba74992356b1c1796ee09fe02b8ea9a2ca69a03a9e6c1c9a901e04898", source: "idle.png", source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", status: "needs_visual_review", bbox: [123, 41, 900, 1560], source_bbox: [59, 15, 884, 1629], scale: 0.9417596034696406, matrix: [0.9417596034696406, 0, 67.43618339529121, 0, 0.9417596034696406, 25.87360594795539], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, sitting: { file: "sitting.png", sha256: "afb68c6f52dc1a71040d01b1dd92f69f4814c6ebdd97cbf8f6de606549197cc9", source: "sitting.png", source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", status: "needs_visual_review", bbox: [40, 54, 984, 1560], source_bbox: [0, 0, 973, 1552], scale: 0.9701952723535457, matrix: [0.9701952723535457, 0, 40, 0, 0.9701952723535457, 54], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, drawing: { file: "drawing.png", sha256: "d695ce9e6626a14a8b192ca324714a62ffb57cb5c0c43f9e315e82ec4f9d7689", source: "drawing.png", source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", status: "needs_visual_review", bbox: [40, 67, 984, 1560], source_bbox: [0, 10, 985, 1568], scale: 0.9583756345177665, matrix: [0.9583756345177665, 0, 40, 0, 0.9583756345177665, 57.41624365482234], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, firing: { file: "firing.png", sha256: "3f1c40fdcde5a3ee40aee386386ca26d0573b701244650e380f714e61b7972bb", source: "firing.png", source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", status: "needs_visual_review", bbox: [48, 40, 976, 1560], source_bbox: [43, 1, 989, 1550], scale: 0.9812782440284055, matrix: [0.9812782440284055, 0, 5.805035506778566, 0, 0.9812782440284055, 39.0187217559716], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, smoking: { file: "smoking.png", sha256: "743aac30f835b4e46de0896dc873e05d1adc7979e515279037c1bd7cd723dc1d", source: "smoking.png", source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", status: "needs_visual_review", bbox: [64, 40, 960, 1560], source_bbox: [47, 11, 965, 1568], scale: 0.9762363519588954, matrix: [0.9762363519588954, 0, 18.11689145793192, 0, 0.9762363519588954, 29.261400128452152], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, working: { file: "working.png", sha256: "7a0fb784d418c576fd23e419c583aca56e35a6962b3aaf1f657af231d9f1fbff", source: "working.png", source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", status: "needs_visual_review", bbox: [67, 40, 956, 1560], source_bbox: [49, 15, 957, 1568], scale: 0.978750804893754, matrix: [0.978750804893754, 0, 19.041210560206054, 0, 0.978750804893754, 25.31873792659369], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, firing_dynamic: { file: "firing_dynamic.png", sha256: "3b94ab169ece74521cc71fd4f7d03a36369dfc1e898ada11dab779dcca0664ee", source: "firing_dynamic.jpg", source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", status: "needs_visual_review", bbox: [64, 40, 959, 1560], source_bbox: [26, 24, 902, 1511], scale: 1.0221923335574983, matrix: [1.0221923335574983, 0, 37.422999327505046, 0, 1.0221923335574983, 15.467383994620043], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, dual_firing: { file: "dual_firing.png", sha256: "7afefe5af1ef0f9111b8dfad629eaf1589cedf449513e7c7de5653cbd03e175f", source: "dual_firing.jpg", source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", status: "blocked", bbox: [40, 204, 984, 1560], source_bbox: [15, 88, 1022, 1534], scale: 0.9374379344587885, matrix: [0.9374379344587885, 0, 25.938430983118174, 0, 0.9374379344587885, 121.50546176762661], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, "speaking-01": { file: "speaking-01.png", sha256: "b7a4503c95398f955637da4e93716028b415facb8eb494f56738317fcfb18662", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [20, 55, 218, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 23, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-02": { file: "speaking-02.png", sha256: "860925d006ba270200bf7b24cb5301ea607081741f29078921729f5d729211a6", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [218, 55, 416, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-03": { file: "speaking-03.png", sha256: "5440c351687a5620532c1106e0d02fc30af67ca7dbae6437645800a861e6212e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [416, 55, 614, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 22, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-04": { file: "speaking-04.png", sha256: "a3dbc721e517aff4d4a24b12dd7d770370d12469b79638ab6bc13239de781953", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [614, 55, 812, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 20, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-05": { file: "speaking-05.png", sha256: "c2464814b875bad18c0d41fdefa3c004741c9da3e2c7848840292f91e245b0c4", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [812, 55, 1010, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 279], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-06": { file: "speaking-06.png", sha256: "c51f1113cf0dda986bde20a77cb825f25529758841a1bc6e5de0d497cf83ce6e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1010, 55, 1208, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-07": { file: "speaking-07.png", sha256: "a375b3ec338fd67aed60d5b5ce388119b9ff7c63418257711de19451b89da247", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1208, 55, 1404, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [30, 21, 226, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" } };
-  const Qn = { assets: Hn };
-  const Jn = { idle: { file: "idle.png", sha256: "fb9eee9113bfba7eb41989e59554562bfa601789941e3f3beab8fc469f49ce81", source: "idle.png", source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", status: "needs_visual_review", bbox: [123, 41, 900, 1560], source_bbox: [59, 15, 884, 1629], scale: 0.9417596034696406, matrix: [0.9417596034696406, 0, 67.43618339529121, 0, 0.9417596034696406, 25.87360594795539], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [270, 20, 600, 395], eye_y: 260, shoulder_y: 440, foot_y: 1625, status: "tentative_manual_review", aligned_eye_y: 270.7311028500619, aligned_head_width: 310.7806691449814 }, rgb_fringe_pixels_corrected: 64 }, sitting: { file: "sitting.png", sha256: "91e3a71ea800dec83baa876d7b11ea15e5ae774ede6095f26e8d891b10bed1e0", source: "sitting.png", source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", status: "needs_visual_review", bbox: [113, 287, 911, 1560], source_bbox: [0, 0, 973, 1552], scale: 0.8203853325046613, matrix: [0.8203853325046613, 0, 113, 0, 0.8203853325046613, 287], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [258, 175, 638, 610], eye_y: 470, shoulder_y: 620, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 672.5811062771909, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 106 }, drawing: { file: "drawing.png", sha256: "2d5f2f2156f5dffefe66154c3554ed896d64201982c61cc5fb0ac900e4ee9a0c", source: "drawing.png", source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", status: "needs_visual_review", bbox: [40, 67, 984, 1560], source_bbox: [0, 10, 985, 1568], scale: 0.9583756345177665, matrix: [0.9583756345177665, 0, 40, 0, 0.9583756345177665, 57.41624365482234], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 301.8020304568528, aligned_head_width: 306.6802030456853 }, rgb_fringe_pixels_corrected: 94 }, firing: { file: "firing.png", sha256: "f17d4cee28c3f386bb65ea46b2a479a3e71daec0723e9be26213356cdc3c4e58", source: "firing.png", source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", status: "needs_visual_review", bbox: [51, 51, 973, 1560], source_bbox: [43, 1, 989, 1550], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 9.10907395898073, 0, 0.9742075823492853, 50.02579241765071], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 298.44872591671844, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 0 }, smoking: { file: "smoking.png", sha256: "7738ec443856ecef49fb4b58e131c763b785587a4ea76e4bce785c20dd417862", source: "smoking.png", source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", status: "needs_visual_review", bbox: [65, 43, 959, 1560], source_bbox: [47, 11, 965, 1568], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 19.21224362958359, 0, 0.9742075823492853, 32.283716594157866], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 280.7066500932256, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 183 }, working: { file: "working.png", sha256: "0423dc92753c9fe4799ca787038481b227b85bfd74b3942adfffbb19f04fdd38", source: "working.png", source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", status: "needs_visual_review", bbox: [69, 47, 954, 1560], source_bbox: [49, 15, 957, 1568], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 21.263828464885023, 0, 0.9742075823492853, 32.38688626476072], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 280.8098197638285, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 81 }, firing_dynamic: { file: "firing_dynamic.png", sha256: "76afa112a494948089d5519cbe315a7083fda55f4f71cad46fe0a2ba2d883b09", source: "firing_dynamic.jpg", source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", status: "needs_visual_review", bbox: [64, 40, 959, 1560], source_bbox: [26, 24, 902, 1511], scale: 1.0221923335574983, matrix: [1.0221923335574983, 0, 37.422999327505046, 0, 1.0221923335574983, 15.467383994620043], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, dual_firing: { file: "dual_firing.png", sha256: "49f6b35236135996b645892bf299190e789c204e3930fa430dac6ccd5ea9d7be", source: "dual_firing.jpg", source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", status: "blocked", bbox: [40, 241, 984, 1560], source_bbox: [0, 83, 1024, 1514], scale: 0.921875, matrix: [0.921875, 0, 40, 0, 0.921875, 164.484375], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, "speaking-01": { file: "speaking-01.png", sha256: "759a0a5eddd07914c77cc236833881067b2bf2bf077574558f7535f392e3d87e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [20, 55, 218, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 23, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-02": { file: "speaking-02.png", sha256: "f67a3c0ab3ea24ef8bc924887309fe09b48365011ecce9979d084cecdc236fad", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [218, 55, 416, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-03": { file: "speaking-03.png", sha256: "f37477ad49a67e19f777f6b5a4d1d0e470c970b1bc4f7824ee307352a94b2a42", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [416, 55, 614, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 22, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-04": { file: "speaking-04.png", sha256: "cfec50635cacaf251b2d2e69c4ab2106598a6c909969d562cc8c10ca42bb4cfb", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [614, 55, 812, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 20, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-05": { file: "speaking-05.png", sha256: "dcbfe047c7791ab2145ac3e0f761bdbbd6459225af3174ba1ac2054eb2b1927b", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [812, 55, 1010, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 279], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-06": { file: "speaking-06.png", sha256: "d5e66cf5af4dcadf3f11971d62401ae3c4f3eb6bb808d043fe056c439e3e819f", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1010, 55, 1208, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-07": { file: "speaking-07.png", sha256: "68153524f6cb95640eabd516c524470c59b8f184867fcb265da3d2b38852c4c4", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1208, 55, 1404, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [30, 21, 226, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" } };
-  const Z = { assets: Jn };
-  const K = { idle: [["idle", 1200]], drawing: [["idle", 300], ["drawing", 900]], firing: [["idle", 300], ["drawing", 600], ["firing", 220], ["drawing", 550], ["idle", 500]], working: [["idle", 350], ["working", 2400], ["idle", 500]], smoking: [["idle", 350], ["smoking", 2200], ["idle", 500]], dual_firing: [["idle", 350], ["dual_firing", 2200], ["idle", 500]], sitting: [["sitting", 2e3], ["idle", 500]], firing_dynamic: [["firing_dynamic", 1800], ["idle", 500]], speaking: Array.from({ length: 7 }, (e, a) => [`speaking-${String(a + 1).padStart(2, "0")}`, 350]) };
-  function Zn(e, a = { set: (i, n) => setTimeout(i, n), clear: (i) => clearTimeout(i) }) {
-    let i, n = [], t = 0, s = false, r = false, o = false, c = 1, u = false;
+  const tt = { idle: { source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", candidate: "idle.png", sha256: "3062401922c879858e16d7c74f6c16218e385f7465495bcfba06d105d3345f1b", dimensions: [948, 1659], alpha_unchanged: true, bbox: [59, 15, 884, 1629], scale: [1, 1], status: "needs_visual_review" }, sitting: { source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", candidate: "sitting.png", sha256: "19ff7c70d58621bc43761a39fd8cbcc7a461bed9bdfdeca2c33866bf9b3fa425", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [0, 0, 973, 1552], scale: [1, 1], status: "needs_visual_review" }, drawing: { source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", candidate: "drawing.png", sha256: "89a46bd9c5ef6235ad3ff17797315da6eeaa5efe81b6498a13fe53f5df62aa11", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [0, 10, 985, 1568], scale: [1, 1], status: "needs_visual_review" }, firing: { source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", candidate: "firing.png", sha256: "97be71fb8001ce717f367ca6990583431c935234e53b7db23804f66b1a6df945", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [43, 1, 989, 1550], scale: [1, 1], status: "needs_visual_review" }, smoking: { source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", candidate: "smoking.png", sha256: "30cffe2bfeac55c89cd8bb60acb924b406cb487d1009e3f243d6c159e3f3b9df", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [47, 11, 965, 1568], scale: [1, 1], status: "needs_visual_review" }, working: { source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", candidate: "working.png", sha256: "5309a181f2c1f6b9802bb45ebbe98ea0fa89f296872d262d4a91829fb2698b75", dimensions: [1003, 1568], alpha_unchanged: true, bbox: [49, 15, 957, 1568], scale: [1, 1], status: "needs_visual_review" }, firing_dynamic: { source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", candidate: "firing_dynamic.png", sha256: "979f58f51342a30c62c76f86366db5946047da56f37f99ab78be517d9cfe8f78", mask: "firing_dynamic-draft-mask.png", dimensions: [984, 1536], bbox: [26, 23, 907, 1515], scale: [1, 1], status: "needs_manual_review", warning: "black threshold may erase dark details or retain gradient; inspect flash and edges" }, dual_firing: { source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", candidate: "dual_firing.png", sha256: "86cdf0ae59dda6e518f84bbd512ffa026cdfc0dc864c05271e092cbea8bc3ffd", mask: "dual_firing-draft-mask.png", dimensions: [1024, 1536], bbox: [0, 0, 1024, 1536], scale: [1, 1], status: "needs_manual_review", warning: "black threshold may erase dark details or retain gradient; inspect flash and edges" }, speaking_reference: { source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_manual_review", warning: "rough crops retain black background, edge alignment not verified", frames: [{ candidate: "speaking-01.png", sha256: "084c73a7efae0cc6c84f83fcfdbfbf2a58ad57a8d6f72ee59717b7f5e7579e7c", source_box: [20, 55, 218, 315], status: "needs_manual_review" }, { candidate: "speaking-02.png", sha256: "c611bf8aa3dc3ff7f8ff340545aee3a4c6b1130047587183ea8afa334318b086", source_box: [218, 55, 416, 315], status: "needs_manual_review" }, { candidate: "speaking-03.png", sha256: "ae487ae3b48c11dcf0aac49aae8e7a9774ce1244364403642938bdcfb07eca43", source_box: [416, 55, 614, 315], status: "needs_manual_review" }, { candidate: "speaking-04.png", sha256: "3378f66e74a880df093d963ce045f5e73341a3e41f370eafc8530aa82bd69ce7", source_box: [614, 55, 812, 315], status: "needs_manual_review" }, { candidate: "speaking-05.png", sha256: "34592051f728fe4b39884644eaddac7dad256490e56c60ea7abf01e2d033f69c", source_box: [812, 55, 1010, 315], status: "needs_manual_review" }, { candidate: "speaking-06.png", sha256: "576dcb411cd43c68e97b341efc7849fc11e7e64861b438d0ed516cf3c9333374", source_box: [1010, 55, 1208, 315], status: "needs_manual_review" }, { candidate: "speaking-07.png", sha256: "885bf9f49aaec3cf3c3419762d0d47af0f65cbeb9cd77f69d8b1801fe343b0d3", source_box: [1208, 55, 1404, 315], status: "needs_manual_review" }] } };
+  const it = { assets: tt };
+  const ct = { idle: { file: "idle.png", sha256: "9d02398ba74992356b1c1796ee09fe02b8ea9a2ca69a03a9e6c1c9a901e04898", source: "idle.png", source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", status: "needs_visual_review", bbox: [123, 41, 900, 1560], source_bbox: [59, 15, 884, 1629], scale: 0.9417596034696406, matrix: [0.9417596034696406, 0, 67.43618339529121, 0, 0.9417596034696406, 25.87360594795539], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, sitting: { file: "sitting.png", sha256: "afb68c6f52dc1a71040d01b1dd92f69f4814c6ebdd97cbf8f6de606549197cc9", source: "sitting.png", source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", status: "needs_visual_review", bbox: [40, 54, 984, 1560], source_bbox: [0, 0, 973, 1552], scale: 0.9701952723535457, matrix: [0.9701952723535457, 0, 40, 0, 0.9701952723535457, 54], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, drawing: { file: "drawing.png", sha256: "d695ce9e6626a14a8b192ca324714a62ffb57cb5c0c43f9e315e82ec4f9d7689", source: "drawing.png", source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", status: "needs_visual_review", bbox: [40, 67, 984, 1560], source_bbox: [0, 10, 985, 1568], scale: 0.9583756345177665, matrix: [0.9583756345177665, 0, 40, 0, 0.9583756345177665, 57.41624365482234], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, firing: { file: "firing.png", sha256: "3f1c40fdcde5a3ee40aee386386ca26d0573b701244650e380f714e61b7972bb", source: "firing.png", source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", status: "needs_visual_review", bbox: [48, 40, 976, 1560], source_bbox: [43, 1, 989, 1550], scale: 0.9812782440284055, matrix: [0.9812782440284055, 0, 5.805035506778566, 0, 0.9812782440284055, 39.0187217559716], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, smoking: { file: "smoking.png", sha256: "743aac30f835b4e46de0896dc873e05d1adc7979e515279037c1bd7cd723dc1d", source: "smoking.png", source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", status: "needs_visual_review", bbox: [64, 40, 960, 1560], source_bbox: [47, 11, 965, 1568], scale: 0.9762363519588954, matrix: [0.9762363519588954, 0, 18.11689145793192, 0, 0.9762363519588954, 29.261400128452152], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, working: { file: "working.png", sha256: "7a0fb784d418c576fd23e419c583aca56e35a6962b3aaf1f657af231d9f1fbff", source: "working.png", source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", status: "needs_visual_review", bbox: [67, 40, 956, 1560], source_bbox: [49, 15, 957, 1568], scale: 0.978750804893754, matrix: [0.978750804893754, 0, 19.041210560206054, 0, 0.978750804893754, 25.31873792659369], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review" }, firing_dynamic: { file: "firing_dynamic.png", sha256: "3b94ab169ece74521cc71fd4f7d03a36369dfc1e898ada11dab779dcca0664ee", source: "firing_dynamic.jpg", source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", status: "needs_visual_review", bbox: [64, 40, 959, 1560], source_bbox: [26, 24, 902, 1511], scale: 1.0221923335574983, matrix: [1.0221923335574983, 0, 37.422999327505046, 0, 1.0221923335574983, 15.467383994620043], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, dual_firing: { file: "dual_firing.png", sha256: "7afefe5af1ef0f9111b8dfad629eaf1589cedf449513e7c7de5653cbd03e175f", source: "dual_firing.jpg", source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", status: "blocked", bbox: [40, 204, 984, 1560], source_bbox: [15, 88, 1022, 1534], scale: 0.9374379344587885, matrix: [0.9374379344587885, 0, 25.938430983118174, 0, 0.9374379344587885, 121.50546176762661], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, "speaking-01": { file: "speaking-01.png", sha256: "b7a4503c95398f955637da4e93716028b415facb8eb494f56738317fcfb18662", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [20, 55, 218, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 23, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-02": { file: "speaking-02.png", sha256: "860925d006ba270200bf7b24cb5301ea607081741f29078921729f5d729211a6", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [218, 55, 416, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-03": { file: "speaking-03.png", sha256: "5440c351687a5620532c1106e0d02fc30af67ca7dbae6437645800a861e6212e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [416, 55, 614, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 22, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-04": { file: "speaking-04.png", sha256: "a3dbc721e517aff4d4a24b12dd7d770370d12469b79638ab6bc13239de781953", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [614, 55, 812, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 20, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-05": { file: "speaking-05.png", sha256: "c2464814b875bad18c0d41fdefa3c004741c9da3e2c7848840292f91e245b0c4", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [812, 55, 1010, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 279], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-06": { file: "speaking-06.png", sha256: "c51f1113cf0dda986bde20a77cb825f25529758841a1bc6e5de0d497cf83ce6e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1010, 55, 1208, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-07": { file: "speaking-07.png", sha256: "a375b3ec338fd67aed60d5b5ce388119b9ff7c63418257711de19451b89da247", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1208, 55, 1404, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [30, 21, 226, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" } };
+  const st = { assets: ct };
+  const rt = { idle: { file: "idle.png", sha256: "fb9eee9113bfba7eb41989e59554562bfa601789941e3f3beab8fc469f49ce81", source: "idle.png", source_sha256: "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976", status: "needs_visual_review", bbox: [123, 41, 900, 1560], source_bbox: [59, 15, 884, 1629], scale: 0.9417596034696406, matrix: [0.9417596034696406, 0, 67.43618339529121, 0, 0.9417596034696406, 25.87360594795539], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [270, 20, 600, 395], eye_y: 260, shoulder_y: 440, foot_y: 1625, status: "tentative_manual_review", aligned_eye_y: 270.7311028500619, aligned_head_width: 310.7806691449814 }, rgb_fringe_pixels_corrected: 64 }, sitting: { file: "sitting.png", sha256: "91e3a71ea800dec83baa876d7b11ea15e5ae774ede6095f26e8d891b10bed1e0", source: "sitting.png", source_sha256: "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3", status: "needs_visual_review", bbox: [113, 287, 911, 1560], source_bbox: [0, 0, 973, 1552], scale: 0.8203853325046613, matrix: [0.8203853325046613, 0, 113, 0, 0.8203853325046613, 287], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [258, 175, 638, 610], eye_y: 470, shoulder_y: 620, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 672.5811062771909, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 106 }, drawing: { file: "drawing.png", sha256: "2d5f2f2156f5dffefe66154c3554ed896d64201982c61cc5fb0ac900e4ee9a0c", source: "drawing.png", source_sha256: "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96", status: "needs_visual_review", bbox: [40, 67, 984, 1560], source_bbox: [0, 10, 985, 1568], scale: 0.9583756345177665, matrix: [0.9583756345177665, 0, 40, 0, 0.9583756345177665, 57.41624365482234], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 301.8020304568528, aligned_head_width: 306.6802030456853 }, rgb_fringe_pixels_corrected: 94 }, firing: { file: "firing.png", sha256: "f17d4cee28c3f386bb65ea46b2a479a3e71daec0723e9be26213356cdc3c4e58", source: "firing.png", source_sha256: "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b", status: "needs_visual_review", bbox: [51, 51, 973, 1560], source_bbox: [43, 1, 989, 1550], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 9.10907395898073, 0, 0.9742075823492853, 50.02579241765071], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 298.44872591671844, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 0 }, smoking: { file: "smoking.png", sha256: "7738ec443856ecef49fb4b58e131c763b785587a4ea76e4bce785c20dd417862", source: "smoking.png", source_sha256: "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c", status: "needs_visual_review", bbox: [65, 43, 959, 1560], source_bbox: [47, 11, 965, 1568], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 19.21224362958359, 0, 0.9742075823492853, 32.283716594157866], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 280.7066500932256, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 183 }, working: { file: "working.png", sha256: "0423dc92753c9fe4799ca787038481b227b85bfd74b3942adfffbb19f04fdd38", source: "working.png", source_sha256: "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4", status: "needs_visual_review", bbox: [69, 47, 954, 1560], source_bbox: [49, 15, 957, 1568], scale: 0.9742075823492853, matrix: [0.9742075823492853, 0, 21.263828464885023, 0, 0.9742075823492853, 32.38688626476072], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "silhouette fit is not face-size registration; pose head-size differences need visual review", landmarks: { head_box: [330, 30, 650, 390], eye_y: 255, shoulder_y: 440, foot_y: 1540, status: "tentative_manual_review", aligned_eye_y: 280.8098197638285, aligned_head_width: 311.7464263517713 }, rgb_fringe_pixels_corrected: 81 }, firing_dynamic: { file: "firing_dynamic.png", sha256: "76afa112a494948089d5519cbe315a7083fda55f4f71cad46fe0a2ba2d883b09", source: "firing_dynamic.jpg", source_sha256: "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c", status: "needs_visual_review", bbox: [64, 40, 959, 1560], source_bbox: [26, 24, 902, 1511], scale: 1.0221923335574983, matrix: [1.0221923335574983, 0, 37.422999327505046, 0, 1.0221923335574983, 15.467383994620043], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, dual_firing: { file: "dual_firing.png", sha256: "49f6b35236135996b645892bf299190e789c204e3930fa430dac6ccd5ea9d7be", source: "dual_firing.jpg", source_sha256: "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7", status: "blocked", bbox: [40, 241, 984, 1560], source_bbox: [0, 83, 1024, 1514], scale: 0.921875, matrix: [0.921875, 0, 40, 0, 0.921875, 164.484375], baseline: 1560, center_x: 512, canvas: [1024, 1600], source_crop: null, warning: "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable" }, "speaking-01": { file: "speaking-01.png", sha256: "759a0a5eddd07914c77cc236833881067b2bf2bf077574558f7535f392e3d87e", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [20, 55, 218, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 23, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-02": { file: "speaking-02.png", sha256: "f67a3c0ab3ea24ef8bc924887309fe09b48365011ecce9979d084cecdc236fad", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [218, 55, 416, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-03": { file: "speaking-03.png", sha256: "f37477ad49a67e19f777f6b5a4d1d0e470c970b1bc4f7824ee307352a94b2a42", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [416, 55, 614, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 22, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-04": { file: "speaking-04.png", sha256: "cfec50635cacaf251b2d2e69c4ab2106598a6c909969d562cc8c10ca42bb4cfb", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [614, 55, 812, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 20, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-05": { file: "speaking-05.png", sha256: "dcbfe047c7791ab2145ac3e0f761bdbbd6459225af3174ba1ac2054eb2b1927b", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [812, 55, 1010, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 279], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-06": { file: "speaking-06.png", sha256: "d5e66cf5af4dcadf3f11971d62401ae3c4f3eb6bb808d043fe056c439e3e819f", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1010, 55, 1208, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [29, 21, 227, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" }, "speaking-07": { file: "speaking-07.png", sha256: "68153524f6cb95640eabd516c524470c59b8f184867fcb265da3d2b38852c4c4", source: "speaking_reference.jpg", source_sha256: "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d", status: "needs_visual_review", source_crop: [1208, 55, 1404, 315], canvas: [256, 320], scale: 1, eye_line_approx: 145, bbox: [30, 21, 226, 280], warning: "black fringe and crop boundaries need review; face-only loop, no whole-body compositing" } };
+  const ie = { assets: rt };
+  const ce = { idle: [["idle", 1200]], drawing: [["idle", 300], ["drawing", 900]], firing: [["idle", 300], ["drawing", 600], ["firing", 220], ["drawing", 550], ["idle", 500]], working: [["idle", 350], ["working", 2400], ["idle", 500]], smoking: [["idle", 350], ["smoking", 2200], ["idle", 500]], dual_firing: [["idle", 350], ["dual_firing", 2200], ["idle", 500]], sitting: [["sitting", 2e3], ["idle", 500]], firing_dynamic: [["firing_dynamic", 1800], ["idle", 500]], speaking: Array.from({ length: 7 }, (e, a) => [`speaking-${String(a + 1).padStart(2, "0")}`, 350]) };
+  function ot(e, a = { set: (i, t) => setTimeout(i, t), clear: (i) => clearTimeout(i) }) {
+    let i, t = [], n = 0, o = false, s = false, r = false, c = 1, u = false;
     const g = () => {
       i !== void 0 && a.clear(i), i = void 0;
     }, d = () => {
-      g(), !(!r || s) && (i = a.set(f, u ? 700 : n[t][1] / c));
+      g(), !(!s || o) && (i = a.set(p, u ? 700 : t[n][1] / c));
     };
-    function f() {
-      if (i = void 0, !!r) {
-        if (t++, t >= n.length) if (o) t = 0;
+    function p() {
+      if (i = void 0, !!s) {
+        if (n++, n >= t.length) if (r) n = 0;
         else {
-          r = false, e("idle");
+          s = false, e("idle");
           return;
         }
-        e(n[t][0]), d();
+        e(t[n][0]), d();
       }
     }
     return { start(k, w = {}) {
-      if (g(), n = k === "all" ? Object.values(K).flat() : K[k], !n) throw Error("Unknown B action: " + k);
-      t = 0, r = true, o = !!w.repeat, c = w.speed || 1, e(n[0][0]), d();
+      if (g(), t = k === "all" ? Object.values(ce).flat() : ce[k], !t) throw Error("Unknown B action: " + k);
+      n = 0, s = true, r = !!w.repeat, c = w.speed || 1, e(t[0][0]), d();
     }, pause(k) {
-      s = k, k ? g() : d();
+      o = k, k ? g() : d();
     }, reduced(k) {
       u = k, d();
     }, cancel: () => {
-      g(), r = false, n = [], e("idle");
+      g(), s = false, t = [], e("idle");
     }, dispose() {
-      g(), r = false, n = [];
+      g(), s = false, t = [];
     }, get running() {
-      return r;
+      return s;
     } };
   }
-  const ge = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack-v04/drawing.png": me, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-mask.png": ve, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-seeds.png": he, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-uncertainty.png": ke, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing.png": we, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing.png": ye, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-mask.png": Le, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-seeds.png": xe, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-uncertainty.png": Re, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic.png": Ue, "./characters/candidates/b-mustang-20261107/action-pack-v04/idle.png": Ee, "./characters/candidates/b-mustang-20261107/action-pack-v04/sitting.png": Se, "./characters/candidates/b-mustang-20261107/action-pack-v04/smoking.png": qe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-01.png": Ce, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-02.png": je, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-03.png": ze, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-04.png": $e, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-05.png": De, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-06.png": Me, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-07.png": Be, "./characters/candidates/b-mustang-20261107/action-pack-v04/working.png": Ne });
+  const ke = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack-v04/drawing.png": Ue, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-mask.png": Ee, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-seeds.png": Se, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-uncertainty.png": qe, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing.png": Ce, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing.png": je, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-mask.png": ze, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-seeds.png": $e, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-uncertainty.png": De, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic.png": Ne, "./characters/candidates/b-mustang-20261107/action-pack-v04/idle.png": Oe, "./characters/candidates/b-mustang-20261107/action-pack-v04/sitting.png": Me, "./characters/candidates/b-mustang-20261107/action-pack-v04/smoking.png": Be, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-01.png": Fe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-02.png": We, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-03.png": Te, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-04.png": Ie, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-05.png": Pe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-06.png": Ae, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-07.png": Ye, "./characters/candidates/b-mustang-20261107/action-pack-v04/working.png": Je });
   const y = document.createElement("section");
   y.className = "b-action-review";
   y.innerHTML = '<h2>B\uD615 \uB3C5\uB9BD \uB3D9\uC791\uD329 \xB7 \uC2DC\uAC01 \uC2B9\uC778 \uC804 \uD0A4\uD3EC\uC988 \uD6C4\uBCF4</h2><p>\uD314\xB7\uC190 \uC911\uAC04 \uB3D9\uC791\uC744 \uD569\uC131\uD558\uC9C0 \uC54A\uC740 \uD0A4\uD3EC\uC988 \uC804\uD658\uC785\uB2C8\uB2E4. JPEG \uB9C8\uC2A4\uD06C \uBC0F \uC5BC\uAD74 \uACBD\uACC4\uB294 \uAC80\uD1A0\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4.</p><label>\uB3D9\uC791 <select id="b-action"></select></label><label>\uD06C\uAE30 <select id="b-size"><option>180</option><option selected>240</option><option>360</option></select></label><label>\uC18D\uB3C4 <select id="b-speed"><option value="0.5">0.5\xD7</option><option value="1" selected>1\xD7</option><option value="2">2\xD7</option></select></label><label><input id="b-repeat" type="checkbox">\uBC18\uBCF5</label><label>\uBC30\uACBD <select id="b-bg"><option value="checker">\uACA9\uC790</option><option value="light">\uD770\uC0C9</option><option value="dark">\uC5B4\uB461\uAC8C</option></select></label><label><input id="b-guides" type="checkbox">\uAC00\uC774\uB4DC</label><button id="b-start">\uC2DC\uC791</button><button id="b-all">\uC804\uCCB4 \uC2DC\uD000\uC2A4</button><button id="b-pause">\uC77C\uC2DC\uC815\uC9C0</button><button id="b-cancel">\uCDE8\uC18C \xB7 Idle</button><div class="b-review-stage"><img id="b-action-image" alt="B\uD615 \uAC80\uC218 \uD0A4\uD3EC\uC988"></div><p id="b-action-status"></p>';
   document.querySelector("main").append(y);
   const _ = (e) => y.querySelector("#" + e);
-  const Fe = _("b-action");
-  for (const e of Object.keys(K)) {
+  const He = _("b-action");
+  for (const e of Object.keys(ce)) {
     const a = document.createElement("option");
-    a.value = e, a.textContent = e, Fe.append(a);
+    a.value = e, a.textContent = e, He.append(a);
   }
   const L = _("b-action-image");
-  let p;
-  let R = [];
-  function Oe(e) {
-    p == null || p.cancel(), R.forEach((n) => n.cancel()), R = [], y.querySelectorAll(".b-effect").forEach((n) => n.remove());
-    const a = Object.keys(ge).find((n) => n.endsWith("/" + e + ".png"));
-    a ? (L.src = ge[a], L.hidden = false) : L.hidden = true;
-    const i = Z.assets[e];
+  let f;
+  let U = [];
+  function Ge(e) {
+    f == null || f.cancel(), U.forEach((t) => t.cancel()), U = [], y.querySelectorAll(".b-effect").forEach((t) => t.remove());
+    const a = Object.keys(ke).find((t) => t.endsWith("/" + e + ".png"));
+    a ? (L.src = ke[a], L.hidden = false) : L.hidden = true;
+    const i = ie.assets[e];
     if (_("b-action-status").textContent = e + " \xB7 " + ((i == null ? void 0 : i.status) || "blocked") + " \xB7 " + ((i == null ? void 0 : i.warning) || "\uC774\uBBF8\uC9C0 \uC5C6\uC74C"), L.dataset.pose = e, e === "smoking" && !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const t = Z.assets[e].matrix;
-      if (t) {
-        const s = y.querySelector(".b-review-stage"), r = document.createElement("span");
-        r.className = "b-effect b-ember", r.style.left = (605 * t[0] + t[2]) / 1024 * 100 + "%", r.style.top = (317 * t[4] + t[5]) / 1600 * 100 + "%", s.append(r), R.push(r.animate([{ opacity: 0 }, { opacity: 0.6 }, { opacity: 0 }], { duration: 1500 }));
-        const o = L.cloneNode();
-        o.removeAttribute("id"), o.alt = "", o.className = "b-effect b-smoke-overlay";
-        const c = (610 * t[0] + t[2]) / 1024 * 100, u = (45 * t[4] + t[5]) / 1600 * 100, g = 100 - (755 * t[0] + t[2]) / 1024 * 100, d = 100 - (308 * t[4] + t[5]) / 1600 * 100;
-        o.style.clipPath = `inset(${u}% ${g}% ${d}% ${c}%)`, s.append(o), R.push(o.animate([{ opacity: 0, transform: "translateY(0)" }, { opacity: 0.08 }, { opacity: 0, transform: "translateY(-2px)" }], { duration: 2e3 }));
+      const n = ie.assets[e].matrix;
+      if (n) {
+        const o = y.querySelector(".b-review-stage"), s = document.createElement("span");
+        s.className = "b-effect b-ember", s.style.left = (605 * n[0] + n[2]) / 1024 * 100 + "%", s.style.top = (317 * n[4] + n[5]) / 1600 * 100 + "%", o.append(s), U.push(s.animate([{ opacity: 0 }, { opacity: 0.6 }, { opacity: 0 }], { duration: 1500 }));
+        const r = L.cloneNode();
+        r.removeAttribute("id"), r.alt = "", r.className = "b-effect b-smoke-overlay";
+        const c = (610 * n[0] + n[2]) / 1024 * 100, u = (45 * n[4] + n[5]) / 1600 * 100, g = 100 - (755 * n[0] + n[2]) / 1024 * 100, d = 100 - (308 * n[4] + n[5]) / 1600 * 100;
+        r.style.clipPath = `inset(${u}% ${g}% ${d}% ${c}%)`, o.append(r), U.push(r.animate([{ opacity: 0, transform: "translateY(0)" }, { opacity: 0.08 }, { opacity: 0, transform: "translateY(-2px)" }], { duration: 2e3 }));
       }
     }
-    (e === "firing" || e === "dual_firing") && !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches ? p = L.animate([{ transform: "translateX(0)" }, { transform: "translateX(-1px)" }, { transform: "translateX(0)" }], { duration: 180 }) : e === "working" && !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches ? (L.style.transformOrigin = "50% 100%", p = L.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(1.001)" }, { transform: "scaleY(1)" }], { duration: 2400 })) : !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches && (p = L.animate([{ opacity: 0.78 }, { opacity: 1 }], { duration: 160 }));
+    (e === "firing" || e === "dual_firing") && !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches ? f = L.animate([{ transform: "translateX(0)" }, { transform: "translateX(-1px)" }, { transform: "translateX(0)" }], { duration: 180 }) : e === "working" && !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches ? (L.style.transformOrigin = "50% 100%", f = L.animate([{ transform: "scaleY(1)" }, { transform: "scaleY(1.001)" }, { transform: "scaleY(1)" }], { duration: 2400 })) : !document.hidden && !matchMedia("(prefers-reduced-motion: reduce)").matches && (f = L.animate([{ opacity: 0.78 }, { opacity: 1 }], { duration: 160 }));
   }
-  const j = Zn(Oe);
-  let D = false;
-  function We() {
+  const $ = ot(Ge);
+  let O = false;
+  function Xe() {
     return { repeat: _("b-repeat").checked, speed: Number(_("b-speed").value) };
   }
-  _("b-start").addEventListener("click", () => j.start(Fe.value, We()));
-  _("b-all").addEventListener("click", () => j.start("all", We()));
-  _("b-cancel").addEventListener("click", () => j.cancel());
-  const Y = matchMedia("(prefers-reduced-motion: reduce)");
-  const X = () => {
-    j.pause(D || document.hidden), D || document.hidden ? (p == null || p.pause(), R.forEach((e) => e.pause())) : (p == null || p.play(), R.forEach((e) => e.play()));
+  _("b-start").addEventListener("click", () => $.start(He.value, Xe()));
+  _("b-all").addEventListener("click", () => $.start("all", Xe()));
+  _("b-cancel").addEventListener("click", () => $.cancel());
+  const H = matchMedia("(prefers-reduced-motion: reduce)");
+  const V = () => {
+    $.pause(O || document.hidden), O || document.hidden ? (f == null || f.pause(), U.forEach((e) => e.pause())) : (f == null || f.play(), U.forEach((e) => e.play()));
   };
-  const ee = () => {
-    j.reduced(Y.matches), Y.matches && (p == null || p.cancel(), R.forEach((e) => e.cancel()), y.querySelectorAll(".b-effect").forEach((e) => e.remove()));
+  const re = () => {
+    $.reduced(H.matches), H.matches && (f == null || f.cancel(), U.forEach((e) => e.cancel()), y.querySelectorAll(".b-effect").forEach((e) => e.remove()));
   };
   _("b-pause").addEventListener("click", () => {
-    D = !D, _("b-pause").textContent = D ? "\uC7AC\uAC1C" : "\uC77C\uC2DC\uC815\uC9C0", X();
+    O = !O, _("b-pause").textContent = O ? "\uC7AC\uAC1C" : "\uC77C\uC2DC\uC815\uC9C0", V();
   });
-  document.addEventListener("visibilitychange", X);
-  Y.addEventListener("change", ee);
-  ee();
-  X();
+  document.addEventListener("visibilitychange", V);
+  H.addEventListener("change", re);
+  re();
+  V();
   _("b-size").addEventListener("change", () => {
     _("b-action-image").style.width = _("b-size").value + "px", y.querySelector(".b-review-stage").style.width = _("b-size").value + "px";
   });
-  Oe("idle");
+  Ge("idle");
   window.addEventListener("pagehide", () => {
-    j.dispose(), p == null || p.cancel(), R.forEach((e) => e.cancel()), document.removeEventListener("visibilitychange", X), Y.removeEventListener("change", ee);
+    $.dispose(), f == null || f.cancel(), U.forEach((e) => e.cancel()), document.removeEventListener("visibilitychange", V), H.removeEventListener("change", re);
   });
   _("b-bg").addEventListener("change", () => {
     y.querySelector(".b-review-stage").dataset.background = _("b-bg").value;
@@ -390,97 +390,97 @@ ${c} \uC774\uBBF8\uC9C0 \uC900\uBE44 \uC911`, e.replaceChildren(v);
     y.querySelector(".b-review-stage").classList.toggle("b-guides", _("b-guides").checked);
   });
   const l = document.querySelector("#pet");
-  const A = document.querySelector("#desktop");
-  const Te = document.querySelector("#dialogue");
-  const Pe = document.querySelector("#speed");
-  const F = In(l, G, () => Number(Pe.value));
-  const C = document.querySelector("#state");
+  const G = document.querySelector("#desktop");
+  const Qe = document.querySelector("#dialogue");
+  const Ze = document.querySelector("#speed");
+  const W = nt(l, Z, () => Number(Ze.value));
+  const j = document.querySelector("#state");
   l.addEventListener("pet-state", (e) => {
-    C.value = e.detail;
+    j.value = e.detail;
   });
-  for (const e of P) {
+  for (const e of J) {
     const a = document.createElement("option");
-    a.value = e, a.textContent = e === "working" ? "\uC791\uC5C5 (\uD0C0\uC774\uD551\xB7\uB178\uD2B8\uBD81 \uC815\uB9AC)" : e === "dual_firing" ? "\uC30D\uAD8C\uCD1D (\uACE0\uC815 \uC870\uC900 \uD6A8\uACFC)" : e, C.append(a);
+    a.value = e, a.textContent = e === "working" ? "\uC791\uC5C5 (\uD0C0\uC774\uD551\xB7\uB178\uD2B8\uBD81 \uC815\uB9AC)" : e === "dual_firing" ? "\uC30D\uAD8C\uCD1D (\uACE0\uC815 \uC870\uC900 \uD6A8\uACFC)" : e, j.append(a);
   }
-  C.addEventListener("change", () => F.set(C.value));
-  function ae() {
-    l.style.left = `${Math.max(0, Math.min(l.offsetLeft, A.clientWidth - l.offsetWidth))}px`, l.style.top = `${Math.max(0, Math.min(l.offsetTop, A.clientHeight - l.offsetHeight))}px`;
+  j.addEventListener("change", () => W.set(j.value));
+  function oe() {
+    l.style.left = `${Math.max(0, Math.min(l.offsetLeft, G.clientWidth - l.offsetWidth))}px`, l.style.top = `${Math.max(0, Math.min(l.offsetTop, G.clientHeight - l.offsetHeight))}px`;
   }
-  function Ye() {
-    l.style.left = `${Math.max(0, A.clientWidth - l.offsetWidth - 30)}px`, l.style.top = `${Math.max(0, A.clientHeight - l.offsetHeight - 30)}px`, Te.textContent = "";
+  function Ve() {
+    l.style.left = `${Math.max(0, G.clientWidth - l.offsetWidth - 30)}px`, l.style.top = `${Math.max(0, G.clientHeight - l.offsetHeight - 30)}px`, Qe.textContent = "";
   }
   document.querySelector("#size").addEventListener("change", (e) => {
     const a = Number(e.target.value);
-    l.style.width = `${a}px`, l.style.height = `${a * 1.25}px`, ae();
+    l.style.width = `${a}px`, l.style.height = `${a * 1.25}px`, oe();
   });
-  document.querySelector("#reset").addEventListener("click", Ye);
+  document.querySelector("#reset").addEventListener("click", Ve);
   document.querySelectorAll("[data-dialogue]").forEach((e) => e.addEventListener("click", () => {
-    Te.textContent = G.dialogues[e.dataset.dialogue][0];
+    Qe.textContent = Z.dialogues[e.dataset.dialogue][0];
   }));
   l.addEventListener("pointerdown", (e) => {
     e.preventDefault(), l.setPointerCapture(e.pointerId);
-    const a = e.clientX, i = e.clientY, n = l.offsetLeft, t = l.offsetTop, s = (o) => {
-      l.style.left = `${n + o.clientX - a}px`, l.style.top = `${t + o.clientY - i}px`, ae();
-    }, r = () => {
-      l.removeEventListener("pointermove", s), l.removeEventListener("pointerup", r), l.removeEventListener("pointercancel", r);
+    const a = e.clientX, i = e.clientY, t = l.offsetLeft, n = l.offsetTop, o = (r) => {
+      l.style.left = `${t + r.clientX - a}px`, l.style.top = `${n + r.clientY - i}px`, oe();
+    }, s = () => {
+      l.removeEventListener("pointermove", o), l.removeEventListener("pointerup", s), l.removeEventListener("pointercancel", s);
     };
-    l.addEventListener("pointermove", s), l.addEventListener("pointerup", r), l.addEventListener("pointercancel", r);
+    l.addEventListener("pointermove", o), l.addEventListener("pointerup", s), l.addEventListener("pointercancel", s);
   });
-  window.addEventListener("resize", ae);
-  Ye();
+  window.addEventListener("resize", oe);
+  Ve();
   document.querySelector("#replay").addEventListener("click", () => {
-    const e = C.value;
-    F.set("idle"), F.set(e);
+    const e = j.value;
+    W.set("idle"), W.set(e);
   });
-  const I = document.querySelector("#review-state");
-  for (const e of P) {
+  const X = document.querySelector("#review-state");
+  for (const e of J) {
     const a = document.createElement("option");
-    a.value = e, a.textContent = e, I.append(a);
+    a.value = e, a.textContent = e, X.append(a);
   }
-  let U = 0;
-  const fe = document.querySelector("#selected-frame");
-  const Kn = document.querySelector("#reference-frame");
-  Kn.src = G.animations.idle.frames[0];
-  function O() {
-    const e = document.querySelector("#review-source").value === "original" ? On(I.value) : G.animations[I.value].frames;
-    U = e.length ? (U + e.length) % e.length : 0, fe.hidden = !e.length, e.length && (fe.src = e[U]), document.querySelector("#frame-label").textContent = e.length ? `${U + 1} / ${e.length}` : "\uD504\uB808\uC784 \uC5C6\uC74C";
+  let E = 0;
+  const we = document.querySelector("#selected-frame");
+  const dt = document.querySelector("#reference-frame");
+  dt.src = Z.animations.idle.frames[0];
+  function I() {
+    const e = document.querySelector("#review-source").value === "original" ? Qn(X.value) : Z.animations[X.value].frames;
+    E = e.length ? (E + e.length) % e.length : 0, we.hidden = !e.length, e.length && (we.src = e[E]), document.querySelector("#frame-label").textContent = e.length ? `${E + 1} / ${e.length}` : "\uD504\uB808\uC784 \uC5C6\uC74C";
   }
-  I.addEventListener("change", () => {
-    U = 0, O();
+  X.addEventListener("change", () => {
+    E = 0, I();
   });
   document.querySelector("#frame-prev").addEventListener("click", () => {
-    U--, O();
+    E--, I();
   });
   document.querySelector("#frame-next").addEventListener("click", () => {
-    U++, O();
+    E++, I();
   });
-  O();
+  I();
   document.querySelector("#review-source").addEventListener("change", () => {
-    U = 0, O();
+    E = 0, I();
   });
-  Pe.addEventListener("change", () => {
-    const e = C.value;
-    F.set("idle"), F.set(e);
+  Ze.addEventListener("change", () => {
+    const e = j.value;
+    W.set("idle"), W.set(e);
   });
-  const ne = Object.assign({ "./characters/candidates/akila_mustang/idle-gate1-unapproved.png": ea, "./characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png": aa, "./characters/candidates/akila_mustang/idle-gate1b-unapproved.png": na, "./characters/candidates/akila_mustang/idle-unapproved.png": ta });
-  const te = Object.keys(ne).sort();
-  const H = document.querySelector("#mustang-candidate");
-  for (const e of te) {
+  const de = Object.assign({ "./characters/candidates/akila_mustang/idle-gate1-unapproved.png": ga, "./characters/candidates/akila_mustang/idle-gate1b-alpha-cleanup-unapproved.png": ua, "./characters/candidates/akila_mustang/idle-gate1b-unapproved.png": pa, "./characters/candidates/akila_mustang/idle-unapproved.png": fa });
+  const le = Object.keys(de).sort();
+  const K = document.querySelector("#mustang-candidate");
+  for (const e of le) {
     const a = document.createElement("option");
-    a.value = e, a.textContent = e.split("/").pop(), H.append(a);
+    a.value = e, a.textContent = e.split("/").pop(), K.append(a);
   }
-  const Vn = document.querySelector("#mustang-before");
-  const ue = document.querySelector("#mustang-after");
-  const pe = te.find((e) => e.endsWith("/idle-unapproved.png"));
-  pe && (Vn.src = ne[pe]);
-  const _e = te.find((e) => e.endsWith("/idle-gate1b-alpha-cleanup-unapproved.png"));
-  _e && (H.value = _e);
-  function Ae() {
-    const e = H.value;
-    ue.hidden = !e, e && (ue.src = ne[e]), document.querySelector("#mustang-status").textContent = e ? "\uBBF8\uC2B9\uC778 \uD6C4\uBCF4: " + e.split("/").pop() : "\uD6C4\uBCF4 \uC5C6\uC74C";
+  const lt = document.querySelector("#mustang-before");
+  const ye = document.querySelector("#mustang-after");
+  const Le = le.find((e) => e.endsWith("/idle-unapproved.png"));
+  Le && (lt.src = de[Le]);
+  const xe = le.find((e) => e.endsWith("/idle-gate1b-alpha-cleanup-unapproved.png"));
+  xe && (K.value = xe);
+  function Ke() {
+    const e = K.value;
+    ye.hidden = !e, e && (ye.src = de[e]), document.querySelector("#mustang-status").textContent = e ? "\uBBF8\uC2B9\uC778 \uD6C4\uBCF4: " + e.split("/").pop() : "\uD6C4\uBCF4 \uC5C6\uC74C";
   }
-  H.addEventListener("change", Ae);
-  Ae();
+  K.addEventListener("change", Ke);
+  Ke();
   document.querySelector("#mustang-size").addEventListener("change", (e) => {
     document.querySelector(".mustang-panels").style.setProperty("--candidate-width", e.target.value + "px");
   });
@@ -490,28 +490,28 @@ ${c} \uC774\uBBF8\uC9C0 \uC900\uBE44 \uC911`, e.replaceChildren(v);
   document.querySelector("#mustang-guides").addEventListener("change", (e) => {
     document.querySelector(".mustang-panels").classList.toggle("hide-guides", !e.target.checked);
   });
-  const et = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack-v04/drawing.png": me, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-mask.png": ve, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-seeds.png": he, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-uncertainty.png": ke, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing.png": we, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing.png": ye, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-mask.png": Le, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-seeds.png": xe, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-uncertainty.png": Re, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic.png": Ue, "./characters/candidates/b-mustang-20261107/action-pack-v04/idle.png": Ee, "./characters/candidates/b-mustang-20261107/action-pack-v04/sitting.png": Se, "./characters/candidates/b-mustang-20261107/action-pack-v04/smoking.png": qe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-01.png": Ce, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-02.png": je, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-03.png": ze, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-04.png": $e, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-05.png": De, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-06.png": Me, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-07.png": Be, "./characters/candidates/b-mustang-20261107/action-pack-v04/working.png": Ne });
-  const at = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack/drawing.png": ia, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing-mask.png": ca, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing-uncertainty.png": sa, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing.png": ra, "./characters/candidates/b-mustang-20261107/action-pack/firing.png": oa, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic-mask.png": da, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic-uncertainty.png": la, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic.png": ga, "./characters/candidates/b-mustang-20261107/action-pack/idle.png": fa, "./characters/candidates/b-mustang-20261107/action-pack/sitting.png": ua, "./characters/candidates/b-mustang-20261107/action-pack/smoking.png": pa, "./characters/candidates/b-mustang-20261107/action-pack/speaking-01.png": _a, "./characters/candidates/b-mustang-20261107/action-pack/speaking-02.png": ba, "./characters/candidates/b-mustang-20261107/action-pack/speaking-03.png": ma, "./characters/candidates/b-mustang-20261107/action-pack/speaking-04.png": va, "./characters/candidates/b-mustang-20261107/action-pack/speaking-05.png": ha, "./characters/candidates/b-mustang-20261107/action-pack/speaking-06.png": ka, "./characters/candidates/b-mustang-20261107/action-pack/speaking-07.png": wa, "./characters/candidates/b-mustang-20261107/action-pack/working.png": ya });
-  const be = Object.assign({ "../design/canonical/b-mustang-20261107/approved_visual_sources/drawing.png": La, "../design/canonical/b-mustang-20261107/approved_visual_sources/dual_firing.jpg": xa, "../design/canonical/b-mustang-20261107/approved_visual_sources/firing.png": Ra, "../design/canonical/b-mustang-20261107/approved_visual_sources/firing_dynamic.jpg": Ua, "../design/canonical/b-mustang-20261107/approved_visual_sources/idle.png": Ea, "../design/canonical/b-mustang-20261107/approved_visual_sources/sitting.png": Sa, "../design/canonical/b-mustang-20261107/approved_visual_sources/smoking.png": qa, "../design/canonical/b-mustang-20261107/approved_visual_sources/speaking_reference.jpg": Ca, "../design/canonical/b-mustang-20261107/approved_visual_sources/working.png": ja });
-  const nt = Object.assign({ "./characters/candidates/b-mustang-20261107/drawing.png": za, "./characters/candidates/b-mustang-20261107/dual_firing-draft-mask.png": $a, "./characters/candidates/b-mustang-20261107/dual_firing.png": Da, "./characters/candidates/b-mustang-20261107/firing.png": Ma, "./characters/candidates/b-mustang-20261107/firing_dynamic-draft-mask.png": Ba, "./characters/candidates/b-mustang-20261107/firing_dynamic.png": Na, "./characters/candidates/b-mustang-20261107/idle.png": Fa, "./characters/candidates/b-mustang-20261107/sitting.png": Oa, "./characters/candidates/b-mustang-20261107/smoking.png": Wa, "./characters/candidates/b-mustang-20261107/speaking-01.png": Ta, "./characters/candidates/b-mustang-20261107/speaking-02.png": Pa, "./characters/candidates/b-mustang-20261107/speaking-03.png": Ya, "./characters/candidates/b-mustang-20261107/speaking-04.png": Aa, "./characters/candidates/b-mustang-20261107/speaking-05.png": Ia, "./characters/candidates/b-mustang-20261107/speaking-06.png": Ga, "./characters/candidates/b-mustang-20261107/speaking-07.png": Xa, "./characters/candidates/b-mustang-20261107/working.png": Ha });
-  const Ie = Xn.assets;
-  const ie = document.querySelector("#canonical-action");
-  const q = document.querySelector("#canonical-speaking");
-  for (const e of Object.keys(Ie)) {
+  const Q = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack-v04/drawing.png": Ue, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-mask.png": Ee, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-seeds.png": Se, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing-uncertainty.png": qe, "./characters/candidates/b-mustang-20261107/action-pack-v04/dual_firing.png": Ce, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing.png": je, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-mask.png": ze, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-seeds.png": $e, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic-uncertainty.png": De, "./characters/candidates/b-mustang-20261107/action-pack-v04/firing_dynamic.png": Ne, "./characters/candidates/b-mustang-20261107/action-pack-v04/idle.png": Oe, "./characters/candidates/b-mustang-20261107/action-pack-v04/sitting.png": Me, "./characters/candidates/b-mustang-20261107/action-pack-v04/smoking.png": Be, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-01.png": Fe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-02.png": We, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-03.png": Te, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-04.png": Ie, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-05.png": Pe, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-06.png": Ae, "./characters/candidates/b-mustang-20261107/action-pack-v04/speaking-07.png": Ye, "./characters/candidates/b-mustang-20261107/action-pack-v04/working.png": Je });
+  const ea = Object.assign({ "./characters/candidates/b-mustang-20261107/action-pack/drawing.png": _a, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing-mask.png": ba, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing-uncertainty.png": ma, "./characters/candidates/b-mustang-20261107/action-pack/dual_firing.png": va, "./characters/candidates/b-mustang-20261107/action-pack/firing.png": ha, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic-mask.png": ka, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic-uncertainty.png": wa, "./characters/candidates/b-mustang-20261107/action-pack/firing_dynamic.png": ya, "./characters/candidates/b-mustang-20261107/action-pack/idle.png": La, "./characters/candidates/b-mustang-20261107/action-pack/sitting.png": xa, "./characters/candidates/b-mustang-20261107/action-pack/smoking.png": Ra, "./characters/candidates/b-mustang-20261107/action-pack/speaking-01.png": Ua, "./characters/candidates/b-mustang-20261107/action-pack/speaking-02.png": Ea, "./characters/candidates/b-mustang-20261107/action-pack/speaking-03.png": Sa, "./characters/candidates/b-mustang-20261107/action-pack/speaking-04.png": qa, "./characters/candidates/b-mustang-20261107/action-pack/speaking-05.png": Ca, "./characters/candidates/b-mustang-20261107/action-pack/speaking-06.png": ja, "./characters/candidates/b-mustang-20261107/action-pack/speaking-07.png": za, "./characters/candidates/b-mustang-20261107/action-pack/working.png": $a });
+  const Re = Object.assign({ "../design/canonical/b-mustang-20261107/approved_visual_sources/drawing.png": Da, "../design/canonical/b-mustang-20261107/approved_visual_sources/dual_firing.jpg": Na, "../design/canonical/b-mustang-20261107/approved_visual_sources/firing.png": Oa, "../design/canonical/b-mustang-20261107/approved_visual_sources/firing_dynamic.jpg": Ma, "../design/canonical/b-mustang-20261107/approved_visual_sources/idle.png": Ba, "../design/canonical/b-mustang-20261107/approved_visual_sources/sitting.png": Fa, "../design/canonical/b-mustang-20261107/approved_visual_sources/smoking.png": Wa, "../design/canonical/b-mustang-20261107/approved_visual_sources/speaking_reference.jpg": Ta, "../design/canonical/b-mustang-20261107/approved_visual_sources/working.png": Ia });
+  const gt = Object.assign({ "./characters/candidates/b-mustang-20261107/drawing.png": Pa, "./characters/candidates/b-mustang-20261107/dual_firing-draft-mask.png": Aa, "./characters/candidates/b-mustang-20261107/dual_firing.png": Ya, "./characters/candidates/b-mustang-20261107/firing.png": Ja, "./characters/candidates/b-mustang-20261107/firing_dynamic-draft-mask.png": Ha, "./characters/candidates/b-mustang-20261107/firing_dynamic.png": Ga, "./characters/candidates/b-mustang-20261107/idle.png": Xa, "./characters/candidates/b-mustang-20261107/sitting.png": Qa, "./characters/candidates/b-mustang-20261107/smoking.png": Za, "./characters/candidates/b-mustang-20261107/speaking-01.png": Va, "./characters/candidates/b-mustang-20261107/speaking-02.png": Ka, "./characters/candidates/b-mustang-20261107/speaking-03.png": en, "./characters/candidates/b-mustang-20261107/speaking-04.png": an, "./characters/candidates/b-mustang-20261107/speaking-05.png": nn, "./characters/candidates/b-mustang-20261107/speaking-06.png": tn, "./characters/candidates/b-mustang-20261107/speaking-07.png": cn, "./characters/candidates/b-mustang-20261107/working.png": sn });
+  const ee = it.assets;
+  const P = document.querySelector("#canonical-action");
+  const S = document.querySelector("#canonical-speaking");
+  for (const e of Object.keys(ee)) {
     const a = document.createElement("option");
-    a.value = e, a.textContent = e, ie.append(a);
+    a.value = e, a.textContent = e, P.append(a);
   }
   for (let e = 0; e < 7; e++) {
     const a = document.createElement("option");
-    a.value = String(e), a.textContent = String(e + 1), q.append(a);
+    a.value = String(e), a.textContent = String(e + 1), S.append(a);
   }
   const M = document.querySelector("#canonical-original");
   const B = document.querySelector("#canonical-candidate");
-  function Q() {
-    var d, f;
-    const e = ie.value, a = Ie[e], i = Object.keys(be).find((h) => h.endsWith("/" + e + (e === "firing_dynamic" || e === "dual_firing" || e === "speaking_reference" ? ".jpg" : ".png"))), n = (d = a.frames) == null ? void 0 : d[Number(q.value) || 0], t = (n == null ? void 0 : n.candidate) || a.candidate, s = document.querySelector("#canonical-version").value, r = s !== "clean", o = s === "revised" ? Z : Qn, c = s === "revised" ? et : r ? at : nt, u = Object.keys(c).find((h) => h.endsWith("/" + t));
-    M.hidden = !i, B.hidden = !u, i && (M.src = be[i]), u && (B.src = c[u]), q.disabled = !a.frames, document.querySelector("#canonical-original-info").textContent = "\uC6D0\uBCF8 SHA-256: " + a.source_sha256, document.querySelector("#canonical-candidate-info").textContent = "\uD6C4\uBCF4 SHA-256: " + (r ? (f = o.assets[e === "speaking_reference" ? "speaking-" + String(Number(q.value) + 1).padStart(2, "0") : e]) == null ? void 0 : f.sha256 : (n == null ? void 0 : n.sha256) || a.sha256 || "\uC5C6\uC74C");
-    const g = r ? o.assets[e === "speaking_reference" ? "speaking-" + String(Number(q.value) + 1).padStart(2, "0") : e] : a;
+  function ae() {
+    var d, p;
+    const e = P.value, a = ee[e], i = Object.keys(Re).find((h) => h.endsWith("/" + e + (e === "firing_dynamic" || e === "dual_firing" || e === "speaking_reference" ? ".jpg" : ".png"))), t = (d = a.frames) == null ? void 0 : d[Number(S.value) || 0], n = document.querySelector("#canonical-version").value, o = n === "mask" ? e + "-mask.png" : (t == null ? void 0 : t.candidate) || a.candidate, s = n !== "clean", r = n === "revised" || n === "mask" ? ie : st, c = n === "revised" || n === "mask" ? Q : s ? ea : gt, u = Object.keys(c).find((h) => h.endsWith("/" + o));
+    M.hidden = !i, B.hidden = !u, i && (M.src = Re[i]), u && (B.src = c[u]), S.disabled = !a.frames, document.querySelector("#canonical-original-info").textContent = "\uC6D0\uBCF8 SHA-256: " + a.source_sha256, document.querySelector("#canonical-candidate-info").textContent = "\uD6C4\uBCF4 SHA-256: " + (n === "mask" ? "\uB9C8\uC2A4\uD06C \uD574\uC2DC \uBBF8\uAE30\uB85D" : s ? (p = r.assets[e === "speaking_reference" ? "speaking-" + String(Number(S.value) + 1).padStart(2, "0") : e]) == null ? void 0 : p.sha256 : (t == null ? void 0 : t.sha256) || a.sha256 || "\uC5C6\uC74C");
+    const g = s ? r.assets[e === "speaking_reference" ? "speaking-" + String(Number(S.value) + 1).padStart(2, "0") : e] : a;
     document.querySelector("#canonical-status").textContent = g.status + " \xB7 " + (g.warning || "\uC2DC\uAC01 \uAC80\uC218 \uD544\uC694");
   }
   M.addEventListener("load", () => {
@@ -520,25 +520,82 @@ ${c} \uC774\uBBF8\uC9C0 \uC900\uBE44 \uC911`, e.replaceChildren(v);
   B.addEventListener("load", () => {
     document.querySelector("#canonical-candidate-info").append(` \xB7 ${B.naturalWidth}\xD7${B.naturalHeight}`);
   });
-  ie.addEventListener("change", Q);
-  q.addEventListener("change", Q);
-  Q();
-  const ce = document.querySelector(".canonical-panels");
-  function Ge() {
-    const e = Number(document.querySelector("#canonical-size").value), a = Number(document.querySelector("#canonical-zoom").value);
-    ce.style.setProperty("--canonical-width", e * a + "px");
+  function ge() {
+    var t, n;
+    const e = P.value, a = ee[e], i = ((n = (t = a.frames) == null ? void 0 : t[Number(S.value) || 0]) == null ? void 0 : n.candidate) || a.candidate;
+    for (const [o, s] of [["canonical-side-03", ea], ["canonical-side-04", Q]]) {
+      const r = document.querySelector("#" + o), c = Object.keys(s).find((u) => u.endsWith("/" + i));
+      r.hidden = !c, c && r.src !== s[c] && (r.src = s[c]);
+    }
   }
-  document.querySelector("#canonical-size").addEventListener("change", Ge);
-  document.querySelector("#canonical-zoom").addEventListener("change", Ge);
+  P.addEventListener("change", ge);
+  S.addEventListener("change", ge);
+  ge();
+  P.addEventListener("change", ae);
+  S.addEventListener("change", ae);
+  ae();
+  const ue = document.querySelector(".canonical-panels");
+  function aa() {
+    const e = Number(document.querySelector("#canonical-size").value), a = Number(document.querySelector("#canonical-zoom").value);
+    ue.style.setProperty("--canonical-width", e * a + "px");
+  }
+  document.querySelector("#canonical-size").addEventListener("change", aa);
+  document.querySelector("#canonical-zoom").addEventListener("change", aa);
   document.querySelector("#canonical-bg").addEventListener("change", (e) => {
-    ce.dataset.background = e.target.value;
+    ue.dataset.background = e.target.value;
   });
   document.querySelector("#canonical-guides").addEventListener("change", (e) => {
-    ce.classList.toggle("hide-guides", !e.target.checked);
+    ue.classList.toggle("hide-guides", !e.target.checked);
   });
-  document.querySelector("#canonical-version").addEventListener("change", Q);
+  document.querySelector("#canonical-version").addEventListener("change", ae);
+  const x = document.createElement("section");
+  x.className = "user-review";
+  x.innerHTML = '<h2>\uC0AC\uC6A9\uC790 \uC2DC\uAC01 \uAC80\uC218 \uAE30\uB85D</h2><p>\uD310\uB2E8\uACFC \uC758\uACAC\uC740 \uC774 \uAE30\uAE30\uC5D0\uB9CC \uC800\uC7A5\uB418\uBA70, JSON \uB0B4\uBCF4\uB0B4\uAE30\uB294 \uC0AC\uC6A9\uC790\uAC00 \uC9C1\uC811 \uC2DC\uC791\uD569\uB2C8\uB2E4.</p><label>\uD56D\uBAA9 <select id="user-review-action"></select></label><label>\uD310\uB2E8 <select id="user-review-decision"><option value="">\uC120\uD0DD \uC548 \uD568</option><option value="needs_revision">\uC218\uC815 \uD544\uC694</option><option value="acceptable">\uC0AC\uC6A9\uC790 \uD655\uC778 \uC644\uB8CC</option></select></label><label>\uC758\uACAC <textarea id="user-review-note" rows="3"></textarea></label><button id="user-review-export">JSON \uB0B4\uBCF4\uB0B4\uAE30</button><p id="user-review-message" aria-live="polite"></p>';
+  document.querySelector("main").append(x);
+  const T = x.querySelector("#user-review-action");
+  const pe = x.querySelector("#user-review-decision");
+  const fe = x.querySelector("#user-review-note");
+  for (const e of Object.keys(ee)) {
+    const a = document.createElement("option");
+    a.value = e, a.textContent = e, T.append(a);
+  }
+  let z = {};
+  try {
+    const e = localStorage.getItem("castle-b-canonical-review-v1");
+    e && (z = JSON.parse(e));
+  } catch {
+    x.querySelector("#user-review-message").textContent = "\uC774 \uD658\uACBD\uC5D0\uC11C \uB85C\uCEEC \uC800\uC7A5\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. \uB0B4\uBCF4\uB0B4\uAE30\uB85C \uAE30\uB85D\uC744 \uBCF4\uAD00\uD558\uC138\uC694.";
+  }
+  function na() {
+    var e, a;
+    pe.value = ((e = z[T.value]) == null ? void 0 : e.decision) || "", fe.value = ((a = z[T.value]) == null ? void 0 : a.note) || "";
+  }
+  function ta() {
+    z[T.value] = { decision: pe.value, note: fe.value };
+    try {
+      localStorage.setItem("castle-b-canonical-review-v1", JSON.stringify(z));
+    } catch {
+      x.querySelector("#user-review-message").textContent = "\uB85C\uCEEC \uC800\uC7A5\uC744 \uC0AC\uC6A9\uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4. JSON\uC744 \uB0B4\uBCF4\uB0B4\uC138\uC694.";
+    }
+  }
+  T.addEventListener("change", na);
+  pe.addEventListener("change", ta);
+  fe.addEventListener("input", ta);
+  na();
+  x.querySelector("#user-review-export").addEventListener("click", () => {
+    const e = new Blob([JSON.stringify({ schemaVersion: 1, source: "user-entered", items: z }, null, 2)], { type: "application/json" }), a = URL.createObjectURL(e), i = document.createElement("a");
+    i.href = a, i.download = "castle-b-review.json", i.click(), setTimeout(() => URL.revokeObjectURL(a), 1e3);
+  });
+  const ne = document.createElement("section");
+  ne.className = "b-proportion";
+  ne.innerHTML = '<h2>Idle / Sitting \uBE44\uC728 \uBE44\uAD50</h2><p>\uB3D9\uC77C \uCE94\uBC84\uC2A4 \uAE30\uC900\uC774\uBA70 \uC5BC\uAD74 \uD06C\uAE30\xB7\uBC1C \uC704\uCE58\uB294 \uC2DC\uAC01 \uAC80\uC218\uAC00 \uD544\uC694\uD569\uB2C8\uB2E4.</p><div class="b-proportion-panels"><figure><img id="proportion-idle" alt="Idle"><figcaption>Idle</figcaption></figure><figure><img id="proportion-sitting" alt="Sitting"><figcaption>Sitting</figcaption></figure></div>';
+  document.querySelector("main").append(ne);
+  for (const e of ["idle", "sitting"]) {
+    const a = ne.querySelector("#proportion-" + e), i = Object.keys(Q).find((t) => t.endsWith("/" + e + ".png"));
+    i && (a.src = Q[i]);
+  }
 })();
  });</script>
-  <style>html,body,#app{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}#app{display:flex;align-items:center;justify-content:center;-webkit-app-region:drag;-webkit-user-select:none;user-select:none}img{width:100%;height:100%;object-fit:contain;pointer-events:none}.placeholder{white-space:pre-line;text-align:center;display:grid;place-content:center;width:70%;height:65%;border-radius:45% 45% 35% 35%;background:#5d6547;color:#fff;font:600 16px sans-serif;border:3px solid #c6c3a8}.pet-stage{position:relative;height:min(100%,194.249%);width:auto;max-width:100%;aspect-ratio:1024/1600;pointer-events:none;transform-origin:50% 100%}.pet-stage img{display:block;width:100%;height:100%;object-fit:contain}.pet-stage.breathing{animation:breathe 4.2s ease-in-out infinite}@keyframes breathe{0%,to{transform:scale(1)}50%{transform:scale(1.001,1.003)}}.ember,.smoke{position:absolute;pointer-events:none;opacity:0}.ember{left:23%;top:34%;width:5%;aspect-ratio:1;border-radius:50%;background:#ffb64d;box-shadow:0 0 8px 3px #ff682c}.smoke{left:21%;top:31%;width:6%;height:4%;border-radius:50%;background:#d2d2d280;filter:blur(3px)}.puff .ember{animation:glow 2.6s ease-out}.puff .smoke{animation:smoke-rise 2.6s ease-out}@keyframes glow{0%,to{opacity:0}15%,35%{opacity:.75}}@keyframes smoke-rise{0%{opacity:0;transform:translate(0) scale(.5)}25%{opacity:.45}to{opacity:0;transform:translate(-20%,-250%) scale(1.6)}}@media(prefers-reduced-motion:reduce){.pet-stage.breathing,.puff .ember,.puff .smoke{animation:none}}.laptop{position:absolute;left:22%;top:64%;width:56%;height:17%;pointer-events:none;transform-origin:50% 100%;animation:laptop-enter .8s ease-out both}.laptop-screen{display:block;position:absolute;left:9%;width:82%;height:72%;border:2px solid #17191b;border-radius:7% 7% 2% 2%;background:linear-gradient(135deg,#42494e,#252a2d);box-sizing:border-box;transform-origin:50% 100%;animation:screen-open .8s ease-out both}.laptop-base{position:absolute;left:0;bottom:14%;width:100%;height:12%;border-radius:2px;background:#1c2022}.laptop-indicator{position:absolute;left:48%;top:30%;width:5%;aspect-ratio:1;border-radius:50%;background:#9baeb2;opacity:.35}.working-active .laptop-indicator{animation:work-rhythm 8s ease-in-out infinite}@keyframes laptop-enter{0%{opacity:0;transform:translateY(10%) scale(.9)}to{opacity:1;transform:none}}@keyframes screen-open{0%{transform:scaleY(.15)}to{transform:scaleY(1)}}@keyframes work-rhythm{0%,60%,to{opacity:.35}10%,30%,50%{opacity:.8}20%,40%{opacity:.3}70%,90%{opacity:.2}}@media(prefers-reduced-motion:reduce){.laptop,.laptop-screen,.working-active .laptop-indicator{animation:none}}.working-exit .laptop{animation:laptop-exit .7s ease-in both}.working-exit .laptop-screen{animation:screen-close .45s ease-in both}@keyframes laptop-exit{0%,55%{opacity:1;transform:none}to{opacity:0;transform:translateY(10%) scale(.9)}}@keyframes screen-close{0%{transform:scaleY(1)}to{transform:scaleY(.15)}}@media(prefers-reduced-motion:reduce){.working-exit .laptop,.working-exit .laptop-screen{animation:none}}.muzzle{position:absolute;width:8%;aspect-ratio:1;opacity:0;pointer-events:none;background:radial-gradient(circle,#fffde3,#ffe07b 28%,#ffa02c 62%,#ff701526);clip-path:polygon(0% 49%,32% 39%,24% 10%,48% 33%,75% 0%,65% 40%,100% 50%,65% 61%,75% 100%,49% 68%,25% 90%,32% 60%);filter:drop-shadow(0 0 2px rgba(255,144,32,.75))}.muzzle-single{left:89%;top:32.8%;animation:shot-single 1.5s linear both}.muzzle-left{left:0%;top:30%;animation:shot-left 2.4s linear both}.muzzle-right{left:78%;top:31%;animation:shot-right 2.4s linear both}.single-action img{animation:recoil-single 1.5s ease-out both;transform-origin:50% 100%}.dual-action img{animation:recoil-dual 2.4s ease-out both;transform-origin:50% 100%}@keyframes shot-single{0%,37%,54%,to{opacity:0}40%,50%{opacity:1}}@keyframes shot-from-drawn{0%,11%,34%,to{opacity:0}15%,29%{opacity:1}}.single-action[data-action-mode=revolver-frames] img{animation:none!important}.single-action[data-action-entry=already-drawn] .muzzle-single{animation-name:shot-from-drawn}@keyframes shot-left{0%,17%,24%,49%,56%,to{opacity:0}19%,21%,51%,53%{opacity:1}}@keyframes shot-right{0%,32%,39%,64%,71%,to{opacity:0}34%,36%,66%,68%{opacity:1}}@keyframes recoil-single{0%,35%,48%,to{transform:none}39%{transform:rotate(-.5deg)}}@keyframes recoil-dual{0%,17%,25%,32%,40%,49%,57%,64%,72%,to{transform:none}20%,52%{transform:rotate(-.3deg)}35%,67%{transform:rotate(.3deg)}}.working-exit:not(:has(.laptop)) img{animation:working-fade .7s ease-in both}.working-exit[data-exit-mode=frames] img{animation:none!important;opacity:1!important}@keyframes working-fade{to{opacity:0;transform:translateY(1%)}}.action-paused img,.action-paused .muzzle{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.muzzle,.single-action img,.dual-action img,.working-exit img{animation:none!important}}.single-action .muzzle,.single-action img,.dual-action .muzzle,.dual-action img{animation-duration:var(--action-duration)}html,body{height:auto;min-height:100%;overflow:auto;background:#e7edf4;font-family:sans-serif;color:#182439}main{max-width:1100px;margin:auto;padding:20px}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}button,select{padding:8px;font:inherit}#desktop{position:relative;width:100%;height:600px;max-height:70vh;min-height:380px;overflow:hidden;background:linear-gradient(135deg,#2269a8,#5fb8d4);border:1px solid #7298b5}#pet{position:absolute;width:240px;height:300px;display:flex;justify-content:center;align-items:center;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}#pet:active{cursor:grabbing}#dialogue{position:absolute;top:20px;left:20px;max-width:65%;padding:8px;background:#ffffffd9;border-radius:8px;pointer-events:none}#dialogue:empty{display:none}.taskbar{position:absolute;bottom:0;width:100%;height:28px;background:#173753bd;color:#fff;padding:4px 12px;box-sizing:border-box;pointer-events:none}.frame-review{margin-top:24px}.frame-review button,.frame-review select{margin:4px}.review-images{display:flex;align-items:end;gap:12px;background:#344150;padding:12px;overflow:auto}.review-images img{width:180px;height:350px;object-fit:contain}.mustang-review{margin-top:24px}.mustang-review label{display:inline-block;margin:4px}.mustang-panels{display:flex;gap:16px;flex-wrap:wrap;--candidate-width:240px}.mustang-panels figure{margin:0}.mustang-panel{position:relative;width:var(--candidate-width);aspect-ratio:1024/1600;overflow:hidden;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.mustang-panel img{width:100%;height:100%;object-fit:contain;display:block}.mustang-panels[data-background=light] .mustang-panel{background:#fff}.mustang-panels[data-background=dark] .mustang-panel{background:#222}.head-guide,.foot-guide{position:absolute;left:0;right:0;border-top:1px dashed #e33232;pointer-events:none}.head-guide{top:5%}.foot-guide{top:95%}.hide-guides .head-guide,.hide-guides .foot-guide{display:none}.canonical-review{margin-top:32px}.canonical-review label{display:inline-block;margin:4px}.canonical-panels{--canonical-width:240px;display:flex;flex-wrap:wrap;gap:16px}.canonical-panels figure{width:var(--canonical-width);margin:0;overflow-wrap:anywhere}.canonical-panel{position:relative;width:100%;aspect-ratio:1024/1600;overflow:hidden;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.canonical-panel img{width:100%;height:100%;object-fit:contain;display:block}.canonical-panels[data-background=light] .canonical-panel{background:#fff}.canonical-panels[data-background=dark] .canonical-panel{background:#333}.canonical-panel i,.canonical-panel b,.canonical-panel em{position:absolute;pointer-events:none}.canonical-panel i{left:50%;top:0;bottom:0;border-left:1px dashed red}.canonical-panel b,.canonical-panel em{left:0;right:0;border-top:1px dashed red}.canonical-panel b{top:5%}.canonical-panel em{top:95%}.canonical-panels.hide-guides i,.canonical-panels.hide-guides b,.canonical-panels.hide-guides em{display:none}.b-action-review{margin-top:30px}.b-action-review label,.b-action-review button{margin:5px}.b-review-stage{overflow:auto;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.b-review-stage img{display:block;width:240px;height:auto;object-fit:contain}.b-review-stage{position:relative;width:240px;max-width:100%}.b-review-stage[data-background=light]{background:#fff}.b-review-stage[data-background=dark]{background:#333}.b-review-stage.b-guides:after{content:"";position:absolute;top:3%;right:50%;bottom:2.5%;left:0;border-top:1px dashed red;border-bottom:1px dashed red;border-right:1px dashed red;pointer-events:none}.b-review-stage .b-smoke-overlay{position:absolute;top:0;right:0;bottom:0;left:0;width:100%!important;height:100%!important;pointer-events:none}.b-ember{position:absolute;width:1.2%;aspect-ratio:1;border-radius:50%;background:#ffad38;box-shadow:0 0 3px #ff5a20;pointer-events:none;opacity:0}
+  <style>html,body,#app{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}#app{display:flex;align-items:center;justify-content:center;-webkit-app-region:drag;-webkit-user-select:none;user-select:none}img{width:100%;height:100%;object-fit:contain;pointer-events:none}.placeholder{white-space:pre-line;text-align:center;display:grid;place-content:center;width:70%;height:65%;border-radius:45% 45% 35% 35%;background:#5d6547;color:#fff;font:600 16px sans-serif;border:3px solid #c6c3a8}.pet-stage{position:relative;height:min(100%,194.249%);width:auto;max-width:100%;aspect-ratio:1024/1600;pointer-events:none;transform-origin:50% 100%}.pet-stage img{display:block;width:100%;height:100%;object-fit:contain}.pet-stage.breathing{animation:breathe 4.2s ease-in-out infinite}@keyframes breathe{0%,to{transform:scale(1)}50%{transform:scale(1.001,1.003)}}.ember,.smoke{position:absolute;pointer-events:none;opacity:0}.ember{left:23%;top:34%;width:5%;aspect-ratio:1;border-radius:50%;background:#ffb64d;box-shadow:0 0 8px 3px #ff682c}.smoke{left:21%;top:31%;width:6%;height:4%;border-radius:50%;background:#d2d2d280;filter:blur(3px)}.puff .ember{animation:glow 2.6s ease-out}.puff .smoke{animation:smoke-rise 2.6s ease-out}@keyframes glow{0%,to{opacity:0}15%,35%{opacity:.75}}@keyframes smoke-rise{0%{opacity:0;transform:translate(0) scale(.5)}25%{opacity:.45}to{opacity:0;transform:translate(-20%,-250%) scale(1.6)}}@media(prefers-reduced-motion:reduce){.pet-stage.breathing,.puff .ember,.puff .smoke{animation:none}}.laptop{position:absolute;left:22%;top:64%;width:56%;height:17%;pointer-events:none;transform-origin:50% 100%;animation:laptop-enter .8s ease-out both}.laptop-screen{display:block;position:absolute;left:9%;width:82%;height:72%;border:2px solid #17191b;border-radius:7% 7% 2% 2%;background:linear-gradient(135deg,#42494e,#252a2d);box-sizing:border-box;transform-origin:50% 100%;animation:screen-open .8s ease-out both}.laptop-base{position:absolute;left:0;bottom:14%;width:100%;height:12%;border-radius:2px;background:#1c2022}.laptop-indicator{position:absolute;left:48%;top:30%;width:5%;aspect-ratio:1;border-radius:50%;background:#9baeb2;opacity:.35}.working-active .laptop-indicator{animation:work-rhythm 8s ease-in-out infinite}@keyframes laptop-enter{0%{opacity:0;transform:translateY(10%) scale(.9)}to{opacity:1;transform:none}}@keyframes screen-open{0%{transform:scaleY(.15)}to{transform:scaleY(1)}}@keyframes work-rhythm{0%,60%,to{opacity:.35}10%,30%,50%{opacity:.8}20%,40%{opacity:.3}70%,90%{opacity:.2}}@media(prefers-reduced-motion:reduce){.laptop,.laptop-screen,.working-active .laptop-indicator{animation:none}}.working-exit .laptop{animation:laptop-exit .7s ease-in both}.working-exit .laptop-screen{animation:screen-close .45s ease-in both}@keyframes laptop-exit{0%,55%{opacity:1;transform:none}to{opacity:0;transform:translateY(10%) scale(.9)}}@keyframes screen-close{0%{transform:scaleY(1)}to{transform:scaleY(.15)}}@media(prefers-reduced-motion:reduce){.working-exit .laptop,.working-exit .laptop-screen{animation:none}}.muzzle{position:absolute;width:8%;aspect-ratio:1;opacity:0;pointer-events:none;background:radial-gradient(circle,#fffde3,#ffe07b 28%,#ffa02c 62%,#ff701526);clip-path:polygon(0% 49%,32% 39%,24% 10%,48% 33%,75% 0%,65% 40%,100% 50%,65% 61%,75% 100%,49% 68%,25% 90%,32% 60%);filter:drop-shadow(0 0 2px rgba(255,144,32,.75))}.muzzle-single{left:89%;top:32.8%;animation:shot-single 1.5s linear both}.muzzle-left{left:0%;top:30%;animation:shot-left 2.4s linear both}.muzzle-right{left:78%;top:31%;animation:shot-right 2.4s linear both}.single-action img{animation:recoil-single 1.5s ease-out both;transform-origin:50% 100%}.dual-action img{animation:recoil-dual 2.4s ease-out both;transform-origin:50% 100%}@keyframes shot-single{0%,37%,54%,to{opacity:0}40%,50%{opacity:1}}@keyframes shot-from-drawn{0%,11%,34%,to{opacity:0}15%,29%{opacity:1}}.single-action[data-action-mode=revolver-frames] img{animation:none!important}.single-action[data-action-entry=already-drawn] .muzzle-single{animation-name:shot-from-drawn}@keyframes shot-left{0%,17%,24%,49%,56%,to{opacity:0}19%,21%,51%,53%{opacity:1}}@keyframes shot-right{0%,32%,39%,64%,71%,to{opacity:0}34%,36%,66%,68%{opacity:1}}@keyframes recoil-single{0%,35%,48%,to{transform:none}39%{transform:rotate(-.5deg)}}@keyframes recoil-dual{0%,17%,25%,32%,40%,49%,57%,64%,72%,to{transform:none}20%,52%{transform:rotate(-.3deg)}35%,67%{transform:rotate(.3deg)}}.working-exit:not(:has(.laptop)) img{animation:working-fade .7s ease-in both}.working-exit[data-exit-mode=frames] img{animation:none!important;opacity:1!important}@keyframes working-fade{to{opacity:0;transform:translateY(1%)}}.action-paused img,.action-paused .muzzle{animation-play-state:paused}@media(prefers-reduced-motion:reduce){.muzzle,.single-action img,.dual-action img,.working-exit img{animation:none!important}}.single-action .muzzle,.single-action img,.dual-action .muzzle,.dual-action img{animation-duration:var(--action-duration)}html,body{height:auto;min-height:100%;overflow:auto;background:#e7edf4;font-family:sans-serif;color:#182439}main{max-width:1100px;margin:auto;padding:20px}.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}button,select{padding:8px;font:inherit}#desktop{position:relative;width:100%;height:600px;max-height:70vh;min-height:380px;overflow:hidden;background:linear-gradient(135deg,#2269a8,#5fb8d4);border:1px solid #7298b5}#pet{position:absolute;width:240px;height:300px;display:flex;justify-content:center;align-items:center;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}#pet:active{cursor:grabbing}#dialogue{position:absolute;top:20px;left:20px;max-width:65%;padding:8px;background:#ffffffd9;border-radius:8px;pointer-events:none}#dialogue:empty{display:none}.taskbar{position:absolute;bottom:0;width:100%;height:28px;background:#173753bd;color:#fff;padding:4px 12px;box-sizing:border-box;pointer-events:none}.frame-review{margin-top:24px}.frame-review button,.frame-review select{margin:4px}.review-images{display:flex;align-items:end;gap:12px;background:#344150;padding:12px;overflow:auto}.review-images img{width:180px;height:350px;object-fit:contain}.mustang-review{margin-top:24px}.mustang-review label{display:inline-block;margin:4px}.mustang-panels{display:flex;gap:16px;flex-wrap:wrap;--candidate-width:240px}.mustang-panels figure{margin:0}.mustang-panel{position:relative;width:var(--candidate-width);aspect-ratio:1024/1600;overflow:hidden;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.mustang-panel img{width:100%;height:100%;object-fit:contain;display:block}.mustang-panels[data-background=light] .mustang-panel{background:#fff}.mustang-panels[data-background=dark] .mustang-panel{background:#222}.head-guide,.foot-guide{position:absolute;left:0;right:0;border-top:1px dashed #e33232;pointer-events:none}.head-guide{top:5%}.foot-guide{top:95%}.hide-guides .head-guide,.hide-guides .foot-guide{display:none}.canonical-review{margin-top:32px}.canonical-review label{display:inline-block;margin:4px}.canonical-panels{--canonical-width:240px;display:flex;flex-wrap:wrap;gap:16px}.canonical-panels figure{width:var(--canonical-width);margin:0;overflow-wrap:anywhere}.canonical-panel{position:relative;width:100%;aspect-ratio:1024/1600;overflow:hidden;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.canonical-panel img{width:100%;height:100%;object-fit:contain;display:block}.canonical-panels[data-background=light] .canonical-panel{background:#fff}.canonical-panels[data-background=dark] .canonical-panel{background:#333}.canonical-panel i,.canonical-panel b,.canonical-panel em{position:absolute;pointer-events:none}.canonical-panel i{left:50%;top:0;bottom:0;border-left:1px dashed red}.canonical-panel b,.canonical-panel em{left:0;right:0;border-top:1px dashed red}.canonical-panel b{top:5%}.canonical-panel em{top:95%}.canonical-panels.hide-guides i,.canonical-panels.hide-guides b,.canonical-panels.hide-guides em{display:none}.b-action-review{margin-top:30px}.b-action-review label,.b-action-review button{margin:5px}.b-review-stage{overflow:auto;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px}.b-review-stage img{display:block;width:240px;height:auto;object-fit:contain}.b-review-stage{position:relative;width:240px;max-width:100%}.b-review-stage[data-background=light]{background:#fff}.b-review-stage[data-background=dark]{background:#333}.b-review-stage.b-guides:after{content:"";position:absolute;top:3%;right:50%;bottom:2.5%;left:0;border-top:1px dashed red;border-bottom:1px dashed red;border-right:1px dashed red;pointer-events:none}.b-review-stage .b-smoke-overlay{position:absolute;top:0;right:0;bottom:0;left:0;width:100%!important;height:100%!important;pointer-events:none}.b-ember{position:absolute;width:1.2%;aspect-ratio:1;border-radius:50%;background:#ffad38;box-shadow:0 0 3px #ff5a20;pointer-events:none;opacity:0}.canonical-review textarea,.user-review textarea{display:block;width:min(100%,500px);font:inherit;margin:8px 0}.canonical-review label,.user-review label{vertical-align:top}.canonical-panels[data-background=gray] .canonical-panel{background:#888}.b-proportion{margin-top:28px}.b-proportion-panels{display:flex;gap:12px;flex-wrap:wrap}.b-proportion-panels figure{margin:0}.b-proportion-panels img{width:240px;height:375px;object-fit:contain;background:repeating-conic-gradient(#bbb 0,#bbb 25%,#eee 0,#eee 50%) 0/20px 20px;border-bottom:2px solid #c22}
 </style>
-</head><body><main><h1>캐슬 펫 미리보기</h1><div class="controls"><label>크기 <select id="size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>상태 <select id="state"></select></label><button data-dialogue="testPassed">테스트 통과 대사</button><button data-dialogue="deploymentComplete">배포 완료 대사</button><label>속도 <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><button id="replay">다시 재생</button><button id="reset">위치 초기화</button></div><p>캐릭터를 드래그하세요. 이미지가 없는 상태는 임시 화면으로 표시됩니다.</p><div id="desktop"><div id="pet"></div><div id="dialogue" aria-live="polite"></div><div class="taskbar">Windows 미리보기</div></div><section class="frame-review"><h2>프레임 비교</h2><p>정렬본과 원본을 선택해 Idle 기준 이미지와 비교합니다. 동작은 아직 시각 검증 중입니다.</p><label>이미지 <select id="review-source"><option value="derived">정렬본</option><option value="original">원본</option></select></label><label>상태 <select id="review-state"></select></label><button id="frame-prev">이전</button><button id="frame-next">다음</button><span id="frame-label"></span><div class="review-images"><img id="reference-frame" alt="기준 idle"><img id="selected-frame" alt="선택 프레임"></div></section><section class="mustang-review"><h2>B형 독립 검수 · 미승인</h2><p>후보만 표시합니다. 실행 캐릭터는 A형이며 B형 각 상태는 별도 승인 전까지 미구현입니다.</p><label>후보 <select id="mustang-candidate"></select></label><label>크기 <select id="mustang-size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>배경 <select id="mustang-bg"><option value="checker">투명 격자</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label><label><input type="checkbox" id="mustang-guides" checked> 기준선 표시</label><div class="mustang-panels"><figure><div class="mustang-panel"><img id="mustang-before" alt="기존 B형 후보"><span class="head-guide"></span><span class="foot-guide"></span></div><figcaption>정제 전 후보</figcaption></figure><figure><div class="mustang-panel"><img id="mustang-after" alt="선택한 B형 후보"><span class="head-guide"></span><span class="foot-guide"></span></div><figcaption>선택 후보 · 미승인</figcaption></figure></div><p>기준선은 캔버스의 상단 5%, 하단 95%를 나타내는 검수용 가이드이며 측정 확정값이 아닙니다.</p><p id="mustang-status"></p></section><section class="canonical-review"><h2>2026-11-07 공식 B형 정제 검수 · 미승인</h2><p>공식 원본과 기술 후보를 비교합니다. 자동 검사 통과는 시각 승인이 아닙니다.</p><label>동작 <select id="canonical-action"></select></label><label>후보 버전 <select id="canonical-version"><option value="clean">정제 후보</option><option value="aligned">03 정렬 후보</option><option value="revised">04 기준점 보정 후보</option></select></label><label>표정 프레임 <select id="canonical-speaking"></select></label><label>너비 <select id="canonical-size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>확대 <select id="canonical-zoom"><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label><label>배경 <select id="canonical-bg"><option value="checker">격자</option><option value="light">흰색</option><option value="dark">어두운 회색</option></select></label><label><input type="checkbox" id="canonical-guides" checked> 중심·머리·발 가이드</label><div class="canonical-panels"><figure><div class="canonical-panel"><img id="canonical-original" alt="공식 원본"><i></i><b></b><em></em></div><figcaption id="canonical-original-info"></figcaption></figure><figure><div class="canonical-panel"><img id="canonical-candidate" alt="미승인 정제 후보"><i></i><b></b><em></em></div><figcaption id="canonical-candidate-info"></figcaption></figure></div><p id="canonical-status"></p><p>가이드는 캔버스 비율 기준이며 실제 신체 기준점이 아닙니다. 표정 후보는 검은 배경이 남은 대략적 추출본입니다.</p></section></main></body></html>
+</head><body><main><h1>캐슬 펫 미리보기</h1><div class="controls"><label>크기 <select id="size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>상태 <select id="state"></select></label><button data-dialogue="testPassed">테스트 통과 대사</button><button data-dialogue="deploymentComplete">배포 완료 대사</button><label>속도 <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label><button id="replay">다시 재생</button><button id="reset">위치 초기화</button></div><p>캐릭터를 드래그하세요. 이미지가 없는 상태는 임시 화면으로 표시됩니다.</p><div id="desktop"><div id="pet"></div><div id="dialogue" aria-live="polite"></div><div class="taskbar">Windows 미리보기</div></div><section class="frame-review"><h2>프레임 비교</h2><p>정렬본과 원본을 선택해 Idle 기준 이미지와 비교합니다. 동작은 아직 시각 검증 중입니다.</p><label>이미지 <select id="review-source"><option value="derived">정렬본</option><option value="original">원본</option></select></label><label>상태 <select id="review-state"></select></label><button id="frame-prev">이전</button><button id="frame-next">다음</button><span id="frame-label"></span><div class="review-images"><img id="reference-frame" alt="기준 idle"><img id="selected-frame" alt="선택 프레임"></div></section><section class="mustang-review"><h2>B형 독립 검수 · 미승인</h2><p>후보만 표시합니다. 실행 캐릭터는 A형이며 B형 각 상태는 별도 승인 전까지 미구현입니다.</p><label>후보 <select id="mustang-candidate"></select></label><label>크기 <select id="mustang-size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>배경 <select id="mustang-bg"><option value="checker">투명 격자</option><option value="light">밝게</option><option value="dark">어둡게</option></select></label><label><input type="checkbox" id="mustang-guides" checked> 기준선 표시</label><div class="mustang-panels"><figure><div class="mustang-panel"><img id="mustang-before" alt="기존 B형 후보"><span class="head-guide"></span><span class="foot-guide"></span></div><figcaption>정제 전 후보</figcaption></figure><figure><div class="mustang-panel"><img id="mustang-after" alt="선택한 B형 후보"><span class="head-guide"></span><span class="foot-guide"></span></div><figcaption>선택 후보 · 미승인</figcaption></figure></div><p>기준선은 캔버스의 상단 5%, 하단 95%를 나타내는 검수용 가이드이며 측정 확정값이 아닙니다.</p><p id="mustang-status"></p></section><section class="canonical-review"><h2>2026-11-07 공식 B형 정제 검수 · 미승인</h2><p>공식 원본과 기술 후보를 비교합니다. 자동 검사 통과는 시각 승인이 아닙니다.</p><label>동작 <select id="canonical-action"></select></label><label>후보 버전 <select id="canonical-version"><option value="clean">정제 후보</option><option value="aligned">03 정렬 후보</option><option value="revised">04 기준점 보정 후보</option><option value="mask">04 수동 보정 마스크 (JPEG)</option></select></label><label>표정 프레임 <select id="canonical-speaking"></select></label><label>너비 <select id="canonical-size"><option>180</option><option selected>240</option><option>360</option></select> px</label><label>확대 <select id="canonical-zoom"><option value="1">1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label><label>배경 <select id="canonical-bg"><option value="checker">격자</option><option value="light">흰색</option><option value="gray">회색</option><option value="dark">어두운 회색</option></select></label><label><input type="checkbox" id="canonical-guides" checked> 중심·머리·발 가이드</label><div class="canonical-panels"><figure><div class="canonical-panel"><img id="canonical-original" alt="공식 원본"><i></i><b></b><em></em></div><figcaption id="canonical-original-info"></figcaption></figure><figure><div class="canonical-panel"><img id="canonical-candidate" alt="미승인 정제 후보"><i></i><b></b><em></em></div><figcaption id="canonical-candidate-info"></figcaption></figure><figure><div class="canonical-panel"><img id="canonical-side-03" alt="03 후보"></div><figcaption>03 후보</figcaption></figure><figure><div class="canonical-panel"><img id="canonical-side-04" alt="04 후보"></div><figcaption>04 후보</figcaption></figure></div><p id="canonical-status"></p><p>가이드는 캔버스 비율 기준이며 실제 신체 기준점이 아닙니다. 표정 후보는 검은 배경이 남은 대략적 추출본입니다.</p></section></main></body></html>

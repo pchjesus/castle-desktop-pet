@@ -61,3 +61,6 @@
 
 ## B-CANONICAL-04
 새 후보는 `action-pack-v04/`, 수동 마스크/랜드마크 설정은 `scripts/b04-regions.json`이다. Sitting 머리 크기와 Dual 전경/배경 영역을 보완했으나 모든 아트는 needs_visual_review이며 Dual은 blocked다. [검수 보고](B_CANONICAL_04_QA.md) 및 [Windows QA 사용법](WINDOWS_QA_PACKAGE.md) 참조. 정식 기본은 A형이다. Windows 포터블 QA는 Actions에서만 생성·업로드하며 기존 우클릭 메뉴의 B형 진단 창에서 검수한다. 자동 시작 검사와 실제 Windows GUI 승인 여부를 혼동하지 않는다.
+
+## B-CANONICAL-05 검수 안정화
+공식 원본/03/04와 마스크, Idle/Sitting 비교 및 사용자 입력 전용 로컬 의견·JSON 내보내기를 추가했다. Speaking QA는 요청 오류를 무시하지 않고 실제 각 이미지의 로드를 기다린다. Windows CI smoke는 한글·공백이 포함된 포터블 경로에서 B형 반복 선택과 취소를 검사한다. 원격 CI/아티팩트 결과는 별도 확인이 필요하며 이미지 기술 상태나 사용자 시각 승인으로 간주하지 않는다. 실행 기본은 A형이다.

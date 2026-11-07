@@ -1,7 +1,11 @@
 # Windows QA 포터블 검수
 
-GitHub Actions의 Windows build and export smoke가 만드는 `castle-pet-windows-qa-unapproved` 아티팩트를 다운로드하고 전체 폴더를 압축 해제한다. `CastlePetQA/electron.exe`를 실행한다. 서버는 필요 없으며 기본 펫은 A형이다. 우클릭 → B형 진단 검수에서 미승인 키포즈 팩을 열어 크기, 배경, 반복, 취소, Reduced Motion을 확인한다. 진단 개발자 도구에서 오류를 확인할 수 있고 `%APPDATA%/castle-desktop-pet/qa.log`에 로딩 오류를 기록한다.
+GitHub Actions의 Windows build and export smoke가 만드는 `castle-pet-windows-qa-unapproved` 아티팩트를 다운로드하고 전체 폴더를 압축 해제한다. 아티팩트의 `검수 QA/electron.exe`를 실행한다. 서버는 필요 없으며 기본 펫은 A형이다. 우클릭 → B형 진단 검수에서 미승인 키포즈 팩을 열어 크기, 배경, 반복, 취소, Reduced Motion을 확인한다. 진단 개발자 도구에서 오류를 확인할 수 있고 `%APPDATA%/castle-desktop-pet/qa.log`에 로딩 오류를 기록한다.
 
 필수 수동 검사: Windows 10/11에서 투명 창, 항상 위, 드래그, 위치 저장/복구, 다중 모니터, 메뉴 및 종료, A형 대사·동작, B형 180/240/360px·마스크·얼굴과 발 정렬. SmartScreen/바이러스 검사 및 코드 서명은 별도이며 이 아티팩트는 정식 배포/설치 파일이 아니다. 원본 에셋 시각 승인도 아니다.
 
-CI는 파일 구성을 검증하고 `--qa-smoke --qa-report <경로>`로 실행해 A형과 B형 검수 이미지의 로딩을 확인한다. 이 검사는 GUI의 자연스러운 동작이나 실제 데스크톱 입력 검증을 대체하지 않는다. 패키지는 릴리스에 게시하지 않고 Actions 아티팩트로만 보관한다.
+CI는 파일 구성을 검증하고 `--qa-smoke --qa-report <경로>`로 실행해 A형과 B형 검수 이미지의 로딩 및 B형 반복 선택·취소를 확인한다. 한글과 공백이 있는 경로에서 실행한다. 이 검사는 GUI의 자연스러운 동작이나 실제 데스크톱 입력 검증을 대체하지 않는다. 패키지는 릴리스에 게시하지 않고 Actions 아티팩트로만 보관한다.
+
+검수 화면 하단에서 동작별 의견과 판단을 직접 입력하고 JSON 내보내기를 눌러 로컬 파일로 저장한다. 자동 테스트 결과는 판단에 입력되지 않으며 서버로 전송하지 않는다. 종료는 펫 우클릭 메뉴의 종료를 사용한다.
+
+검수용 아티팩트는 Actions 실행의 `castle-pet-windows-qa-unapproved` ZIP을 내려받아 압축을 완전히 해제한 다음 폴더의 `electron.exe`를 실행한다. 보안 경고가 표시되면 실행 파일의 출처와 조직 정책을 확인한다. 우클릭 메뉴에서 B형 진단 화면을 열고 원본·03·04 및 각 배경과 크기를 비교한다. 항목별 의견을 입력한 뒤 JSON을 내보내면 파일이 사용자의 다운로드 위치에 저장된다. 진단 창을 닫은 후 펫 우클릭 → 종료로 앱을 끝낸다.
