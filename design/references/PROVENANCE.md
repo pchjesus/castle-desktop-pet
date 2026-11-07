@@ -1,7 +1,6 @@
-# 사용자 제공 캐디 시트
-
-ZIP에서 변경 없이 보존. 두 이미지 모두 출처는 사용자가 제공한 캐릭터 디자인 시트다.
-
-- akila-sheet-01.png: SHA-256 `aaf387b747f377cb19d32c55442e0cabdb8f66c984432969bab552ecb5891886`, 3,274,194 bytes.
-- akila-sheet-02.png: SHA-256 `e22e8bb4b90972ec921bde6b3f254d298031b148d99f0fc2d7e9e6c1d8550394`, 3,170,277 bytes.
-- 기존 A형 idle/000.png SHA-256 `76db768dbdc64db00a96b0ac8bceaa7f9424cc19d6248895f1521acb0d2dcd30`.
+# Later A/B design-sheet provenance (2026-11-07)
+Only the user's later A/B design sheet is retained as an active reference:
+- `design/references/akila-sheet-02.png`: SHA-256 `e22e8bb4b90972ec921bde6b3f254d298031b148d99f0fc2d7e9e6c1d8550394`, 3,170,277 bytes.
+- `design/canonical/a-blouson-later/approved_reference_sheet.png`: exact same Git blob; later A blouson is part of this sheet, not the initial desktop prototype.
+- Nine later B original images and SHA-256: `docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md`.
+Initial concept sheets, the first standalone pet and its historical animation assets are accessible only from `archive/pre-canonical-ab-v03c-20261107` or `archive/initial-prototype-20261107`.
