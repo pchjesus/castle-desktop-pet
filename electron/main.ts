@@ -142,9 +142,26 @@ app.whenReady().then(() => {
             const context=c.getContext('2d',{willReadFrequently:true});context.drawImage(image,0,0);
             const alpha=context.getImageData(0,0,c.width,c.height).data;
             let found=null;
-            for(let y=Math.floor(c.height*.2);y<Math.floor(c.height*.8)&&!found;y+=8){
-              for(let x=Math.floor(c.width*.2);x<Math.floor(c.width*.8);x+=8){
-                if(alpha[(y*c.width+x)*4+3]>=128){found={x:rect.left+(x+.5)*rect.width/c.width,y:rect.top+(y+.5)*rect.height/c.height};break;}
+            const scale=Math.min(rect.width/c.width,rect.height/c.height);
+            const drawnW=c.width*scale,drawnH=c.height*scale;
+            // Use a deep interior pixel with an opaque 5x5 neighborhood.
+            // Sampling the FIRST edge pixel causes fractional CSS scaling to
+            // map back to clear alpha, creating a false negative on Windows.
+            const cx=Math.floor(c.width/2),cy=Math.floor(c.height/2);
+            outer:for(let radius=0;radius<Math.max(c.width,c.height);radius+=12){
+              for(let dy=-radius;dy<=radius;dy+=12){
+                for(let dx=-radius;dx<=radius;dx+=12){
+                  const x=cx+dx,y=cy+dy;if(x<5||y<5||x>=c.width-5||y>=c.height-5)continue;
+                  let solid=true;
+                  for(let yy=-2;yy<=2&&solid;yy++)for(let xx=-2;xx<=2;xx++){
+                    if(alpha[((y+yy)*c.width+(x+xx))*4+3]<200){solid=false;break;}
+                  }
+                  if(solid){
+                    found={x:rect.left+(rect.width-drawnW)/2+(x+.5)*scale,
+                      y:rect.top+(rect.height-drawnH)/2+(y+.5)*scale};
+                    break outer;
+                  }
+                }
               }
             }
             if(!found){resolve({success:false,reason:'no opaque pixel'});return;}
