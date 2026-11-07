@@ -36,3 +36,5 @@ npm start
 B-CANONICAL-03 독립 동작팩은 키포즈 전환 후보입니다. `npm run preview:package`로 `preview-offline.zip`을 만들고 압축을 푼 폴더의 `preview.html`을 여세요. `preview-assets`를 HTML과 함께 유지해야 합니다. `npm run preview:single`은 큰 단일 `preview-single.html`을 선택적으로 생성하며 Git에 저장하지 않습니다. 기본 HTML은 작게 유지하고 큰 이미지는 필요할 때 상대경로로 읽습니다.
 
 새 B형 동작팩 영역은 A형 라이브 펫과 분리되어 시작·반복·전체 재생·일시정지·취소와 Idle 복귀를 제공합니다. 팔·손의 실제 중간 동작을 생성한 것은 아니며, 특히 Dual Firing 마스크는 blocked 상태입니다. Speaking은 전신에 합성하지 않은 얼굴 루프입니다.
+
+Windows QA는 Actions의 `castle-pet-windows-qa-unapproved` 아티팩트를 압축 해제해 `electron.exe`로 실행합니다. A형 우클릭 메뉴의 「B형 진단 검수 · 미승인」으로 B형 후보를 확인할 수 있습니다. 자세한 수동 검수·로그 절차는 [Windows QA 안내](docs/WINDOWS_QA_PACKAGE.md), 이미지 보정의 한계와 마스크 수정은 [04 검수 보고](docs/B_CANONICAL_04_QA.md)를 참조하세요.

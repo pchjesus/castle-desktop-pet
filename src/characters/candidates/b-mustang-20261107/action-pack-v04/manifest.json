@@ -1,0 +1,1160 @@
+{
+  "status": "needs_visual_review",
+  "algorithm": {
+    "opencv": "4.11.0",
+    "grabcut_iterations": 5,
+    "seed": 0,
+    "soft_edge_width": 3,
+    "png_alpha": "unchanged except proportional resampling",
+    "speaking_border_cutoff": 24
+  },
+  "versions": {
+    "pillow": "11.3.0",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3"
+  },
+  "manual_config": {
+    "note": "Tentative manual source-coordinate landmarks and mask seeds; not visual approval. Review overlays before adoption.",
+    "reference_head_width": 330,
+    "anchors": {
+      "idle": {
+        "head_box": [
+          270,
+          20,
+          600,
+          395
+        ],
+        "eye_y": 260,
+        "shoulder_y": 440,
+        "foot_y": 1625
+      },
+      "sitting": {
+        "head_box": [
+          258,
+          175,
+          638,
+          610
+        ],
+        "eye_y": 470,
+        "shoulder_y": 620,
+        "foot_y": 1540
+      },
+      "drawing": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540
+      },
+      "firing": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540
+      },
+      "smoking": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540
+      },
+      "working": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540
+      }
+    },
+    "masks": {
+      "dual_firing": {
+        "foreground": [
+          [
+            [
+              390,
+              390
+            ],
+            [
+              680,
+              390
+            ],
+            [
+              750,
+              690
+            ],
+            [
+              630,
+              800
+            ],
+            [
+              390,
+              720
+            ]
+          ],
+          [
+            [
+              110,
+              200
+            ],
+            [
+              210,
+              260
+            ],
+            [
+              350,
+              410
+            ],
+            [
+              270,
+              490
+            ],
+            [
+              130,
+              410
+            ]
+          ],
+          [
+            [
+              790,
+              335
+            ],
+            [
+              940,
+              290
+            ],
+            [
+              960,
+              390
+            ],
+            [
+              850,
+              480
+            ]
+          ],
+          [
+            [
+              270,
+              860
+            ],
+            [
+              440,
+              850
+            ],
+            [
+              360,
+              1260
+            ],
+            [
+              220,
+              1430
+            ],
+            [
+              140,
+              1420
+            ]
+          ],
+          [
+            [
+              600,
+              850
+            ],
+            [
+              730,
+              850
+            ],
+            [
+              850,
+              1300
+            ],
+            [
+              920,
+              1440
+            ],
+            [
+              810,
+              1450
+            ]
+          ],
+          [
+            [
+              0,
+              95
+            ],
+            [
+              90,
+              115
+            ],
+            [
+              110,
+              195
+            ],
+            [
+              40,
+              235
+            ],
+            [
+              0,
+              235
+            ]
+          ],
+          [
+            [
+              950,
+              245
+            ],
+            [
+              1023,
+              200
+            ],
+            [
+              1023,
+              380
+            ],
+            [
+              945,
+              400
+            ]
+          ]
+        ],
+        "background": [
+          [
+            [
+              0,
+              480
+            ],
+            [
+              100,
+              480
+            ],
+            [
+              100,
+              1150
+            ],
+            [
+              0,
+              1200
+            ]
+          ],
+          [
+            [
+              980,
+              480
+            ],
+            [
+              1023,
+              480
+            ],
+            [
+              1023,
+              1250
+            ],
+            [
+              980,
+              1210
+            ]
+          ],
+          [
+            [
+              500,
+              1040
+            ],
+            [
+              530,
+              1130
+            ],
+            [
+              630,
+              1500
+            ],
+            [
+              390,
+              1500
+            ]
+          ]
+        ],
+        "allowed_foreground": [
+          [
+            0,
+            80
+          ],
+          [
+            95,
+            105
+          ],
+          [
+            120,
+            180
+          ],
+          [
+            240,
+            255
+          ],
+          [
+            350,
+            335
+          ],
+          [
+            352,
+            215
+          ],
+          [
+            380,
+            130
+          ],
+          [
+            450,
+            75
+          ],
+          [
+            550,
+            75
+          ],
+          [
+            620,
+            130
+          ],
+          [
+            650,
+            230
+          ],
+          [
+            625,
+            330
+          ],
+          [
+            690,
+            365
+          ],
+          [
+            790,
+            325
+          ],
+          [
+            900,
+            260
+          ],
+          [
+            950,
+            240
+          ],
+          [
+            1023,
+            195
+          ],
+          [
+            1023,
+            390
+          ],
+          [
+            940,
+            440
+          ],
+          [
+            870,
+            505
+          ],
+          [
+            820,
+            540
+          ],
+          [
+            780,
+            600
+          ],
+          [
+            800,
+            660
+          ],
+          [
+            845,
+            725
+          ],
+          [
+            810,
+            800
+          ],
+          [
+            835,
+            860
+          ],
+          [
+            855,
+            970
+          ],
+          [
+            900,
+            1130
+          ],
+          [
+            915,
+            1280
+          ],
+          [
+            985,
+            1400
+          ],
+          [
+            1000,
+            1530
+          ],
+          [
+            790,
+            1530
+          ],
+          [
+            735,
+            1420
+          ],
+          [
+            690,
+            1270
+          ],
+          [
+            600,
+            1140
+          ],
+          [
+            500,
+            1020
+          ],
+          [
+            445,
+            1110
+          ],
+          [
+            365,
+            1240
+          ],
+          [
+            335,
+            1400
+          ],
+          [
+            305,
+            1510
+          ],
+          [
+            120,
+            1540
+          ],
+          [
+            105,
+            1470
+          ],
+          [
+            150,
+            1360
+          ],
+          [
+            190,
+            1200
+          ],
+          [
+            220,
+            1090
+          ],
+          [
+            250,
+            980
+          ],
+          [
+            305,
+            870
+          ],
+          [
+            330,
+            790
+          ],
+          [
+            295,
+            745
+          ],
+          [
+            265,
+            690
+          ],
+          [
+            280,
+            620
+          ],
+          [
+            290,
+            560
+          ],
+          [
+            235,
+            510
+          ],
+          [
+            190,
+            475
+          ],
+          [
+            140,
+            455
+          ],
+          [
+            100,
+            400
+          ],
+          [
+            95,
+            340
+          ],
+          [
+            85,
+            300
+          ],
+          [
+            50,
+            270
+          ],
+          [
+            0,
+            240
+          ]
+        ]
+      },
+      "firing_dynamic": {
+        "foreground": [
+          [
+            [
+              340,
+              370
+            ],
+            [
+              570,
+              370
+            ],
+            [
+              620,
+              670
+            ],
+            [
+              400,
+              740
+            ],
+            [
+              310,
+              650
+            ]
+          ]
+        ],
+        "background": [
+          [
+            [
+              460,
+              1030
+            ],
+            [
+              500,
+              1080
+            ],
+            [
+              595,
+              1500
+            ],
+            [
+              260,
+              1500
+            ]
+          ]
+        ]
+      }
+    },
+    "red_fringe": {
+      "alpha_max": 24,
+      "distance_max": 4,
+      "skip": [
+        "firing"
+      ],
+      "note": "RGB-only color decontamination of low-alpha saturated-red pixels near an opaque nonred pixel; alpha unchanged"
+    },
+    "speaking_protection_box": [
+      80,
+      205,
+      160,
+      260
+    ]
+  },
+  "assets": {
+    "idle": {
+      "file": "idle.png",
+      "sha256": "fb9eee9113bfba7eb41989e59554562bfa601789941e3f3beab8fc469f49ce81",
+      "source": "idle.png",
+      "source_sha256": "42859af6776986e70122ecc908dd8c34fa420056b3811d0f81e6efb0363a0976",
+      "status": "needs_visual_review",
+      "bbox": [
+        123,
+        41,
+        900,
+        1560
+      ],
+      "source_bbox": [
+        59,
+        15,
+        884,
+        1629
+      ],
+      "scale": 0.9417596034696406,
+      "matrix": [
+        0.9417596034696406,
+        0,
+        67.43618339529121,
+        0,
+        0.9417596034696406,
+        25.87360594795539
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          270,
+          20,
+          600,
+          395
+        ],
+        "eye_y": 260,
+        "shoulder_y": 440,
+        "foot_y": 1625,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 270.7311028500619,
+        "aligned_head_width": 310.7806691449814
+      },
+      "rgb_fringe_pixels_corrected": 64
+    },
+    "sitting": {
+      "file": "sitting.png",
+      "sha256": "91e3a71ea800dec83baa876d7b11ea15e5ae774ede6095f26e8d891b10bed1e0",
+      "source": "sitting.png",
+      "source_sha256": "b15e58f192ff9d69ad943f2a15fe8b6815fc892bb3c4ff62f9ecd85d8f8c36f3",
+      "status": "needs_visual_review",
+      "bbox": [
+        113,
+        287,
+        911,
+        1560
+      ],
+      "source_bbox": [
+        0,
+        0,
+        973,
+        1552
+      ],
+      "scale": 0.8203853325046613,
+      "matrix": [
+        0.8203853325046613,
+        0,
+        113.0,
+        0,
+        0.8203853325046613,
+        287.0
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          258,
+          175,
+          638,
+          610
+        ],
+        "eye_y": 470,
+        "shoulder_y": 620,
+        "foot_y": 1540,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 672.5811062771909,
+        "aligned_head_width": 311.7464263517713
+      },
+      "rgb_fringe_pixels_corrected": 106
+    },
+    "drawing": {
+      "file": "drawing.png",
+      "sha256": "2d5f2f2156f5dffefe66154c3554ed896d64201982c61cc5fb0ac900e4ee9a0c",
+      "source": "drawing.png",
+      "source_sha256": "9f80fee63573dfc45802ea1eec75a3eb09e36af3b42e1f1a0ebfb3433855cf96",
+      "status": "needs_visual_review",
+      "bbox": [
+        40,
+        67,
+        984,
+        1560
+      ],
+      "source_bbox": [
+        0,
+        10,
+        985,
+        1568
+      ],
+      "scale": 0.9583756345177665,
+      "matrix": [
+        0.9583756345177665,
+        0,
+        40.0,
+        0,
+        0.9583756345177665,
+        57.41624365482234
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 301.8020304568528,
+        "aligned_head_width": 306.6802030456853
+      },
+      "rgb_fringe_pixels_corrected": 94
+    },
+    "firing": {
+      "file": "firing.png",
+      "sha256": "f17d4cee28c3f386bb65ea46b2a479a3e71daec0723e9be26213356cdc3c4e58",
+      "source": "firing.png",
+      "source_sha256": "4689c13e9fd992cc77d7ced3c94ee181e1fda25d963adca0880b4fdbb716288b",
+      "status": "needs_visual_review",
+      "bbox": [
+        51,
+        51,
+        973,
+        1560
+      ],
+      "source_bbox": [
+        43,
+        1,
+        989,
+        1550
+      ],
+      "scale": 0.9742075823492853,
+      "matrix": [
+        0.9742075823492853,
+        0,
+        9.10907395898073,
+        0,
+        0.9742075823492853,
+        50.02579241765071
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 298.44872591671844,
+        "aligned_head_width": 311.7464263517713
+      },
+      "rgb_fringe_pixels_corrected": 0
+    },
+    "smoking": {
+      "file": "smoking.png",
+      "sha256": "7738ec443856ecef49fb4b58e131c763b785587a4ea76e4bce785c20dd417862",
+      "source": "smoking.png",
+      "source_sha256": "6ad98b1b5abec2315a7a4e3fbf78e95ebac68136a79f15c3da4a0ad37de0cf5c",
+      "status": "needs_visual_review",
+      "bbox": [
+        65,
+        43,
+        959,
+        1560
+      ],
+      "source_bbox": [
+        47,
+        11,
+        965,
+        1568
+      ],
+      "scale": 0.9742075823492853,
+      "matrix": [
+        0.9742075823492853,
+        0,
+        19.21224362958359,
+        0,
+        0.9742075823492853,
+        32.283716594157866
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 280.7066500932256,
+        "aligned_head_width": 311.7464263517713
+      },
+      "rgb_fringe_pixels_corrected": 183
+    },
+    "working": {
+      "file": "working.png",
+      "sha256": "0423dc92753c9fe4799ca787038481b227b85bfd74b3942adfffbb19f04fdd38",
+      "source": "working.png",
+      "source_sha256": "5b437481adf4df8e3e2cc43f3f53af1fc85bc3b9f2fed7b9479d3a2ba0f4d7c4",
+      "status": "needs_visual_review",
+      "bbox": [
+        69,
+        47,
+        954,
+        1560
+      ],
+      "source_bbox": [
+        49,
+        15,
+        957,
+        1568
+      ],
+      "scale": 0.9742075823492853,
+      "matrix": [
+        0.9742075823492853,
+        0,
+        21.263828464885023,
+        0,
+        0.9742075823492853,
+        32.38688626476072
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "silhouette fit is not face-size registration; pose head-size differences need visual review",
+      "landmarks": {
+        "head_box": [
+          330,
+          30,
+          650,
+          390
+        ],
+        "eye_y": 255,
+        "shoulder_y": 440,
+        "foot_y": 1540,
+        "status": "tentative_manual_review",
+        "aligned_eye_y": 280.8098197638285,
+        "aligned_head_width": 311.7464263517713
+      },
+      "rgb_fringe_pixels_corrected": 81
+    },
+    "firing_dynamic": {
+      "file": "firing_dynamic.png",
+      "sha256": "76afa112a494948089d5519cbe315a7083fda55f4f71cad46fe0a2ba2d883b09",
+      "source": "firing_dynamic.jpg",
+      "source_sha256": "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c",
+      "status": "needs_visual_review",
+      "bbox": [
+        64,
+        40,
+        959,
+        1560
+      ],
+      "source_bbox": [
+        26,
+        24,
+        902,
+        1511
+      ],
+      "scale": 1.0221923335574983,
+      "matrix": [
+        1.0221923335574983,
+        0,
+        37.422999327505046,
+        0,
+        1.0221923335574983,
+        15.467383994620043
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable"
+    },
+    "dual_firing": {
+      "file": "dual_firing.png",
+      "sha256": "49f6b35236135996b645892bf299190e789c204e3930fa430dac6ccd5ea9d7be",
+      "source": "dual_firing.jpg",
+      "source_sha256": "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7",
+      "status": "blocked",
+      "bbox": [
+        40,
+        241,
+        984,
+        1560
+      ],
+      "source_bbox": [
+        0,
+        83,
+        1024,
+        1514
+      ],
+      "scale": 0.921875,
+      "matrix": [
+        0.921875,
+        0,
+        40.0,
+        0,
+        0.921875,
+        164.484375
+      ],
+      "baseline": 1560,
+      "center_x": 512,
+      "canvas": [
+        1024,
+        1600
+      ],
+      "source_crop": null,
+      "warning": "GrabCut draft: dark clothes, fingers, flash, gradient and soft fringe require manual review; masks are editable"
+    },
+    "speaking-01": {
+      "file": "speaking-01.png",
+      "sha256": "759a0a5eddd07914c77cc236833881067b2bf2bf077574558f7535f392e3d87e",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        20,
+        55,
+        218,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        23,
+        227,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-02": {
+      "file": "speaking-02.png",
+      "sha256": "f67a3c0ab3ea24ef8bc924887309fe09b48365011ecce9979d084cecdc236fad",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        218,
+        55,
+        416,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        21,
+        227,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-03": {
+      "file": "speaking-03.png",
+      "sha256": "f37477ad49a67e19f777f6b5a4d1d0e470c970b1bc4f7824ee307352a94b2a42",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        416,
+        55,
+        614,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        22,
+        227,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-04": {
+      "file": "speaking-04.png",
+      "sha256": "cfec50635cacaf251b2d2e69c4ab2106598a6c909969d562cc8c10ca42bb4cfb",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        614,
+        55,
+        812,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        20,
+        227,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-05": {
+      "file": "speaking-05.png",
+      "sha256": "dcbfe047c7791ab2145ac3e0f761bdbbd6459225af3174ba1ac2054eb2b1927b",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        812,
+        55,
+        1010,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        21,
+        227,
+        279
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-06": {
+      "file": "speaking-06.png",
+      "sha256": "d5e66cf5af4dcadf3f11971d62401ae3c4f3eb6bb808d043fe056c439e3e819f",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        1010,
+        55,
+        1208,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        29,
+        21,
+        227,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    },
+    "speaking-07": {
+      "file": "speaking-07.png",
+      "sha256": "68153524f6cb95640eabd516c524470c59b8f184867fcb265da3d2b38852c4c4",
+      "source": "speaking_reference.jpg",
+      "source_sha256": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+      "status": "needs_visual_review",
+      "source_crop": [
+        1208,
+        55,
+        1404,
+        315
+      ],
+      "canvas": [
+        256,
+        320
+      ],
+      "scale": 1,
+      "eye_line_approx": 145,
+      "bbox": [
+        30,
+        21,
+        226,
+        280
+      ],
+      "warning": "black fringe and crop boundaries need review; face-only loop, no whole-body compositing"
+    }
+  }
+}

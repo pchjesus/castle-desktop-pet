@@ -34,11 +34,14 @@ try {
   async function loaded(label) {
     const image = page.locator('#pet .pet-stage img');
     await image.waitFor({ timeout: 8000 });
-    await page.waitForFunction(() => {
+    // Capture readiness and dimensions in one browser evaluation: animation
+    // may replace img.src between separate Playwright round trips.
+    const ready = await page.waitForFunction(() => {
       const img = document.querySelector('#pet .pet-stage img');
-      return img && img.complete && img.naturalWidth > 0;
+      return img && img.complete && img.naturalWidth > 0
+        ? { width: img.naturalWidth, height: img.naturalHeight } : false;
     }, null, { timeout: 15000 });
-    const info = await image.evaluate(img => ({ width: img.naturalWidth, height: img.naturalHeight }));
+    const info = await ready.jsonValue();
     assert(info.width > 0 && info.height > 0, label + ' failed image loading');
     return info;
   }

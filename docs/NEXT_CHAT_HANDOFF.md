@@ -58,3 +58,6 @@
 
 ## B-CANONICAL-03 독립 검수
 별도 action-pack 후보 및 B형 키포즈 재생기를 추가했다. 상세 한계와 검증 방법은 `docs/B_CANONICAL_03_QA.md`. 기본 preview.html은 이미지 분리형이며 `npm run preview:package`로 ZIP을 배포 없이 로컬 생성한다. 선택 단일 HTML은 `npm run preview:single`. A형 실행은 그대로다. Dual 배경 마스크는 blocked이며 얼굴/발 일관성 및 Speaking 경계는 시각 승인되지 않았다.
+
+## B-CANONICAL-04
+새 후보는 `action-pack-v04/`, 수동 마스크/랜드마크 설정은 `scripts/b04-regions.json`이다. Sitting 머리 크기와 Dual 전경/배경 영역을 보완했으나 모든 아트는 needs_visual_review이며 Dual은 blocked다. [검수 보고](B_CANONICAL_04_QA.md) 및 [Windows QA 사용법](WINDOWS_QA_PACKAGE.md) 참조. 정식 기본은 A형이다. Windows 포터블 QA는 Actions에서만 생성·업로드하며 기존 우클릭 메뉴의 B형 진단 창에서 검수한다. 자동 시작 검사와 실제 Windows GUI 승인 여부를 혼동하지 않는다.

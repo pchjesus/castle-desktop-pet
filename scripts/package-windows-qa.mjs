@@ -1,0 +1,11 @@
+import {cp,mkdir,readFile,writeFile,access,rm} from 'node:fs/promises';import {join} from 'node:path';
+if(process.platform!=='win32')throw Error('Windows QA packaging must run on Windows with the pinned Electron runtime');
+const p=JSON.parse(await readFile('package.json','utf8'));const dest='dist-qa/CastlePetQA';
+await access('node_modules/electron/dist/electron.exe');await access('preview-assets');await access('dist-electron/main.cjs');
+await rm(dest,{recursive:true,force:true});await cp('node_modules/electron/dist',dest,{recursive:true});
+const runtime=JSON.parse(await readFile('node_modules/electron/package.json','utf8'));
+await writeFile(join(dest,'QA_BUILD.json'),JSON.stringify({electron:runtime.version,sourceCommit:process.env.GITHUB_SHA||'local-build',status:'unapproved-qa',defaultOutfit:'blouson'},null,2));
+const app=join(dest,'resources/app');await mkdir(app,{recursive:true});
+for(const dir of ['dist','dist-electron','preview-assets'])await cp(dir,join(app,dir),{recursive:true});
+await cp('preview.html',join(app,'preview.html'));await writeFile(join(app,'package.json'),JSON.stringify({name:p.name,version:p.version,main:p.main}));
+await writeFile(join(dest,'READ_ME.txt'),'Run electron.exe. A-type pet starts by default. Right-click > B diagnostic review (unapproved). No server needed. QA logs: %APPDATA%/castle-desktop-pet/qa.log. Close through the pet menu.\r\n');console.log(dest);

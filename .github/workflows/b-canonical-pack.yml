@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'scripts/prepare-b-action-pack.py'
+      - 'scripts/b04-regions.json'
+      - 'scripts/report-b04.py'
       - 'scripts/b-canonical-requirements.txt'
       - 'src/characters/candidates/b-mustang-20261107/**'
       - '.github/workflows/b-canonical-pack.yml'
@@ -26,7 +28,15 @@ jobs:
       - run: cp src/characters/candidates/b-mustang-20261107/action-pack/manifest.json /tmp/b-first.json
       - run: python scripts/prepare-b-action-pack.py
       - run: cmp /tmp/b-first.json src/characters/candidates/b-mustang-20261107/action-pack/manifest.json
+      - run: python scripts/prepare-b-action-pack.py --config scripts/b04-regions.json --output src/characters/candidates/b-mustang-20261107/action-pack-v04
+      - run: cp src/characters/candidates/b-mustang-20261107/action-pack-v04/manifest.json /tmp/b04-first.json
+      - run: python scripts/prepare-b-action-pack.py --config scripts/b04-regions.json --output src/characters/candidates/b-mustang-20261107/action-pack-v04
+      - run: cmp /tmp/b04-first.json src/characters/candidates/b-mustang-20261107/action-pack-v04/manifest.json
+      - run: python scripts/report-b04.py
       - uses: actions/upload-artifact@v4
         with:
           name: b-canonical-technical-candidates-unapproved
-          path: src/characters/candidates/b-mustang-20261107/action-pack/
+          path: |
+            src/characters/candidates/b-mustang-20261107/action-pack/
+            src/characters/candidates/b-mustang-20261107/action-pack-v04/
+            artifacts/b04-review/

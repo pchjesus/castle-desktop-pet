@@ -5,6 +5,9 @@ on:
       - main
     paths:
       - 'electron/**'
+      - 'scripts/package-windows-qa.mjs'
+      - 'scripts/export-preview.mjs'
+      - 'preview-entry.html'
       - 'src/**'
       - 'tests/**'
       - 'package.json'
@@ -29,3 +32,26 @@ jobs:
       - run: npm run preview:export
       - name: Verify committed offline HTML is reproducible on Windows
         run: git diff --exit-code -- preview.html
+      - name: Create portable Windows QA folder
+        run: node scripts/package-windows-qa.mjs
+      - name: Verify package and launch smoke
+        shell: pwsh
+        run: |
+          $qaRoot = Join-Path $PWD 'dist-qa/CastlePetQA'
+          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/preview.html','resources/app/preview-assets')) {
+            if (!(Test-Path (Join-Path $qaRoot $name))) { throw "Missing package file: $name" }
+          }
+          $qaReport = Join-Path $PWD 'windows-qa-report.json'
+          $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
+          if (!$qaProcess.WaitForExit(30000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
+          if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
+          $result = Get-Content $qaReport | ConvertFrom-Json
+          if (!$result.passed -or !$result.aLoaded -or !$result.bReviewLoaded) { throw 'QA readiness failed' }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: castle-pet-windows-qa-unapproved
+          path: |
+            dist-qa/CastlePetQA/
+            windows-qa-report.json
+          if-no-files-found: warn

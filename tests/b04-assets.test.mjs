@@ -1,0 +1,5 @@
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';import {createHash} from 'node:crypto';
+const root=new URL('../src/characters/candidates/b-mustang-20261107/action-pack-v04/',import.meta.url);
+const m=JSON.parse(await readFile(new URL('manifest.json',root)));
+test('v04 candidates retain aspect, hash and safe canvas boundaries',async()=>{for(const [name,a] of Object.entries(m.assets)){const b=await readFile(new URL(a.file,root));assert.equal(createHash('sha256').update(b).digest('hex'),a.sha256,name);assert.equal(b[25],6);assert.deepEqual([b.readUInt32BE(16),b.readUInt32BE(20)],a.canvas);if(a.matrix)assert.equal(a.matrix[0],a.matrix[4]);assert(a.bbox[0]>=0&&a.bbox[1]>=0&&a.bbox[2]<=a.canvas[0]&&a.bbox[3]<=a.canvas[1]);}});
+test('Sitting keeps source proportions but matches the tentative Idle head scale',()=>{const i=m.assets.idle,s=m.assets.sitting;assert(Math.abs(i.landmarks.aligned_head_width-s.landmarks.aligned_head_width)<1);assert(s.scale<i.scale);assert.equal(m.assets.dual_firing.status,'blocked');});
