@@ -1,16 +1,9 @@
-# 개발 원칙
-1. 기존 기능을 유지하며 단계적으로 개발한다.
-2. 한 번에 하나의 개발 범위만 구현한다.
-3. UI와 비즈니스 로직을 분리한다.
-4. 캐릭터 및 애니메이션의 확장 가능성을 유지한다.
-5. 불필요한 의존성 설치를 피한다.
-6. Windows 성능 및 메모리 사용량을 고려한다.
-7. 변경 후 빌드와 기본 기능을 검증한다.
-8. 완료 보고에 변경 파일, 검증 결과, 남은 문제를 포함한다.
-
-9. **현재 B형 아킬라의 최고 아트 원본은 2026-11-07 사용자 최종 첨부 9개 이미지다.** 반드시 `docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md`와 `docs/NEXT_CHAT_HANDOFF.md`를 먼저 읽고, 라이브러리 `/Castle Desktop Pet/castle_pet_B_canonical_20261107.zip`의 9개 원본을 그대로 사용한다.
-10. 과거 `design/references/akila-sheet-02.png`는 **참고 자료**이며 현재 9개 원본의 얼굴/몸 비율·의상·자세·장비를 변경하는 근거가 될 수 없다. Gate1B 미승인 후보나 과거 Sitting/Working/Dual 재생성본도 새 원본으로 대체하지 않는다.
-11. 공식 9종: Idle, Sitting, Drawing, Firing, Firing Dynamic, Smoking, Speaking 시트, Working(서서 노트북), Dual Firing. **Sitting은 `1000041381.png` PNG RGBA가 정본**(이전 체크무늬 Sitting 폐기). Working은 `1000041391.png`의 서 있는 포즈. Dual은 `1000041393.png`의 JPEG가 정본.
-12. 이마 흉터 없음(미간 주름 허용), 평상시 홀스터 없음, B형 갈색 무스탕+검은 무지 티+회색 바지/ A형 올리브 블루종+검은 칼라 셔츠+청회색 바지. 1024×1600은 투명 캔버스 규격일 뿐 인체 비례를 강제하는 규칙이 아님.
-13. 승인 소스는 SHA-256 검증 후 **원본 보존 경로**에 쓰고 절대 덮어쓰지 않는다. PNG 알파 개선·JPEG 배경 분리·애니메이션 등 가공 결과는 별도 폴더/이름으로 저장. 이미지 시각 확정/기술 품질/상태 전환 코드/Windows 검증은 별도 절차.
-14. A형 기존 런타임 기능 유지 및 A/B 한 시퀀스 혼합 금지. PR #6 Draft 유지, 명시 승인 전 main 병합·배포 및 조기 B형 활성화 금지.
+# Castle Desktop Pet — active development contract
+1. The **initial prototype** is **not** later A. It is archived only in `archive/initial-prototype-20261107`. Never restore its sprites, tests or visual assets into main/current runtime.
+2. The only current canonical designs are **later A (blouson)**, represented by `design/canonical/a-blouson-later/approved_reference_sheet.png`, and **later B (mustang)**, represented by the exact nine user-approved files in `design/canonical/b-mustang-20261107/approved_visual_sources/`.
+3. The desktop QA runtime opens later B by default; derived sprites live under `src/characters/candidates/b-mustang-20261107/action-pack-v04/`. Official originals are immutable; verify their SHA-256.
+4. Do not turn the original prototype into a fallback for later A. Later A standalone transparent sprites are not yet verified; keep that runtime outfit unavailable until proper sources are provided.
+5. B dual_firing is blocked by a background mask, and Speaking seven-head reference is not a full-body runtime sprite. Present them only in diagnostics; do not substitute another outfit.
+6. Preserve offline preview, Windows portable smoke, all valid B tests, drag/size/dialogues/reduced motion, and A/B isolation. Distinguish technical QA from user visual approval. Never fake successful image or GUI validation.
+7. Commit to feature branch, run CI, then update main only after success. Avoid GitHub Release or Pages deployment without user authorization.
+8. See `docs/AB_ASSET_CONTRACT_2026-11-07.md` and `docs/NEXT_CHAT_HANDOFF.md`.
