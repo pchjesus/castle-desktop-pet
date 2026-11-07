@@ -1,2 +1,9 @@
-import { contextBridge, ipcRenderer } from 'electron';
-contextBridge.exposeInMainWorld('pet', { showMenu: () => ipcRenderer.send('show-menu') });
+import {contextBridge,ipcRenderer} from 'electron';
+contextBridge.exposeInMainWorld('pet',{
+ showMenu:()=>ipcRenderer.send('show-menu'),
+ onAction:(callback:(state:string)=>void)=>{
+  const listener=(_event:Electron.IpcRendererEvent,state:string)=>callback(state);
+  ipcRenderer.on('pet:action',listener);
+  return ()=>ipcRenderer.removeListener('pet:action',listener);
+ }
+});

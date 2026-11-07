@@ -48,7 +48,7 @@ jobs:
           if (!$qaProcess.WaitForExit(30000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
           if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
           $result = Get-Content $qaReport | ConvertFrom-Json
-          if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
+          if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:

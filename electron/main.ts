@@ -45,6 +45,15 @@ function showMenu() {
   {label:'크기 한 단계 크게',click:()=>changeSizeBy(1)},
   {label:'펫 크기 선택',submenu:sizes},
   {type:'separator'},
+  {label:'포즈 미리보기',submenu:[
+    {label:'대기 · Idle',click:()=>win.webContents.send('pet:action','idle')},
+    {label:'흡연 · Smoking',click:()=>win.webContents.send('pet:action','smoking')},
+    {label:'노트북 · Working',click:()=>win.webContents.send('pet:action','working')},
+    {label:'리볼버 꺼내기 · Drawing',click:()=>win.webContents.send('pet:action','drawing')},
+    {label:'사격 · Firing',click:()=>win.webContents.send('pet:action','firing')},
+    {label:'앉기 · Sitting',click:()=>win.webContents.send('pet:action','sitting')}
+  ]},
+  {type:'separator'},
   {label:'B형 동작·포즈 검수',click:()=>openDiagnostics()},
   {label:'진단 개발자 도구',click:()=>openDiagnostics().webContents.openDevTools()},
   {type:'separator'},
@@ -83,8 +92,13 @@ app.whenReady().then(() => {
       try {
         const result = await qa.webContents.executeJavaScript(`new Promise((resolve,reject)=>{let n=0;const timer=setInterval(()=>{const a=document.querySelector('#pet .pet-stage img'),b=document.querySelector('#b-action-image');if(a?.complete&&a.naturalWidth&&b?.complete&&b.naturalWidth){clearInterval(timer);resolve({petLoaded:true,bReviewLoaded:true,bWidth:b.naturalWidth});}else if(++n>100){clearInterval(timer);reject(Error('image readiness timeout'));}},100);})`);
         const interactions = await qa.webContents.executeJavaScript(`(()=>{const select=document.querySelector('#b-action'),repeat=document.querySelector('#b-repeat');select.value='working';repeat.checked=true;document.querySelector('#b-start').click();document.querySelector('#b-cancel').click();return {repeatChecked:repeat.checked,cancelledToIdle:document.querySelector('#b-action-image').dataset.pose==='idle'};})()`);
-        if (!interactions.repeatChecked || !interactions.cancelledToIdle || !resizeChecked || !chrome.passed) throw Error('B/window QA readiness failed: '+JSON.stringify({resizeChecked,chrome,interactions}));
-        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,nativeFrameless:chrome,...result,...interactions}));app.quit();
+        if(win.webContents.isLoading()) await new Promise<void>(resolve=>win.webContents.once('did-finish-load',()=>resolve()));
+        await win.webContents.executeJavaScript("window.__lastPetState='';document.querySelector('#app').addEventListener('pet-state',e=>window.__lastPetState=e.detail);true;");
+        win.webContents.send('pet:action','drawing');
+        const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+        win.webContents.send('pet:action','idle');
+        if (!interactions.repeatChecked || !interactions.cancelledToIdle || !resizeChecked || !chrome.passed || !manualPoseChecked) throw Error('B/window/live pose QA readiness failed: '+JSON.stringify({resizeChecked,chrome,manualPoseChecked,interactions}));
+        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
     });
     setTimeout(()=>app.exit(2),20000).unref();

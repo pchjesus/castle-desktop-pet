@@ -13,3 +13,6 @@ CI는 파일 구성을 검증하고 `--qa-smoke --qa-report <경로>`로 실행�
 ## v0.4 창 테두리·크기 조정
 기본 QA 펫 창 너비는 180px이며 최초 실행 시 구형 240×300 기본 설정을 자동 전환한다(기존 사용자가 선택한 다른 크기는 유지). 펫을 우클릭해 **크기 한 단계 작게 / 크게** 또는 **펫 크기 선택**(120·140·160·180·200·240·280·320·360px)을 사용한다. Ctrl+- / Ctrl++도 지원한다. 설정은 `window.json`에 보존되며 발 위치와 가로 중심을 최대한 유지한다.
 Windows 펫 창은 `frame:false`, `transparent:true`, `titleBarOverlay:false`이며 네이티브 메뉴바를 숨긴다. QA 실행 검사는 `getBounds()`와 `getContentBounds()`의 차이를 이용해 네이티브 제목 표시줄 공간이 없는지 확인한다. 만일 사용자 Windows 화면에서 여전히 제목 표시줄이 보이면 실기기 스크린샷과 `qa.log`를 받아 추가 조정한다.
+
+### GPT 연동 전 실제 포즈 테스트
+펫을 우클릭하여 **포즈 미리보기** 메뉴를 열면 Idle, Smoking, Working, Drawing, Firing, Sitting을 **실제 투명 펫 창**에서 실행할 수 있다. 사격은 완료 후 Idle로 돌아간다. 아직 마스크 품질이 차단된 Dual Firing과 얼굴 시트만 있는 Speaking은 이 메뉴에 표시하지 않으며 별도 B 진단 화면에서 검수한다. 자동 Windows smoke에서 Drawing IPC 이벤트 수신 및 실제 B형 그림 로딩을 검사한다. 인터넷·API 키·ChatGPT 계정 없이 사용 가능하다.
