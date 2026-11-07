@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>아킬라 메뉴</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:#e7e9ef;font:13px/1.3 system-ui,'Malgun Gothic',sans-serif}
+main{height:100%;padding:12px 12px 9px;background:#22262eeF;border:1px solid #515966;border-radius:12px;overflow-y:auto;box-shadow:0 8px 24px #0005}
+h1{font-size:15px;margin:0 0 7px;font-weight:650}h2{font-size:11px;margin:12px 0 5px;font-weight:550;color:#9faab8}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.grid.poses{grid-template-columns:repeat(2,minmax(0,1fr))}
+button{display:block;border:1px solid #535b66;background:#333a45;color:#f0f2f4;border-radius:7px;min-height:31px;width:100%;padding:5px 4px;cursor:pointer;text-align:center;font:inherit}
+button:hover,button:focus-visible{outline:1px solid #a4c4ff;background:#454f5d}
+button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}button.wide{text-align:left;padding:7px 9px;margin-top:5px}
+button.danger{color:#f1b2b2}small{color:#adb4c0;font-size:10px}.foot{border-top:1px solid #49525d;margin-top:11px;padding-top:7px}
+</style></head><body><main>
+<h1>아킬라 · 설정</h1>
+<h2>크기 조정</h2>
+<div class="grid">
+<button data-action="size:120">120</button><button data-action="size:140">140</button><button data-action="size:160">160</button>
+<button data-action="size:180">180</button><button data-action="size:200">200</button><button data-action="size:240">240</button>
+<button data-action="size:280">280</button><button data-action="size:320">320</button><button data-action="size:360">360</button>
+</div>
+<h2>포즈 미리보기 · 실제 펫</h2>
+<div class="grid poses">
+<button data-action="pose:idle">Idle · 대기</button><button data-action="pose:smoking">Smoking · 흡연</button>
+<button data-action="pose:drawing">Drawing · 꺼내기</button><button data-action="pose:firing">Firing · 사격</button>
+<button data-action="pose:working">Working · 작업</button><button data-action="pose:sitting">Sitting · 앉기</button>
+</div>
+<h2>추가 포즈 · 이미지 검수 전용</h2>
+<button class="wide" data-action="diagnostics:dual_firing">Dual Firing · 배경 보정 필요</button>
+<button class="wide" data-action="diagnostics:firing_dynamic">Firing Dynamic · 원본/후보 보기</button>
+<button class="wide" data-action="diagnostics:speaking_reference">Speaking · 얼굴 7컷 보기</button>
+<button class="wide" data-action="diagnostics">전체 이미지·비율 검수</button>
+<div class="foot"><button class="wide danger" data-action="quit">종료</button><small>공식 B형 원본은 변경되지 않았음</small></div>
+</main><script>
+const active=new URL(location.href).searchParams.get('size');
+for(const b of document.querySelectorAll('button[data-action^="size:"]'))b.setAttribute('aria-pressed',String(b.dataset.action==='size:'+active));
+document.addEventListener('click',event=>{
+ const button=event.target.closest('button[data-action]');
+ if(button)window.castleMenu?.invoke(button.dataset.action);
+});
+window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();});
+document.addEventListener('contextmenu',event=>event.preventDefault());
+</script></body></html>

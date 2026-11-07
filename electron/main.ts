@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, screen, ipcMain } from 'electron';
+import { app, BrowserWindow, screen, ipcMain } from 'electron';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { constrain } from './geometry.mjs';
@@ -6,6 +6,8 @@ import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeA
 
 let win: BrowserWindow;
 let diagnostics: BrowserWindow | undefined;
+let menuWindow: BrowserWindow | undefined;
+const isSmoke=process.argv.includes('--qa-smoke');
 function log(message: string) { try { appendFileSync(join(app.getPath('userData'),'qa.log'), `${new Date().toISOString()} ${message}\n`); } catch { /* stderr remains available */ } }
 function openDiagnostics(show=true) {
  if (diagnostics && !diagnostics.isDestroyed()) { diagnostics.show(); return diagnostics; }
@@ -33,33 +35,82 @@ function resizePet(width: number) {
  catch(error) { log('Resize rejected: '+String(error)); }
 }
 function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().width,direction)); }
-function showMenu() {
- if (!win || win.isDestroyed()) return;
- const current=win.getBounds().width;
- const sizes=PET_WIDTH_PRESETS.map(width=>({
-  label:`${width}px${width===DEFAULT_PET_WIDTH?' · 기본':''}`,
-  type:'radio' as const, checked:width===current, click:()=>resizePet(width)
- }));
- Menu.buildFromTemplate([
-  {label:'크기 한 단계 작게',click:()=>changeSizeBy(-1)},
-  {label:'크기 한 단계 크게',click:()=>changeSizeBy(1)},
-  {label:'펫 크기 선택',submenu:sizes},
-  {type:'separator'},
-  {label:'포즈 미리보기',submenu:[
-    {label:'대기 · Idle',click:()=>win.webContents.send('pet:action','idle')},
-    {label:'흡연 · Smoking',click:()=>win.webContents.send('pet:action','smoking')},
-    {label:'노트북 · Working',click:()=>win.webContents.send('pet:action','working')},
-    {label:'리볼버 꺼내기 · Drawing',click:()=>win.webContents.send('pet:action','drawing')},
-    {label:'사격 · Firing',click:()=>win.webContents.send('pet:action','firing')},
-    {label:'앉기 · Sitting',click:()=>win.webContents.send('pet:action','sitting')}
-  ]},
-  {type:'separator'},
-  {label:'B형 동작·포즈 검수',click:()=>openDiagnostics()},
-  {label:'진단 개발자 도구',click:()=>openDiagnostics().webContents.openDevTools()},
-  {type:'separator'},
-  {label:'종료',click:()=>app.quit()}
- ]).popup({window:win});
+
+const menuWidth=270,menuHeight=486;
+function closePetMenu() {
+ const old=menuWindow;
+ menuWindow=undefined;
+ if(old && !old.isDestroyed()) old.close();
 }
+function openPetMenu() {
+ if(!win || win.isDestroyed())return;
+ closePetMenu();
+ const pt=screen.getCursorScreenPoint();
+ const work=screen.getDisplayNearestPoint(pt).workArea;
+ const place=constrain({x:pt.x+12,y:pt.y-24,width:menuWidth,height:menuHeight},[work]);
+ const popup=new BrowserWindow({
+  ...place,frame:false,transparent:true,titleBarOverlay:false,thickFrame:false,
+  backgroundColor:'#00000000',alwaysOnTop:true,skipTaskbar:true,
+  hasShadow:false,resizable:false,show:false,
+  webPreferences:{preload:join(__dirname,'menu-preload.cjs'),
+   contextIsolation:true,nodeIntegration:false,sandbox:true}
+ });
+ menuWindow=popup;
+ popup.setMenu(null);
+ popup.on('system-context-menu',event=>event.preventDefault());
+ popup.on('closed',()=>{if(menuWindow===popup)menuWindow=undefined;});
+ if(!isSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
+ popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
+ popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width)}})
+  .then(()=>{if(!isSmoke && !popup.isDestroyed())popup.show();})
+  .catch(error=>log('custom menu exception '+String(error)));
+ return popup;
+}
+function inspectMenuChrome(popup:BrowserWindow) {
+ const outer=popup.getBounds(),content=popup.getContentBounds();
+ return {passed:Math.abs(outer.width-content.width)<=1&&Math.abs(outer.height-content.height)<=1,
+  deltaWidth:outer.width-content.width,deltaHeight:outer.height-content.height};
+}
+function openDiagnosticsAt(pose:'dual_firing'|'firing_dynamic'|'speaking_reference') {
+ const diag=openDiagnostics(true);
+ const select=()=>{
+  if(diag.isDestroyed())return;
+  // All values are from the fixed three-entry allowlist, not user content.
+  const script=`(()=>{const e=document.querySelector('#canonical-action');if(!e)return false;
+   e.value=${JSON.stringify(pose)};
+   e.dispatchEvent(new Event('change',{bubbles:true}));
+   const review=document.querySelector('.canonical-review');
+   review?.scrollIntoView({block:'start'});
+   return true;})()`;
+  diag.webContents.executeJavaScript(script).catch(error=>log('pose diagnostics selection: '+String(error)));
+ };
+ if(diag.webContents.isLoading())diag.webContents.once('did-finish-load',select);else select();
+}
+function dispatchPetMenuCommand(command:string) {
+ if(!win || win.isDestroyed())return;
+ if(command==='quit'){app.quit();return;}
+ if(command==='diagnostics'){openDiagnostics();return;}
+ if(command==='diagnostics:dual_firing'){openDiagnosticsAt('dual_firing');return;}
+ if(command==='diagnostics:firing_dynamic'){openDiagnosticsAt('firing_dynamic');return;}
+ if(command==='diagnostics:speaking_reference'){openDiagnosticsAt('speaking_reference');return;}
+ if(command==='size:smaller'){changeSizeBy(-1);return;}
+ if(command==='size:larger'){changeSizeBy(1);return;}
+ if(command.startsWith('size:')){
+  const width=Number(command.slice(5));
+  if(PET_WIDTH_PRESETS.includes(width))resizePet(width);
+  return;
+ }
+ switch(command) {
+  case 'pose:idle':win.webContents.send('pet:action','idle');break;
+  case 'pose:smoking':win.webContents.send('pet:action','smoking');break;
+  case 'pose:working':win.webContents.send('pet:action','working');break;
+  case 'pose:drawing':win.webContents.send('pet:action','drawing');break;
+  case 'pose:firing':win.webContents.send('pet:action','firing');break;
+  case 'pose:sitting':win.webContents.send('pet:action','sitting');break;
+  default:log('Unknown pet menu command rejected');
+ }
+}
+
 function nativeFrameless() {
  const outer=win.getBounds(),content=win.getContentBounds();
  const deltaWidth=outer.width-content.width,deltaHeight=outer.height-content.height;
@@ -68,7 +119,10 @@ function nativeFrameless() {
 
 app.whenReady().then(() => {
   win = new BrowserWindow({ ...restore(), transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
+  win.setMenu(null);
   win.setMenuBarVisibility(false);
+  // Suppress Windows' native titlebar/system menu on non-client right clicks.
+  win.on('system-context-menu',event=>{event.preventDefault();log('Windows system context menu suppressed');});
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   win.loadFile(join(__dirname, '../dist/index.html'));
   win.on('moved', save); win.on('resize', save); win.on('close', save);
@@ -86,7 +140,15 @@ app.whenReady().then(() => {
   ipcMain.on('show-menu',(event)=>{
     if(!isPet(event))return;
     menuRequests++;
-    if(!process.argv.includes('--qa-smoke'))showMenu();
+    openPetMenu();
+  });
+  ipcMain.on('pet-menu:command',(event,command)=>{
+    if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
+    closePetMenu();
+    dispatchPetMenuCommand(command);
+  });
+  ipcMain.on('pet-menu:dismiss',event=>{
+    if(menuWindow && !menuWindow.isDestroyed() && event.sender===menuWindow.webContents)closePetMenu();
   });
   ipcMain.on('pet:passthrough',(event,ignore)=>{
     if(!isPet(event)||typeof ignore!=='boolean'||drag)return;
@@ -175,7 +237,25 @@ app.whenReady().then(() => {
           throw Error('B/window/live pose/mouse QA readiness failed: '+JSON.stringify({resizeChecked,chrome,manualPoseChecked,mouseQa,interactions}));
         await new Promise(resolve=>setTimeout(resolve,100));
         if(menuRequests<1||hitChanges<1)throw Error('Alpha menu/hit-test IPC not received: '+JSON.stringify({menuRequests,hitChanges}));
-        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,menuRequests,hitChanges,mouseQa,nativeFrameless:chrome,...result,...interactions}));app.quit();
+        const popup=menuWindow;
+        if(!popup || popup.isDestroyed())throw Error('Custom menu window not constructed by alpha right-click');
+        if(popup.webContents.isLoading()) await new Promise<void>(resolve=>popup.webContents.once('did-finish-load',()=>resolve()));
+        const menuChrome=inspectMenuChrome(popup);
+        const menuQA=await popup.webContents.executeJavaScript(`({hasSizing:!!document.querySelector('[data-action="size:180"]'),
+          hasPose:!!document.querySelector('[data-action="pose:smoking"]'),
+          hasBlocked:!!document.querySelector('[data-action="diagnostics:dual_firing"]'),
+          buttonCount:document.querySelectorAll('button[data-action]').length})`);
+        if(!menuChrome.passed||!menuQA.hasSizing||!menuQA.hasPose||!menuQA.hasBlocked||menuQA.buttonCount<20)
+          throw Error('Custom frameless menu QA failed: '+JSON.stringify({menuChrome,menuQA}));
+        // Validate actual menu command routing, not just static HTML presence.
+        await popup.webContents.executeJavaScript(`document.querySelector('[data-action="size:160"]').click()`);
+        await new Promise(resolve=>setTimeout(resolve,100));
+        const resizedFromMenu=win.getBounds().width===160;
+        resizePet(180);
+        if(!resizedFromMenu)throw Error('Custom menu size command did not reach main window');
+        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,
+          nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
     });
     setTimeout(()=>app.exit(2),20000).unref();

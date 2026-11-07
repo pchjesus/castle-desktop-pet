@@ -40,7 +40,7 @@ jobs:
           $qaSource = Join-Path $PWD 'dist-qa/CastlePetQA'
           $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
           Move-Item -LiteralPath $qaSource -Destination $qaRoot
-          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/preview.html','resources/app/preview-assets')) {
+          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/dist-electron/pet-menu.html','resources/app/dist-electron/menu-preload.cjs','resources/app/preview.html','resources/app/preview-assets')) {
             if (!(Test-Path (Join-Path $qaRoot $name))) { throw "Missing package file: $name" }
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
@@ -52,7 +52,7 @@ jobs:
           } else { Write-Host 'Windows QA process report was not written.' }
           if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
           $result = Get-Content $qaReport | ConvertFrom-Json
-          if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
+          if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.menuChrome.passed -or !$result.menuQA.hasSizing -or !$result.menuQA.hasPose -or !$result.menuQA.hasBlocked -or !$result.resizedFromMenu -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
