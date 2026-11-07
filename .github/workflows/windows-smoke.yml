@@ -46,6 +46,10 @@ jobs:
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
           $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
           if (!$qaProcess.WaitForExit(30000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
+          if (Test-Path $qaReport) {
+            Write-Host '=== Windows QA process report ==='
+            Get-Content $qaReport -Raw | Write-Host
+          } else { Write-Host 'Windows QA process report was not written.' }
           if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
           $result = Get-Content $qaReport | ConvertFrom-Json
           if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
