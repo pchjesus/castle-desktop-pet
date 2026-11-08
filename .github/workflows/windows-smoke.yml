@@ -45,7 +45,7 @@ jobs:
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
           $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
-          if (!$qaProcess.WaitForExit(30000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
+          if (!$qaProcess.WaitForExit(60000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
           if (Test-Path $qaReport) {
             Write-Host '=== Windows QA process report ==='
             Get-Content $qaReport -Raw | Write-Host

@@ -13,7 +13,7 @@ button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}button.wide{te
 button.danger{color:#f1b2b2}small{color:#adb4c0;font-size:10px}.foot{border-top:1px solid #49525d;margin-top:11px;padding-top:7px}
 </style></head><body><main>
 <h1>아킬라 · 설정</h1>
-<h2>크기 조정</h2>
+<h2>기본 자세·자율 행동</h2><div class="grid poses"><button data-action="setting:base:smoking">Smoking 기본</button><button data-action="setting:base:idle">Idle 기본</button><button id="autonomy-setting">자율 행동</button><button id="fire-setting">자동 사격</button></div><h2>크기 조정</h2>
 <div class="grid">
 <button data-action="size:120">120</button><button data-action="size:140">140</button><button data-action="size:160">160</button>
 <button data-action="size:180">180</button><button data-action="size:200">200</button><button data-action="size:240">240</button>
@@ -32,7 +32,9 @@ button.danger{color:#f1b2b2}small{color:#adb4c0;font-size:10px}.foot{border-top:
 <button class="wide" data-action="diagnostics">전체 이미지·비율 검수</button>
 <div class="foot"><button class="wide danger" data-action="quit">종료</button><small>공식 B형 원본은 변경되지 않았음</small></div>
 </main><script>
-const active=new URL(location.href).searchParams.get('size');
+const params=new URL(location.href).searchParams;const active=params.get('size');
+for(const [id,key,label] of [['autonomy-setting','autonomy','자율 행동'],['fire-setting','autoFire','자동 사격']]){const button=document.getElementById(id);const enabled=params.get(key)!=='false';button.textContent=label+(enabled?' ON':' OFF');button.dataset.action='setting:'+key+':'+String(!enabled);button.setAttribute('aria-pressed',String(enabled));}
+for(const button of document.querySelectorAll('[data-action^="setting:base:"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:base:'+(params.get('base')||'smoking')));
 for(const b of document.querySelectorAll('button[data-action^="size:"]'))b.setAttribute('aria-pressed',String(b.dataset.action==='size:'+active));
 document.addEventListener('click',event=>{
  const button=event.target.closest('button[data-action]');

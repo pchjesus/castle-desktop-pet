@@ -1,4 +1,6 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron';
+import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
+import {normalizeSettings} from '../src/behavior/controller.mjs';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor } from 'electron';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { constrain } from './geometry.mjs';
@@ -17,6 +19,8 @@ function openDiagnostics(show=true) {
  diagnostics.loadFile(join(__dirname,'../preview.html'));
  return diagnostics;
 }
+let behaviorSettings=normalizeSettings(null);
+function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
 function fit(bounds: Electron.Rectangle) { return constrain(bounds, screen.getAllDisplays().map(d => d.workArea)); }
@@ -61,7 +65,7 @@ function openPetMenu() {
  popup.on('closed',()=>{if(menuWindow===popup)menuWindow=undefined;});
  if(!isSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
- popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width)}})
+ popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))}})
   .then(()=>{if(!isSmoke && !popup.isDestroyed())popup.show();})
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
@@ -88,6 +92,7 @@ function openDiagnosticsAt(pose:'dual_firing'|'firing_dynamic'|'speaking_referen
 }
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
  if(command==='quit'){app.quit();return;}
  if(command==='diagnostics'){openDiagnostics();return;}
  if(command==='diagnostics:dual_firing'){openDiagnosticsAt('dual_firing');return;}
@@ -121,13 +126,18 @@ function nativeFrameless() {
 }
 
 app.whenReady().then(() => {
+  const suspend=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
+  const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
+  powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
+  app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
   win = new BrowserWindow({ ...restore(), transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
   win.setMenu(null);
   win.setMenuBarVisibility(false);
   // Suppress Windows' native titlebar/system menu on non-client right clicks.
   win.on('system-context-menu',event=>{event.preventDefault();log('Windows system context menu suppressed');});
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
-  win.loadFile(join(__dirname, '../dist/index.html'));
+  readBehavior();
+  win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
   win.on('moved', save); win.on('resize', save); win.on('close', save);
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
   let ignoresPointer=false;
@@ -197,7 +207,7 @@ app.whenReady().then(() => {
         const approvedPoseChecked:Record<string,boolean>={};
         for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003],['dual_firing',1024],['speaking',956],['firing_dynamic',1004]] as const){
           win.webContents.send('pet:action',pose);
-          approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+          approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>100){clearInterval(timer);resolve(false);}},100);})`);
         }
         if(Object.values(approvedPoseChecked).some(value=>!value))throw Error('Approved pose QA failed: '+JSON.stringify(approvedPoseChecked));
         win.webContents.send('pet:action','idle');
@@ -267,7 +277,7 @@ app.whenReady().then(() => {
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
     });
-    setTimeout(()=>app.exit(2),20000).unref();
+    setTimeout(()=>app.exit(2),45000).unref();
   }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit);
 });

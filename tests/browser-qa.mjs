@@ -24,11 +24,11 @@ try{
  page.on('console',m=>{if(m.type()==='error')errors.push('console '+m.text())});
  page.on('requestfailed',r=>errors.push('requestfailed '+r.url()+' '+r.failure()?.errorText));
  await page.goto('http://127.0.0.1:'+server.address().port+'/preview.html',{waitUntil:'load'});
- await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===956;});
+ await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1003;});
  const first=await page.locator('#pet .pet-stage img').getAttribute('src');
- assert(/idle[-.]/.test(first),'Desktop must display B idle candidate');
+ assert(/smoking[-.]/.test(first),'Desktop must display approved B Smoking at startup');
  const checkHash=async pose=>{await page.waitForFunction(name=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('/'+name+'-');},pose);const url=await page.locator('#pet .pet-stage img').evaluate(im=>im.currentSrc);const response=await page.request.get(url);assert(response.ok());assert.equal(createHash('sha256').update(await response.body()).digest('hex'),hashes[pose]);record('approved '+pose+' bytes');};
- await checkHash('idle');
+ await checkHash('smoking');
  record('later B is the actual desktop default, not a legacy source');
  for(const width of [180,240,360]){
   await page.locator('#size').selectOption(String(width));

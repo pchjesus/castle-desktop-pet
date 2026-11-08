@@ -29,4 +29,4 @@ export const originalFrames=(state:PetState)=>{const u=get(sourceB,state+'.png')
 export const workingExitFrames:string[]=[];
 export const revolverActionFrames:string[]=[];
 const animation=(state:PetState)=>({frames:outfitFrames(outfitRegistry,outfitPolicy.active,state),frameDurationMs:500});
-export const akila:Character={id:'akila',name:'아킬라',initialState:'idle',animations:Object.fromEntries(states.map(state=>[state,animation(state)])) as Character['animations'],dialogues:{testPassed:['코딩 실력은 인정하지. 감탄했다, 오픈AI.'],deploymentComplete:['남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.']}};
+export const akila:Character={id:'akila',name:'아킬라',initialState:'smoking',animations:Object.fromEntries(states.map(state=>[state,animation(state)])) as Character['animations'],dialogues:{testPassed:['코딩 실력은 인정하지. 감탄했다, 오픈AI.'],jobStart:['남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.'],deploymentComplete:['여러모로... 나쁘지 않았다. 신입.']}};

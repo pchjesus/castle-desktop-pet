@@ -36,3 +36,6 @@ All nine B poses are registered; Speaking and Firing Dynamic use user-approved c
 - Dialogue registry: preserve user-provided original lines, distinguish adaptations/creative text, 4 independent `부동심` fragments, fixed Cone/Firing Dynamic homage, 5/6-click Black Mamba easter egg.
 - **Codex event approval change**: jobStart = `남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.`; testPassed unchanged; deploymentComplete = `여러모로... 나쁘지 않았다. 신입.`. Drop old jobStart phrase. These are future integrations, not B-13 implementation.
 - B-13: autonomous scheduling, clicks and dialogue behavior; B-14: cartoon/game status UI, archives, help and extended settings; B-15: Codex linkage. Keep user-approved B images immutable and PR #11 draft, no merge/deploy without approval.
+
+## B-CANONICAL-13
+Implemented v1.7 behavior/controller and dialogue registry. Default Smoking; renderer uses managed animation completion and restores configured base. Settings persist in behavior.json via the existing custom menu. See B_CANONICAL_13_BEHAVIOR.md for proposed timing/cooldown defaults and tests. External Codex integration and B-14 UI remain out of scope. Approved image files/mappings are unchanged.

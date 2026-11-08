@@ -7,7 +7,7 @@ const pet=document.querySelector<HTMLElement>('#pet')!;
 const desktop=document.querySelector<HTMLElement>('#desktop')!;
 const dialogue=document.querySelector<HTMLElement>('#dialogue')!;
 const speed=document.querySelector<HTMLSelectElement>('#speed')!;
-const controller=mountPet(pet,akila,()=>Number(speed.value));
+const controller=mountPet(pet,akila,()=>Number(speed.value),{initialState:'smoking'});
 const select=document.querySelector<HTMLSelectElement>('#state')!;
 for(const state of states){const option=document.createElement('option');option.value=state;option.textContent=state;select.append(option);}
 pet.addEventListener('pet-state',ev=>{select.value=(ev as CustomEvent<PetState>).detail;});

@@ -9,6 +9,7 @@ on:
       - 'tests/b07-proportions-browser-qa.mjs'
       - 'tests/b10-browser-qa.mjs'
       - 'tests/b11-browser-qa.mjs'
+      - 'tests/behavior-browser-qa.mjs'
       - 'preview-entry.html'
       - 'scripts/export-preview.mjs'
       - '.github/workflows/browser-qa.yml'
@@ -43,6 +44,8 @@ jobs:
         run: node tests/b10-browser-qa.mjs
       - name: B11 candidate review
         run: node tests/b11-browser-qa.mjs
+      - name: B13 behavior and pointer interaction
+        run: node tests/behavior-browser-qa.mjs
       - name: File offline verification
         run: node tests/offline-preview-qa.mjs
       - name: Package offline review
@@ -60,5 +63,6 @@ jobs:
             artifacts/b07-review/
             artifacts/b10/
             artifacts/b11/
+            artifacts/b13/
             preview-offline.zip
           if-no-files-found: warn

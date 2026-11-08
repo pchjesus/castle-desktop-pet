@@ -5,7 +5,7 @@ import { playFrames } from './animation';
 import { startEffects } from './effects';
 import { startWorking } from './working';
 import { createTransition } from './transition.mjs';
-export function mountPet(root: HTMLElement, character: Character, getSpeed: () => number = () => 1) {
+export function mountPet(root: HTMLElement, character: Character, getSpeed: () => number = () => 1, options:{managed?:boolean;initialState?:PetState}={}) {
   let stop = () => {};
   let previousRenderedState: PetState | undefined;
   const render = (state: PetState) => {
@@ -77,12 +77,12 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
       image.src = reduced?.matches ? frames[0] : frame;
       if (isRevolverFiring) stage.dataset.actionFrame = String(actionFrameIndex++);
       if (isRevolverDrawing) stage.dataset.drawFrame = String(actionFrameIndex++);
-    }, mode, () => { stateController.set('idle'); }, state === 'speaking');
+    }, mode, () => { if(!options.managed)stateController.set('idle'); }, state === 'speaking');
     const stopWorking = isWorking && outfitPolicy.active !== 'mustang' ? startWorking(stage, frames[0]) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); document.removeEventListener('visibilitychange', visibility); };
   };
-  const transition = createTransition(render, () => {
+  const transition = options.managed ? render : createTransition(render, () => {
     const stage = root.querySelector<HTMLElement>('.pet-stage');
     if (!stage || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     const image = stage.querySelector<HTMLImageElement>('img');
@@ -112,6 +112,6 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     stage.classList.add('working-exit');
     return true;
   });
-  const stateController = createState(character.initialState, transition); transition(stateController.get());
-  return stateController;
+  const stateController = createState(options.initialState||character.initialState, transition); transition(stateController.get());
+  return {...stateController,dispose:()=>stop()};
 }

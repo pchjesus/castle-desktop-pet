@@ -145,3 +145,6 @@ Dark charcoal / steel / muted gold. Right-click entry into:
 - GitHub: `pchjesus/castle-desktop-pet`, feature branch `feat/b-canonical-07-proportions`, Draft PR #11.
 - B-12 integrated user-approved B pose art; baseline `src/characters/akila.ts` still defaults to `initialState:'idle'` and lists old `deploymentComplete` dialogue. The proposals here are not yet coded.
 - Next task: B-CANONICAL-13 implementation guided by this file, without modifying any approved visual asset or implementing B-14/B-15 prematurely.
+
+## B-13 implementation note
+The v1.7 planning baseline above remains the source of approved wording. Implementation and chosen PROPOSED defaults, validation evidence and outstanding Windows/CI checks are documented in `B_CANONICAL_13_BEHAVIOR.md`. B-14/B-15 remain excluded.
