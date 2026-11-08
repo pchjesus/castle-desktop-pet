@@ -26,7 +26,7 @@ try{
     for(const size of ['180','240','360']){
       await page.selectOption('#b07-size',size);
       const widths=await page.locator('.b07-stage').evaluateAll(stages=>stages.map(el=>el.getBoundingClientRect().width));
-      assert(widths.every(width=>Math.abs(width-Number(size))<1));
+      assert.equal(widths.length,pose==='sitting'?6:5);assert(widths.every(width=>Math.abs(width-Number(size))<1));
       assert.equal(await page.locator('.b07-head').count(),5);
       result.checks.push(`${pose} original/candidate/references load at ${size}px`);
     }

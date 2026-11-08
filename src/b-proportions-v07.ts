@@ -1,5 +1,6 @@
 import report from './characters/candidates/b-mustang-20261107/proportions-v07/manifest.json';
 import './b-proportions-v07.css';
+import sitting08 from './characters/candidates/b-mustang-20261107/proportions-v08/sitting.png';
 
 // Review-only imports: never register these images in outfits or the live pet.
 const originals = import.meta.glob('../design/canonical/b-mustang-20261107/approved_visual_sources/*.png', {eager:true, query:'?url', import:'default'}) as Record<string,string>;
@@ -47,7 +48,12 @@ function render() {
     caption.textContent=`${name} · ${label} · 머리폭/어깨폭 추정 ${((right-x)/item.shoulder_width).toFixed(2)}`;
     figure.append(stage,caption);panels.append(figure);
   }
-  section.querySelector('#b07-status')!.textContent=report.poses[pose].limitations;
+  if(pose==='sitting') {
+    const figure=document.createElement('figure');const stage=document.createElement('div');stage.className='b07-stage';
+    const img=document.createElement('img');img.src=sitting08;img.alt='Sitting 08 재검수 후보';img.style.cssText='width:100%;height:100%;object-fit:contain;object-position:bottom';stage.append(img);
+    const caption=document.createElement('figcaption');caption.textContent='Sitting · 08 재검수 후보 · 가이드 미측정';figure.append(stage,caption);panels.insertBefore(figure,panels.children[2]);
+  }
+  section.querySelector('#b07-status')!.textContent=pose==='sitting'?'08 후보: 머리 확대와 목 노출 축소, 상체·팔·허벅지 축소 방향. 손·총·어깨 및 이미지 세부는 사용자 재검수 필요.': '사용자 승인된 07 이미지 · 펫 적용 전.';
 }
 select.addEventListener('change',render);
 section.querySelector('#b07-size')!.addEventListener('change',event=>{panels.style.setProperty('--b07-width',(event.target as HTMLSelectElement).value+'px');});
