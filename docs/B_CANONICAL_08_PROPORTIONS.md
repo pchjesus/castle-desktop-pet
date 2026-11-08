@@ -1,3 +1,5 @@
+> 현재 B-12 상태: Speaking 7컷과 Firing Dynamic은 사용자 승인되어 런타임 및 메뉴에 등록되었다. 아래의 미승인·차단 및 메뉴 항목은 작성 당시 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
 > 과거 검수 기록: 현재 승인 및 실행 상태는 [B-CANONICAL-09](B_CANONICAL_09_RUNTIME.md)를 참조한다.
 
 # B-CANONICAL-08

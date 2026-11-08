@@ -4,11 +4,11 @@ User correction: the **initial prototype is NOT later A**. Its pre-migration sou
 ## Asset identity
 - **Later A**: `design/references/akila-sheet-02.png` blouson variant. Not a standalone runtime pack; unavailable rather than incorrectly using initial prototype.
 - **Later B**: 9 immutable official images `design/canonical/b-mustang-20261107/approved_visual_sources/`, B QA derivatives `src/characters/candidates/b-mustang-20261107/action-pack-v04/`.
-- B QA active by default. `mustang.ready=false` explicitly indicates final visual sign-off still outstanding, not legacy A runtime.
+- B QA active by default. `mustang.ready=true` reflects explicit user approval of the B pose pack, not legacy A runtime.
 - JPEG-derived Dual Firing is blocked. Speaking crops are face-only; no invalid full-size fallback.
 
 ## B-CANONICAL-09 current status
-Idle and Smoking v07 and Sitting v08 are user-approved and registered in the runtime. See `approved-runtime.json` for their hashes and `B_CANONICAL_09_RUNTIME.md` for validation; the following B-07/08 notes describe historical status. Other poses remain unchanged.
+Idle and Smoking v07 and Sitting v08 are user-approved and registered in the runtime. See `approved-runtime.json` for their hashes and `B_CANONICAL_09_RUNTIME.md` for validation; the following B-07/08 notes describe historical status. B-12 subsequently approved B-11 Speaking and Firing Dynamic.
 
 ## Remaining work
 ### B-CANONICAL-07 review-only candidates
@@ -18,8 +18,11 @@ Manual visual QA 180/240/360 and windows 10/11; fix image fringes, blocked masks
 
 See `docs/AB_ASSET_CONTRACT_2026-11-07.md`, `docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md`. No releases without user approval.
 
-## B-CANONICAL-10
+## B-CANONICAL-10 (historical; B-12 supersedes approval status)
 Review-only `cleanup-v10` contains Dual Firing / Firing Dynamic edits and seven full-body Speaking trials, all unapproved. See `B_CANONICAL_10_REVIEW.md` for alpha-composited comparison screenshots, hashes and remaining quality limitations. The approved runtime images and live registry remain unchanged. Do not interpret raw RGB behind transparent pixels as visible background; inspect alpha compositing on light/dark/checker backgrounds.
 
-## B-CANONICAL-11
+## B-CANONICAL-11 (historical; B-12 supersedes approval status)
 `cleanup-v11` holds nine new unapproved trials, preserving B-10 and all approved/runtime assets. See `B_CANONICAL_11_REVIEW.md` for neck/collar and internal-background zoom comparisons, playback video, hashes and pixel metrics. Speaking still changes body pixels below the face and does not meet the mouth-only invariance requirement; do not mark complete or apply it. Use alpha-composited previews, preserve real black clothing/shadows/weapons, and require further visual review.
+
+## B-CANONICAL-12
+All nine B poses are registered; Speaking and Firing Dynamic use user-approved cleanup-v11. Speaking body pixel differences are known and accepted; do not regenerate. See `B_CANONICAL_12_RUNTIME.md`. Previous candidate status notes are historical.

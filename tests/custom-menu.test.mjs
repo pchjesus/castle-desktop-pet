@@ -14,7 +14,7 @@ test('custom frameless menu buttons cover all nine sizes and six live poses, dia
  const h=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
  for(const size of [120,140,160,180,200,240,280,320,360])
   assert(h.includes('data-action="size:'+size+'"'),'missing size '+size);
- for(const pose of ['idle','smoking','working','drawing','firing','sitting','dual_firing'])
+ for(const pose of ['idle','smoking','working','drawing','firing','sitting','dual_firing','speaking','firing_dynamic'])
   assert(h.includes('data-action="pose:'+pose+'"'),'missing pose '+pose);
  for(const pose of ['dual_firing','firing_dynamic','speaking_reference'])
   assert(h.includes('data-action="diagnostics:'+pose+'"'),'missing diagnostic '+pose);

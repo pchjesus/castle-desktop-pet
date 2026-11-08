@@ -1,3 +1,5 @@
+> 현재 승인 상태: B-12에서 사용자가 B-11 Speaking 7컷과 Firing Dynamic을 승인했다. 이 문서의 미승인 언급은 당시 검수 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
 # B-CANONICAL-10 — 미완성 검수 후보
 
 공식 원본 9종과 사용자 승인 파생본 3종은 그대로 보존했다. `cleanup-v10`은 런타임에 등록되지 않는 신규 편집 시안이며 `manifest.json`에 파일별 SHA-256과 문제점을 기록한다.

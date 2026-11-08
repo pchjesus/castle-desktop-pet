@@ -1,3 +1,5 @@
+> 현재 승인 상태: B-12에서 사용자가 B-11 Speaking 7컷과 Firing Dynamic을 승인했다. 이 문서의 미승인 언급은 당시 검수 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
 > 현재 상태: Dual Firing은 리볼버 측 탄피 제거본을 사용자 요청에 따라 실제 포즈로 등록했다. `DUAL_FIRING_CASINGS.md` 참조. 나머지 내용은 B-09 당시 기록이다.
 
 # B-CANONICAL-09 — 승인 이미지 런타임 등록

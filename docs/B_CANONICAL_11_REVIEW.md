@@ -1,3 +1,5 @@
+> 현재 승인 상태: B-12에서 사용자가 B-11 Speaking 7컷과 Firing Dynamic을 승인했다. 이 문서의 미승인 언급은 당시 검수 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
 # B-CANONICAL-11 — 재정제 검수
 
 기준: `592b024`, 기존 `feat/b-canonical-07-proportions`. B-10 반려 파일은 이력으로 보존하고 B-11은 `cleanup-v11`에 별도 저장한다. 공식 원본 9종과 승인 파생 이미지 3종, 실행 에셋 등록은 변경하지 않는다.

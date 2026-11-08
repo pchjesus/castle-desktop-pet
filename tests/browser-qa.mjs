@@ -4,6 +4,7 @@ import {createReadStream,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
 const hashes={idle:'c95006e4e7c05151839bd6f42d35b02b0a24df023ac9014e7c33494645a73b78',smoking:'b5977a66edc65b4d669e3a2f416e35c37fcb6248bdaefb0512fb0bb67ca86391',sitting:'002f75af76599a91e93f911581d1a78117119d1c05c5be7a5d62df29c345cfe5'};
 const output=resolve('artifacts/visual-qa');mkdirSync(output,{recursive:true});
 const errors=[],checks=[];
@@ -53,11 +54,18 @@ try{
  const dualUrl=await page.locator('#pet .pet-stage img').evaluate(im=>im.currentSrc);
  assert.equal(createHash('sha256').update(await (await page.request.get(dualUrl)).body()).digest('hex'),'f0436fa255c3490d1d2e5dd1fab63873f2fe72faa2adf1eda4804e28a23a946b');
  await page.waitForFunction(()=>document.querySelector('#state')?.value==='idle',null,{timeout:5000});record('dual firing approved image and return to idle');
- for(const name of ['speaking','firing_dynamic']) {
-  await page.locator('#state').selectOption(name);
-  await page.locator('#pet .placeholder').waitFor();
-  assert((await page.locator('#pet').innerText()).includes(name));record('unapproved B state does not substitute legacy '+name);
- }
+ await page.locator('#state').selectOption('firing_dynamic');
+ await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1004&&im.currentSrc.includes('firing_dynamic-')});
+ const dynamicUrl=await page.locator('#pet .pet-stage img').evaluate(im=>im.currentSrc);
+ assert.equal(createHash('sha256').update(await (await page.request.get(dynamicUrl)).body()).digest('hex'),'53b524f61d29983937216ee86926b43b5ab1ef4af2bc8eb465b233b7d0e56025');
+ await page.waitForFunction(()=>document.querySelector('#state').value==='idle',null,{timeout:5000});record('dynamic approved image returns idle');
+ await page.evaluate(()=>{window.__b12frames=[];const root=document.querySelector('#pet');window.__b12observer=new MutationObserver(()=>{const im=root.querySelector('img');if(im?.getAttribute('src')?.includes('speaking-')){const src=im.getAttribute('src');if(window.__b12frames.at(-1)!==src)window.__b12frames.push(src);}});window.__b12observer.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});});
+ await page.locator('#state').selectOption('speaking');
+ await page.waitForFunction(()=>document.querySelector('#state').value==='idle',null,{timeout:7000});
+ const speakingFrames=await page.evaluate(()=>{window.__b12observer.disconnect();return window.__b12frames});
+ const registry=JSON.parse(await readFile('src/characters/candidates/b-mustang-20261107/approved-runtime.json','utf8'));assert.equal(speakingFrames.length,7);for(let i=0;i<7;i++){assert(speakingFrames[i].includes('speaking-'+String(i+1).padStart(2,'0')+'-'));const response=await page.request.get(new URL(speakingFrames[i],page.url()).href);assert(response.ok());assert.equal(createHash('sha256').update(await response.body()).digest('hex'),registry.assets.speaking.frames[i].sha256);}record('speaking seven approved frames in order returns idle');
+ await page.locator('#state').selectOption('speaking');await page.waitForTimeout(250);await page.locator('#state').selectOption('sitting');await page.waitForTimeout(3800);assert.equal(await page.inputValue('#state'),'sitting');record('interrupted speaking does not return to idle');
+ await page.emulateMedia({reducedMotion:'reduce'});await page.locator('#state').selectOption('speaking');await page.waitForFunction(()=>document.querySelector('#state').value==='idle',null,{timeout:3000});await page.emulateMedia({reducedMotion:'no-preference'});record('reduced motion speaking returns idle');
  await page.locator('#state').selectOption('idle');
  assert.equal(await page.locator('#canonical-action option').count(),9);record('nine official B sources in visual review');
  for(const width of [180,240,360]){

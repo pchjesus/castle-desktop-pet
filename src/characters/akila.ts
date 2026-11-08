@@ -1,3 +1,4 @@
+import dynamicApproved from './candidates/b-mustang-20261107/cleanup-v11/firing_dynamic.png';
 import dualFiringApproved from './candidates/b-mustang-20261107/dual-firing-approved/dual_firing.png';
 import idleApproved from './candidates/b-mustang-20261107/proportions-v07/idle.png';
 import smokingApproved from './candidates/b-mustang-20261107/proportions-v07/smoking.png';
@@ -9,15 +10,16 @@ export const states: PetState[] = ['idle','smoking','speaking','drawing','firing
 export interface Character { id:string; name:string; initialState:PetState; animations:Record<PetState,{frames:string[];frameDurationMs:number}>; dialogues:Record<string,string[]>; }
 // The B pack is a technical derivative of the 2026-11-07 nine immutable canonical images.
 const approvedB=import.meta.glob('./candidates/b-mustang-20261107/action-pack-v04/*.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
+const speakingB=import.meta.glob('./candidates/b-mustang-20261107/cleanup-v11/speaking-*.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 const sourceB=import.meta.glob('../../design/canonical/b-mustang-20261107/approved_visual_sources/*.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 const get=(set:Record<string,string>,file:string)=>Object.entries(set).find(([path])=>path.endsWith('/'+file))?.[1];
 const B:Record<PetState,string[]>={idle:[],smoking:[],speaking:[],drawing:[],firing:[],working:[],dual_firing:[],sitting:[],firing_dynamic:[]};
 for(const state of ['drawing','firing','working'] as PetState[]) {
  const url=get(approvedB,state+'.png');if(url) B[state]=[url];
 }
-B.dual_firing=[dualFiringApproved]; B.idle=[idleApproved]; B.smoking=[smokingApproved]; B.sitting=[sittingApproved];
-// Speaking face-only crops are not valid full-body desktop sprites.
-// Firing Dynamic remains unapproved; dual firing uses the user-requested casing correction.
+B.firing_dynamic=[dynamicApproved]; B.speaking=Array.from({length:7},(_,i)=>{const name='speaking-'+String(i+1).padStart(2,'0')+'.png';const url=get(speakingB,name);if(!url)throw new Error('Missing approved B speaking frame '+name);return url;}); B.dual_firing=[dualFiringApproved]; B.idle=[idleApproved]; B.smoking=[smokingApproved]; B.sitting=[sittingApproved];
+// Seven full-body B-11 frames are user-approved; face-only original remains diagnostic.
+// Firing Dynamic and Speaking B-11 are user-approved; dual firing retains its casing correction.
 // Do not silently substitute legacy A-type frames for missing B motions.
 export const outfitRegistry:Record<string,Record<string,string[]>>={
  blouson:Object.fromEntries(states.map(state=>[state,[]])),

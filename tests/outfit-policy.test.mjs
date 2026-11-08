@@ -9,7 +9,7 @@ test('only the later B outfit starts by default in QA and later A is not spoofed
  assert.equal(outfitPolicy.targetDefault,'mustang');
  assert.equal(outfitPolicy.active,'mustang');
  assert.equal(outfitPolicy.outfits.blouson.ready,false);
- assert.equal(outfitPolicy.outfits.mustang.ready,false); // not visually approved
+ assert.equal(outfitPolicy.outfits.mustang.ready,true); // user-approved B pose pack
  assert.notEqual(outfitPolicy.outfits.blouson.assetRoot,outfitPolicy.outfits.mustang.assetRoot);
 });
 test('runtime source never imports initial prototype sprites',async()=>{

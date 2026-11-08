@@ -107,6 +107,8 @@ function dispatchPetMenuCommand(command:string) {
   case 'pose:drawing':win.webContents.send('pet:action','drawing');break;
   case 'pose:firing':win.webContents.send('pet:action','firing');break;
   case 'pose:dual_firing':win.webContents.send('pet:action','dual_firing');break;
+  case 'pose:speaking':win.webContents.send('pet:action','speaking');break;
+  case 'pose:firing_dynamic':win.webContents.send('pet:action','firing_dynamic');break;
   case 'pose:sitting':win.webContents.send('pet:action','sitting');break;
   default:log('Unknown pet menu command rejected');
  }
@@ -193,7 +195,7 @@ app.whenReady().then(() => {
         win.webContents.send('pet:action','drawing');
         const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
         const approvedPoseChecked:Record<string,boolean>={};
-        for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003],['dual_firing',1024]] as const){
+        for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003],['dual_firing',1024],['speaking',956],['firing_dynamic',1004]] as const){
           win.webContents.send('pet:action',pose);
           approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
         }

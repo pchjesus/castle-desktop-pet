@@ -66,18 +66,18 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     const visibility = () => stage.classList.toggle('action-paused', document.hidden);
     document.addEventListener('visibilitychange', visibility); visibility();
     root.append(stage);
-    const mode = state === 'firing' || state === 'dual_firing' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
+    const mode = state === 'firing' || state === 'dual_firing' || state === 'firing_dynamic' || state === 'speaking' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
     const frameMs = state === 'working' ? (frames.length > 1 ? 300 : 3000)
       : isRevolverFiring ? 190
       : isRevolverDrawing ? 320
       : state === 'firing' ? 1500
-      : state === 'dual_firing' ? 2400 : animation.frameDurationMs;
+      : state === 'dual_firing' ? 2400 : state === 'firing_dynamic' ? 1500 : animation.frameDurationMs;
     let actionFrameIndex = 0;
     const stopFrames = playFrames(frames, frameMs / Math.max(getSpeed(), 0.2), frame => {
       image.src = reduced?.matches ? frames[0] : frame;
       if (isRevolverFiring) stage.dataset.actionFrame = String(actionFrameIndex++);
       if (isRevolverDrawing) stage.dataset.drawFrame = String(actionFrameIndex++);
-    }, mode, () => { stateController.set('idle'); });
+    }, mode, () => { stateController.set('idle'); }, state === 'speaking');
     const stopWorking = isWorking && outfitPolicy.active !== 'mustang' ? startWorking(stage, frames[0]) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); document.removeEventListener('visibilitychange', visibility); };

@@ -22,3 +22,11 @@ test('interrupted playback never completes and hidden playback resumes', async (
  await wait(25); assert.equal(count, 1); stop();
  const cancel = playFrames(['aim'], 10, () => {}, 'once', () => count++); cancel(); await wait(20); assert.equal(count, 1);
 });
+test('speaking interruption and reduced motion do not advance stale frames', async () => {
+ const shown=[];let completed=0;media.matches=false;
+ const stop=playFrames(['one','two','three'],15,f=>shown.push(f),'once',()=>completed++,true);
+ await wait(25);assert(shown.includes('two'));
+ media.matches=true;media.dispatchEvent(new Event('change'));assert.equal(shown.at(-1),'one');
+ await wait(50);assert.equal(shown.at(-1),'one');stop();media.matches=false;media.dispatchEvent(new Event('change'));
+ await wait(50);assert.equal(completed,0);
+});
