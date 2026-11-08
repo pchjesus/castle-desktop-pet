@@ -1,0 +1,111 @@
+{
+  "status": "incomplete-review-only",
+  "method": "Reference-conditioned image edits with alpha compositing review. Dual Firing second edit removed background in browser composite; raw RGB previews were misleading. No runtime registration.",
+  "assets": {
+    "dual_firing": {
+      "sha256": "df893b08f18838938ffc9eef2c42c9fa055d4774530b2302209da6c3bb448a42",
+      "width": 1024,
+      "height": 1536,
+      "alpha_range": [
+        0,
+        254
+      ],
+      "approved": false,
+      "warning": "미승인 정제 시안: 밝은 배경 합성에서 배경 제거 확인. 손·무기·탄피·섬광 세부 재묘사와 반투명 경계 정밀 검수 필요."
+    },
+    "firing_dynamic": {
+      "sha256": "59b8fa8467daa9a47d6d5f2e2b9b2acb033ed6b7b96efbfc984a80d3463d8390",
+      "width": 1004,
+      "height": 1567,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미승인 정제 시안: 배경 제거 확인. 섬광 알파 경계와 손·총·외곽선의 원본 동일성 추가 검수 필요."
+    },
+    "speaking-01": {
+      "sha256": "cf5bfd28b79df0624350dc1a91d910b78810c61fbe425675b63354ba885c5c2b",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-02": {
+      "sha256": "38dba6335552fe9d038f123b71a6452a2215dd28ef9e00c9e91695849dd3efe8",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-03": {
+      "sha256": "0032e4553fe9bcf0252d5aac465da49fe99b3b2acb40bbf63875e2c6e8ea1dd6",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-04": {
+      "sha256": "ed9c273336a3ebeea9a717332391f111fd5a75183ae357e127bd94fd795e37bc",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-05": {
+      "sha256": "b3fa5a041dd65d3994d723979eea538f9fcadc2d770ab0e0f79bc5c3dad4eca5",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-06": {
+      "sha256": "9a5abd6944f24744a7cd55625bec517370872ccdfa5ee0ddf37789e2f7b31833",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    },
+    "speaking-07": {
+      "sha256": "7394b8f18493108518da1e91d9eccc521385971f87848e49ca4cdfb52cd3be0d",
+      "width": 956,
+      "height": 1645,
+      "alpha_range": [
+        0,
+        255
+      ],
+      "approved": false,
+      "warning": "미완성: 전신 결합 시안. 원본 표정 일치와 머리·선글라스·목·몸통 정렬 및 연속 재생 흔들림 검수 필요."
+    }
+  },
+  "source_sha256": {
+    "design/canonical/b-mustang-20261107/approved_visual_sources/dual_firing.jpg": "9256480c510ac8b7b1de6a56b64a8a8bec7362e5b5fc4e20faa0afc353c147a7",
+    "design/canonical/b-mustang-20261107/approved_visual_sources/firing_dynamic.jpg": "182235a157ea96df141fdc14794a715a96720647cabcd4f69de8b1a9f4448c9c",
+    "design/canonical/b-mustang-20261107/approved_visual_sources/speaking_reference.jpg": "c91601262eb7c8ec3a8af7c3df904c000d05d8247229855ef2564d62c649c42d",
+    "src/characters/candidates/b-mustang-20261107/proportions-v07/idle.png": "c95006e4e7c05151839bd6f42d35b02b0a24df023ac9014e7c33494645a73b78"
+  }
+}

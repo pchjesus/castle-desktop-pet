@@ -17,3 +17,6 @@ See `docs/B_CANONICAL_07_PROPORTIONS.md`. B-07 source images are preserved separ
 Manual visual QA 180/240/360 and windows 10/11; fix image fringes, blocked masks and Speaking; later A standalone sprite extraction only from later A design; integrate per-outfit action sequences after approval. Avoid altering canonical originals or introducing any first-prototype art. `npm ci`, `npm run build`, `npm test`, `npm run preview:package`.
 
 See `docs/AB_ASSET_CONTRACT_2026-11-07.md`, `docs/B_MUSTANG_CANONICAL_ASSETS_2026-11-07.md`. No releases without user approval.
+
+## B-CANONICAL-10
+Review-only `cleanup-v10` contains Dual Firing / Firing Dynamic edits and seven full-body Speaking trials, all unapproved. See `B_CANONICAL_10_REVIEW.md` for alpha-composited comparison screenshots, hashes and remaining quality limitations. The approved runtime images and live registry remain unchanged. Do not interpret raw RGB behind transparent pixels as visible background; inspect alpha compositing on light/dark/checker backgrounds.

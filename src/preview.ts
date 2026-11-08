@@ -69,3 +69,5 @@ reviewNotes.querySelector('#user-review-export')!.addEventListener('click',()=>{
 
 const proportion=document.createElement('section');proportion.className='b-proportion';proportion.innerHTML='<h2>Idle / Sitting 비율 비교</h2><p>동일 캔버스 기준이며 얼굴 크기·발 위치는 시각 검수가 필요합니다.</p><div class="b-proportion-panels"><figure><img id="proportion-idle" alt="Idle"><figcaption>Idle</figcaption></figure><figure><img id="proportion-sitting" alt="Sitting"><figcaption>Sitting</figcaption></figure></div>';document.querySelector('main')!.append(proportion);
 for(const name of ['idle','sitting']){const image=proportion.querySelector<HTMLImageElement>('#proportion-'+name)!;const key=Object.keys(revisedImages).find(path=>path.endsWith('/'+name+'.png'));if(key)image.src=revisedImages[key];}
+
+import './b10-review';
