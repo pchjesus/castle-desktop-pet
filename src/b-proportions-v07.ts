@@ -2,13 +2,13 @@ import report from './characters/candidates/b-mustang-20261107/proportions-v07/m
 import './b-proportions-v07.css';
 import sitting08 from './characters/candidates/b-mustang-20261107/proportions-v08/sitting.png';
 
-// Review-only imports: never register these images in outfits or the live pet.
+// The comparison retains original, approved, and superseded images separately.
 const originals = import.meta.glob('../design/canonical/b-mustang-20261107/approved_visual_sources/*.png', {eager:true, query:'?url', import:'default'}) as Record<string,string>;
 const candidates = import.meta.glob('./characters/candidates/b-mustang-20261107/proportions-v07/*.png', {eager:true, query:'?url', import:'default'}) as Record<string,string>;
 const section = document.createElement('section');
 section.className = 'b07-review';
-section.innerHTML = `<h2>B-CANONICAL-07 · 비례 편집 후보 · 미승인</h2>
-<p>원본·후보·기준 그룹을 같은 표시 영역에 맞춥니다. 머리 축소와 상체·팔다리 변경이 있는 재편집 이미지이며, 기본 펫에 적용되지 않습니다.</p>
+section.innerHTML = `<h2>B-CANONICAL-09 · 비례 이미지 검수</h2>
+<p>원본·후보·기준 그룹을 같은 표시 영역에 맞춥니다. Idle·Smoking 07과 Sitting 08은 사용자 승인되어 기본 펫에 적용됩니다. Sitting 07은 미승인입니다.</p>
 <label>대상 <select id="b07-pose"><option value="idle">Idle</option><option value="smoking">Smoking</option><option value="sitting">Sitting</option></select></label>
 <label>표시 너비 <select id="b07-size"><option>180</option><option selected>240</option><option>360</option></select> px</label>
 <label>배경 <select id="b07-bg"><option value="checker">격자</option><option value="light">흰색</option><option value="dark">어두운 회색</option></select></label>
@@ -26,7 +26,7 @@ function imageUrl(map:Record<string,string>, name:string) {
 function render() {
   const pose = select.value as 'idle'|'smoking'|'sitting';
   panels.replaceChildren();
-  for (const [name, kind, label] of [[pose,'original','공식 원본'],[pose,'candidate','07 편집 후보'],['drawing','original','기준 Drawing'],['firing','original','기준 Firing'],['working','original','기준 Working']] as const) {
+  for (const [name, kind, label] of [[pose,'original','공식 원본'],[pose,'candidate',pose==='sitting'?'07 미승인 후보':'07 사용자 승인'],['drawing','original','기준 Drawing'],['firing','original','기준 Firing'],['working','original','기준 Working']] as const) {
     const item = report.images[`${name}-${kind}` as keyof typeof report.images];
     const figure = document.createElement('figure');
     const stage = document.createElement('div'); stage.className='b07-stage';
@@ -50,10 +50,10 @@ function render() {
   }
   if(pose==='sitting') {
     const figure=document.createElement('figure');const stage=document.createElement('div');stage.className='b07-stage';
-    const img=document.createElement('img');img.src=sitting08;img.alt='Sitting 08 재검수 후보';img.style.cssText='width:100%;height:100%;object-fit:contain;object-position:bottom';stage.append(img);
-    const caption=document.createElement('figcaption');caption.textContent='Sitting · 08 재검수 후보 · 가이드 미측정';figure.append(stage,caption);panels.insertBefore(figure,panels.children[2]);
+    const img=document.createElement('img');img.src=sitting08;img.alt='Sitting 08 사용자 승인';img.style.cssText='width:100%;height:100%;object-fit:contain;object-position:bottom';stage.append(img);
+    const caption=document.createElement('figcaption');caption.textContent='Sitting · 08 사용자 승인 · 가이드 미측정';figure.append(stage,caption);panels.insertBefore(figure,panels.children[2]);
   }
-  section.querySelector('#b07-status')!.textContent=pose==='sitting'?'08 후보: 머리 확대와 목 노출 축소, 상체·팔·허벅지 축소 방향. 손·총·어깨 및 이미지 세부는 사용자 재검수 필요.': '사용자 승인된 07 이미지 · 펫 적용 전.';
+  section.querySelector('#b07-status')!.textContent=pose==='sitting'?'08 사용자 승인 · 기본 펫 적용. 07 Sitting은 미승인.':'07 사용자 승인 · 기본 펫 적용.';
 }
 select.addEventListener('change',render);
 section.querySelector('#b07-size')!.addEventListener('change',event=>{panels.style.setProperty('--b07-width',(event.target as HTMLSelectElement).value+'px');});

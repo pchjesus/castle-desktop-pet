@@ -1,3 +1,5 @@
+> 과거 검수 기록: 현재 승인 및 실행 상태는 [B-CANONICAL-09](B_CANONICAL_09_RUNTIME.md)를 참조한다.
+
 # B-CANONICAL-07 — 비례 편집 후보 (미승인)
 
 기준 커밋: 최신 main `42d9c83e732004b00b97b3776cd45923f6f8153d`.

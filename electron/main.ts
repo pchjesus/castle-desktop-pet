@@ -191,6 +191,12 @@ app.whenReady().then(() => {
         await win.webContents.executeJavaScript("window.__lastPetState='';document.querySelector('#app').addEventListener('pet-state',e=>window.__lastPetState=e.detail);true;");
         win.webContents.send('pet:action','drawing');
         const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+        const approvedPoseChecked:Record<string,boolean>={};
+        for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003]] as const){
+          win.webContents.send('pet:action',pose);
+          approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+        }
+        if(Object.values(approvedPoseChecked).some(value=>!value))throw Error('Approved pose QA failed: '+JSON.stringify(approvedPoseChecked));
         win.webContents.send('pet:action','idle');
         // A synthetic client event proves the pixel-gated right click reaches
         // the preload IPC bridge without creating a native popup in headless QA.
@@ -253,7 +259,7 @@ app.whenReady().then(() => {
         const resizedFromMenu=win.getBounds().width===160;
         resizePet(180);
         if(!resizedFromMenu)throw Error('Custom menu size command did not reach main window');
-        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,
+        writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
           menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }

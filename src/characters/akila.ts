@@ -1,3 +1,6 @@
+import idleApproved from './candidates/b-mustang-20261107/proportions-v07/idle.png';
+import smokingApproved from './candidates/b-mustang-20261107/proportions-v07/smoking.png';
+import sittingApproved from './candidates/b-mustang-20261107/proportions-v08/sitting.png';
 import { outfitPolicy } from './outfits';
 import { outfitFrames } from './outfit-loader.mjs';
 export type PetState = 'idle' | 'smoking' | 'speaking' | 'drawing' | 'firing' | 'working' | 'dual_firing' | 'sitting' | 'firing_dynamic';
@@ -8,9 +11,10 @@ const approvedB=import.meta.glob('./candidates/b-mustang-20261107/action-pack-v0
 const sourceB=import.meta.glob('../../design/canonical/b-mustang-20261107/approved_visual_sources/*.png',{eager:true,query:'?url',import:'default'}) as Record<string,string>;
 const get=(set:Record<string,string>,file:string)=>Object.entries(set).find(([path])=>path.endsWith('/'+file))?.[1];
 const B:Record<PetState,string[]>={idle:[],smoking:[],speaking:[],drawing:[],firing:[],working:[],dual_firing:[],sitting:[],firing_dynamic:[]};
-for(const state of ['idle','smoking','drawing','firing','working','sitting'] as PetState[]) {
+for(const state of ['drawing','firing','working'] as PetState[]) {
  const url=get(approvedB,state+'.png');if(url) B[state]=[url];
 }
+B.idle=[idleApproved]; B.smoking=[smokingApproved]; B.sitting=[sittingApproved];
 // Speaking face-only crops are not valid full-body desktop sprites.
 // The two JPEG-derived action poses remain visually blocked or unapproved.
 // Do not silently substitute legacy A-type frames for missing B motions.

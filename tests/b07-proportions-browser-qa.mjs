@@ -21,6 +21,10 @@ try{
   for(const pose of ['idle','smoking','sitting']){
     await page.selectOption('#b07-pose',pose);
     await page.waitForFunction(()=>[...document.querySelectorAll('.b07-content img')].length===5&&[...document.querySelectorAll('.b07-content img')].every(im=>im.complete&&im.naturalWidth>0));
+    if(pose==='sitting'){
+      await page.waitForFunction(()=>{const im=document.querySelector('img[alt="Sitting 08 사용자 승인"]');return im?.complete&&im.naturalWidth===1003;});
+      assert((await page.locator('#b07-status').innerText()).includes('08 사용자 승인'));
+    }else assert((await page.locator('#b07-status').innerText()).includes('07 사용자 승인'));
     const sources=await page.locator('.b07-content img').evaluateAll(images=>images.map(im=>im.src));
     assert.notEqual(sources[0],sources[1]);
     for(const size of ['180','240','360']){

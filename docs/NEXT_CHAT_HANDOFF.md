@@ -7,9 +7,12 @@ User correction: the **initial prototype is NOT later A**. Its pre-migration sou
 - B QA active by default. `mustang.ready=false` explicitly indicates final visual sign-off still outstanding, not legacy A runtime.
 - JPEG-derived Dual Firing is blocked. Speaking crops are face-only; no invalid full-size fallback.
 
+## B-CANONICAL-09 current status
+Idle and Smoking v07 and Sitting v08 are user-approved and registered in the runtime. See `approved-runtime.json` for their hashes and `B_CANONICAL_09_RUNTIME.md` for validation; the following B-07/08 notes describe historical status. Other poses remain unchanged.
+
 ## Remaining work
 ### B-CANONICAL-07 review-only candidates
-See `docs/B_CANONICAL_07_PROPORTIONS.md`. New Idle/Smoking/Sitting PNGs live in `proportions-v07`, separately from official originals and active v04. The offline preview has a five-image comparison, manual anatomical guides and separate `b07/*` review-note keys. None are visually approved or registered in the pet. Sitting neck/shoulder continuity and generated hand/prop/detail drift need user inspection. Do not merge or apply candidates without explicit user approval.
+See `docs/B_CANONICAL_07_PROPORTIONS.md`. B-07 source images are preserved separately from official originals. The offline preview retains the comparison, manual anatomical guides and separate `b07/*` review-note keys. B-07 Sitting remains unapproved; the user approved B-07 Idle/Smoking and B-08 Sitting in B-CANONICAL-09. Do not merge main without explicit user authorization.
 
 Manual visual QA 180/240/360 and windows 10/11; fix image fringes, blocked masks and Speaking; later A standalone sprite extraction only from later A design; integrate per-outfit action sequences after approval. Avoid altering canonical originals or introducing any first-prototype art. `npm ci`, `npm run build`, `npm test`, `npm run preview:package`.
 

@@ -1,0 +1,18 @@
+{
+  "status": "user-approved-derivatives",
+  "approval": "B-CANONICAL-09",
+  "assets": {
+    "idle": {
+      "path": "proportions-v07/idle.png",
+      "sha256": "c95006e4e7c05151839bd6f42d35b02b0a24df023ac9014e7c33494645a73b78"
+    },
+    "smoking": {
+      "path": "proportions-v07/smoking.png",
+      "sha256": "b5977a66edc65b4d669e3a2f416e35c37fcb6248bdaefb0512fb0bb67ca86391"
+    },
+    "sitting": {
+      "path": "proportions-v08/sitting.png",
+      "sha256": "002f75af76599a91e93f911581d1a78117119d1c05c5be7a5d62df29c345cfe5"
+    }
+  }
+}

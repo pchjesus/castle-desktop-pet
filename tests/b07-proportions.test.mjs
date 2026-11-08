@@ -13,13 +13,16 @@ test('B07 review images preserve provenance, encoded size and unapproved status'
     assert(item.head_box[2]>item.head_box[0]);assert(item.foot_y<item.height);
   }
   for(const pose of ['idle','smoking','sitting']){
-    assert.equal(report.poses[pose].approved,false);
+    assert.equal(report.poses[pose].approved,pose!=='sitting');
     assert.notEqual(report.images[pose+'-candidate'].sha256,report.images[pose+'-original'].sha256);
     assert(report.poses[pose].limitations.length>20);
   }
 });
-test('B07 images cannot replace the registered desktop outfit',async()=>{
-  for(const path of ['src/characters/outfits.ts','src/characters/akila.ts','src/main.ts','electron/main.ts']){
-    assert.doesNotMatch(await readFile(path,'utf8'),/proportions-v07|b-proportions-v07/);
-  }
+test('approved runtime derivatives retain exact bytes and approval record',async()=>{
+ const registry=JSON.parse(await readFile('src/characters/candidates/b-mustang-20261107/approved-runtime.json','utf8'));
+ for(const pose of ['idle','smoking','sitting']){
+  const item=registry.assets[pose];
+  const bytes=await readFile('src/characters/candidates/b-mustang-20261107/'+item.path);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),item.sha256);
+ }
 });

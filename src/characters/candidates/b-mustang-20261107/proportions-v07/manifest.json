@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
-  "status": "unapproved-review-only",
-  "method": "Reference-conditioned image generation edits of each official PNG using Drawing/Firing/Working as anatomy references. Not deterministic warping; details may drift. No runtime registration. Idle and Smoking refined in a second edit after the first pass overshot head reduction; final pixels, not a deterministic generation recipe, are versioned.",
+  "status": "partial-user-approved",
+  "method": "Reference-conditioned image generation edits of each official PNG using Drawing/Firing/Working as anatomy references. Not deterministic warping; details may drift. Initially review-only; Idle and Smoking were approved and registered in B-CANONICAL-09. Idle and Smoking refined in a second edit after the first pass overshot head reduction; final pixels, not a deterministic generation recipe, are versioned.",
   "landmarks": "Manual approximate source-pixel annotations; ratios are descriptive, not acceptance criteria. Sitting total height is not comparable to standing.",
   "poses": {
     "idle": {
-      "status": "edited-candidate-needs-visual-review",
-      "limitations": "첫 시안의 과도한 머리 축소를 재조정한 비례 편집 후보. 원본보다 작은 머리와 긴 상체·다리 방향은 확인되나 얼굴 인상·손·봉제선·주름 재묘사와 붉은 경계를 검수해야 합니다. 완성본 아님.",
-      "approved": false
+      "status": "user-approved-runtime",
+      "limitations": "사용자 승인 · B-CANONICAL-09 런타임 적용",
+      "approved": true
     },
     "smoking": {
-      "status": "edited-candidate-needs-visual-review",
-      "limitations": "첫 시안의 과도한 머리 축소를 재조정한 비례 편집 후보. 손가락·입술·담배 접점과 담배 길이, 연기 형태·소매 재묘사를 검수해야 합니다. 원본과 세부 동일성 미승인. 완성본 아님.",
-      "approved": false
+      "status": "user-approved-runtime",
+      "limitations": "사용자 승인 · B-CANONICAL-09 런타임 적용",
+      "approved": true
     },
     "sitting": {
       "status": "edited-candidate-needs-visual-review",

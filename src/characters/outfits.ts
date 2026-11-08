@@ -1,4 +1,4 @@
-// Post-prototype design contract. B is the desktop QA default; visual approval remains pending.
+// Post-prototype design contract. B is the desktop QA default; three selected derivatives are user-approved; other poses remain under review.
 export const outfitPolicy = Object.freeze({
   targetDefault: 'mustang',
   active: 'mustang',

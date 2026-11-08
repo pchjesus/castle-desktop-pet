@@ -1,3 +1,5 @@
+> 과거 검수 기록: 현재 승인 및 실행 상태는 [B-CANONICAL-09](B_CANONICAL_09_RUNTIME.md)를 참조한다.
+
 # B-CANONICAL-08
 
 사용자는 B-07 Idle과 Smoking 이미지를 승인했다. 두 PNG는 변경하거나 실행 펫에 적용하지 않았다. Sitting은 B-07을 기반으로 머리 확대, 목 노출 축소 및 상체·팔·허벅지 비율 조정을 시도한 B-08 검수 후보이며 사용자 승인을 기다린다. 원본과 B-07, B-08 및 Drawing/Firing/Working을 미리보기에서 비교할 수 있다. B-08 가이드는 측정하지 않았다.
