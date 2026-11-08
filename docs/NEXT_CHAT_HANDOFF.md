@@ -26,3 +26,13 @@ Review-only `cleanup-v10` contains Dual Firing / Firing Dynamic edits and seven 
 
 ## B-CANONICAL-12
 All nine B poses are registered; Speaking and Firing Dynamic use user-approved cleanup-v11. Speaking body pixel differences are known and accepted; do not regenerate. See `B_CANONICAL_12_RUNTIME.md`. Previous candidate status notes are historical.
+
+## B-CANONICAL-13 next work — user-approved behavior/dialogue design v1.7 (2026-11-09)
+**Source of truth:** [DIALOGUE_AND_BEHAVIOR_SPEC.md](DIALOGUE_AND_BEHAVIOR_SPEC.md). This is a planning document; B-13 implementation has **not** started.
+
+- Base pose defaults to **Smoking**, with user switch to Idle; after a transient action return to selected base, never always idle.
+- Auto action interval **2–3 minutes**, automatic shooting cooldown **3–5 minutes** (a cooldown, not guaranteed fire interval); both tunable from future status UI, autonomy and auto-fire default ON.
+- Action distribution: opposite rest pose 10%, sitting 18%, speaking 30%, drawing 12%, firing 18%, dual firing 6%, firing dynamic 6%.
+- Dialogue registry: preserve user-provided original lines, distinguish adaptations/creative text, 4 independent `부동심` fragments, fixed Cone/Firing Dynamic homage, 5/6-click Black Mamba easter egg.
+- **Codex event approval change**: jobStart = `남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.`; testPassed unchanged; deploymentComplete = `여러모로... 나쁘지 않았다. 신입.`. Drop old jobStart phrase. These are future integrations, not B-13 implementation.
+- B-13: autonomous scheduling, clicks and dialogue behavior; B-14: cartoon/game status UI, archives, help and extended settings; B-15: Codex linkage. Keep user-approved B images immutable and PR #11 draft, no merge/deploy without approval.
