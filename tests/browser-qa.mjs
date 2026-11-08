@@ -7,6 +7,7 @@ const output=resolve('artifacts/visual-qa');mkdirSync(output,{recursive:true});
 const errors=[],checks=[];
 const record=(label)=>checks.push({name:label,passed:true});
 const server=createServer((req,res)=>{const p=new URL(req.url,'http://localhost').pathname.slice(1)||'preview.html';
+ if(p==='favicon.ico'){res.writeHead(204);res.end();return;}
  if(!/^(preview\.html|preview-assets\/[\w.-]+)$/.test(p)){res.writeHead(404);res.end('Not found');return;}
  res.setHeader('Content-Type',p.endsWith('.html')?'text/html;charset=utf8':p.endsWith('.jpg')?'image/jpeg':'image/png');
  createReadStream(p).on('error',()=>{res.destroy()}).pipe(res);

@@ -1,0 +1,14 @@
+.b07-review{margin:28px 0;padding:16px;border:2px solid #987653;border-radius:10px}
+.b07-review label{display:inline-block;margin:6px 14px 6px 0}
+.b07-panels{--b07-width:240px;display:flex;flex-wrap:wrap;gap:16px;overflow-x:auto;padding:12px 0;align-items:start}
+.b07-panels figure{margin:0;flex:0 0 var(--b07-width);width:var(--b07-width)}
+.b07-stage{width:100%;height:calc(var(--b07-width) * 1.75);display:flex;align-items:end;justify-content:center;background:repeating-conic-gradient(#d6d6d6 0% 25%,#f5f5f5 0% 50%) 0/16px 16px}
+.b07-content{position:relative;width:100%;max-height:100%}
+.b07-content img{display:block;width:100%;height:auto}
+.b07-panels[data-background=light] .b07-stage{background:#fff}
+.b07-panels[data-background=dark] .b07-stage{background:#252525}
+.b07-head{position:absolute;border:1px solid #e843c4;box-sizing:border-box;pointer-events:none}
+.b07-line{position:absolute;left:0;right:0;border-top:1px dashed;font-size:10px;line-height:1;color:#0084ff;pointer-events:none;text-shadow:0 1px #fff}
+.b07-line.shoulder_y{color:#d36a00}.b07-line.foot_y{color:#087637}
+.b07-hide-guides .b07-head,.b07-hide-guides .b07-line{display:none}
+.b07-panels figcaption{padding:8px 0;font-size:13px}
