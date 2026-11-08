@@ -1,3 +1,5 @@
+> 현재 상태: Dual Firing은 리볼버 측 탄피 제거본을 사용자 요청에 따라 실제 포즈로 등록했다. `DUAL_FIRING_CASINGS.md` 참조. 나머지 내용은 B-09 당시 기록이다.
+
 # B-CANONICAL-09 — 승인 이미지 런타임 등록
 
 사용자 승인에 따라 B형 Idle·Smoking은 `proportions-v07`, Sitting은 `proportions-v08`의 원본과 분리된 파생 이미지를 기본 펫과 해당 포즈 전환에 등록했다. 바이트와 SHA-256은 `src/characters/candidates/b-mustang-20261107/approved-runtime.json`에 기록했다. 공식 B 원본 9종과 해시는 유지한다. Drawing·Firing·Working은 기존 v04이며 Dual Firing·Firing Dynamic·Speaking은 승인되지 않았고 펫 동작으로 대체하지 않는다. B-07 Sitting은 미승인 상태로 비교용만 유지한다. `mustang.ready=false`는 전체 포즈팩의 완성 승인이 아니라는 기존 정책이다.

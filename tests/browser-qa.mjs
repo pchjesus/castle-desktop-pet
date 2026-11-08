@@ -48,7 +48,12 @@ try{
   await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1003;});record('B sitting load '+width);await checkHash('sitting');
   await page.locator('#state').selectOption('idle');
  }
- for(const name of ['speaking','dual_firing','firing_dynamic']) {
+ await page.locator('#state').selectOption('dual_firing');
+ await page.waitForFunction(()=>{const im=document.querySelector('#pet .pet-stage img');return im?.complete&&im.naturalWidth===1024&&im.currentSrc.includes('dual_firing-');});
+ const dualUrl=await page.locator('#pet .pet-stage img').evaluate(im=>im.currentSrc);
+ assert.equal(createHash('sha256').update(await (await page.request.get(dualUrl)).body()).digest('hex'),'f0436fa255c3490d1d2e5dd1fab63873f2fe72faa2adf1eda4804e28a23a946b');
+ await page.waitForFunction(()=>document.querySelector('#state')?.value==='idle',null,{timeout:5000});record('dual firing approved image and return to idle');
+ for(const name of ['speaking','firing_dynamic']) {
   await page.locator('#state').selectOption(name);
   await page.locator('#pet .placeholder').waitFor();
   assert((await page.locator('#pet').innerText()).includes(name));record('unapproved B state does not substitute legacy '+name);

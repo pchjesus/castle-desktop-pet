@@ -41,7 +41,7 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
       : isRevolverDrawing
         ? reduced?.matches ? revolverActionFrames.slice(2, 3) : revolverActionFrames.slice(0, 3)
       : state === 'firing' ? animation.frames.slice(0, 1)
-      : state === 'dual_firing' ? animation.frames.slice(1, 2)
+      : state === 'dual_firing' ? animation.frames.slice(outfitPolicy.active === 'mustang' ? 0 : 1, outfitPolicy.active === 'mustang' ? 1 : 2)
       : animation.frames;
     const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n${state} 이미지 준비 중`; root.replaceChildren(el); };
     if (!frames.length) { placeholder(); return; }

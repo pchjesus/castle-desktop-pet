@@ -20,7 +20,7 @@ test('B07 review images preserve provenance, encoded size and unapproved status'
 });
 test('approved runtime derivatives retain exact bytes and approval record',async()=>{
  const registry=JSON.parse(await readFile('src/characters/candidates/b-mustang-20261107/approved-runtime.json','utf8'));
- for(const pose of ['idle','smoking','sitting']){
+ for(const pose of ['idle','smoking','sitting','dual_firing']){
   const item=registry.assets[pose];
   const bytes=await readFile('src/characters/candidates/b-mustang-20261107/'+item.path);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),item.sha256);

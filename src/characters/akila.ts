@@ -1,3 +1,4 @@
+import dualFiringApproved from './candidates/b-mustang-20261107/dual-firing-approved/dual_firing.png';
 import idleApproved from './candidates/b-mustang-20261107/proportions-v07/idle.png';
 import smokingApproved from './candidates/b-mustang-20261107/proportions-v07/smoking.png';
 import sittingApproved from './candidates/b-mustang-20261107/proportions-v08/sitting.png';
@@ -14,9 +15,9 @@ const B:Record<PetState,string[]>={idle:[],smoking:[],speaking:[],drawing:[],fir
 for(const state of ['drawing','firing','working'] as PetState[]) {
  const url=get(approvedB,state+'.png');if(url) B[state]=[url];
 }
-B.idle=[idleApproved]; B.smoking=[smokingApproved]; B.sitting=[sittingApproved];
+B.dual_firing=[dualFiringApproved]; B.idle=[idleApproved]; B.smoking=[smokingApproved]; B.sitting=[sittingApproved];
 // Speaking face-only crops are not valid full-body desktop sprites.
-// The two JPEG-derived action poses remain visually blocked or unapproved.
+// Firing Dynamic remains unapproved; dual firing uses the user-requested casing correction.
 // Do not silently substitute legacy A-type frames for missing B motions.
 export const outfitRegistry:Record<string,Record<string,string[]>>={
  blouson:Object.fromEntries(states.map(state=>[state,[]])),

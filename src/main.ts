@@ -5,7 +5,7 @@ import {installPetMouse} from './renderer/mouse-interaction';
 const root=document.querySelector<HTMLDivElement>('#app')!;
 const livePet=mountPet(root,akila);
 installPetMouse(root);
-const permitted=new Set<PetState>(['idle','smoking','working','drawing','firing','sitting']);
+const permitted=new Set<PetState>(['idle','smoking','working','drawing','firing','sitting','dual_firing']);
 window.pet?.onAction((state:string)=>{
  if(permitted.has(state as PetState)) livePet.set(state as PetState);
 });
