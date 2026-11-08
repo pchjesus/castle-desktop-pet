@@ -20,3 +20,6 @@ See `docs/AB_ASSET_CONTRACT_2026-11-07.md`, `docs/B_MUSTANG_CANONICAL_ASSETS_202
 
 ## B-CANONICAL-10
 Review-only `cleanup-v10` contains Dual Firing / Firing Dynamic edits and seven full-body Speaking trials, all unapproved. See `B_CANONICAL_10_REVIEW.md` for alpha-composited comparison screenshots, hashes and remaining quality limitations. The approved runtime images and live registry remain unchanged. Do not interpret raw RGB behind transparent pixels as visible background; inspect alpha compositing on light/dark/checker backgrounds.
+
+## B-CANONICAL-11
+`cleanup-v11` holds nine new unapproved trials, preserving B-10 and all approved/runtime assets. See `B_CANONICAL_11_REVIEW.md` for neck/collar and internal-background zoom comparisons, playback video, hashes and pixel metrics. Speaking still changes body pixels below the face and does not meet the mouth-only invariance requirement; do not mark complete or apply it. Use alpha-composited previews, preserve real black clothing/shadows/weapons, and require further visual review.

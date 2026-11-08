@@ -71,3 +71,5 @@ const proportion=document.createElement('section');proportion.className='b-propo
 for(const name of ['idle','sitting']){const image=proportion.querySelector<HTMLImageElement>('#proportion-'+name)!;const key=Object.keys(revisedImages).find(path=>path.endsWith('/'+name+'.png'));if(key)image.src=revisedImages[key];}
 
 import './b10-review';
+
+import './b11-review';
