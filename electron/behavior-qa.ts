@@ -47,18 +47,20 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  menu.show();writeFileSync(join(evidence,'menu.png'),(await menu.webContents.capturePage()).toPNG());menu.close();
  await menuClick('pose:smoking');await pause(180);
  const smoke=[];
+ const originalReducedMotion=await win.webContents.executeJavaScript(`matchMedia('(prefers-reduced-motion: reduce)').matches`);
+ win.webContents.debugger.attach('1.3');
+ try{
+ await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});await pause(100);
  for(const width of [120,180,240,360]){
   resize(width);await pause(70);
-  const metrics=await win.webContents.executeJavaScript(`(()=>{const s=document.querySelector('.pet-stage:not([data-exiting])'),i=s.querySelector('img'),p=s.querySelector('.b-smoking-anchor');if(!p)return {missing:true};const a=i.getBoundingClientRect(),b=p.getBoundingClientRect(),scale=Math.min(a.width/i.naturalWidth,a.height/i.naturalHeight);return {error:Math.hypot(b.x-a.left-(a.width-i.naturalWidth*scale)/2-597*scale,b.y-a.top-(a.height-i.naturalHeight*scale)/2-282*scale),strands:p.children.length,duration:getComputedStyle(p.firstElementChild).animationDuration}})()`);
+  const metrics=await win.webContents.executeJavaScript(`(()=>{const s=document.querySelector('.pet-stage:not([data-exiting])'),i=s.querySelector('img'),p=s.querySelector('.b-smoking-anchor');if(!p)return {missing:true,reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,documentHidden:document.hidden,pose:s.dataset.pose,paused:document.querySelector('#app').classList.contains('presentation-paused')};const a=i.getBoundingClientRect(),b=p.getBoundingClientRect(),scale=Math.min(a.width/i.naturalWidth,a.height/i.naturalHeight);return {error:Math.hypot(b.x-a.left-(a.width-i.naturalWidth*scale)/2-597*scale,b.y-a.top-(a.height-i.naturalHeight*scale)/2-282*scale),strands:p.children.length,duration:getComputedStyle(p.firstElementChild).animationDuration}})()`);
   if(metrics.missing||metrics.error>=1.2||metrics.strands!==2||metrics.duration!=='2s')throw Error('Native smoke alignment '+JSON.stringify(metrics));
   smoke.push({width,...metrics});writeFileSync(join(evidence,`${width}-smoking.png`),(await win.webContents.capturePage()).toPNG());
  }
- win.webContents.debugger.attach('1.3');
- try{
   await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});await pause(70);
   if(!await win.webContents.executeJavaScript(`!document.querySelector('.b-smoking-layer')`))throw Error('Reduced Motion smoke was not removed');
   await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});await pause(70);
   if(!await win.webContents.executeJavaScript(`!!document.querySelector('.b-smoking-layer')`))throw Error('Smoke did not resume');
- }finally{win.webContents.debugger.detach();}
- return {passed:true,commands,settings,smoke,reducedMotion:true};
+ }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
+ return {passed:true,commands,settings,smoke,reducedMotion:true,originalReducedMotion};
 }
