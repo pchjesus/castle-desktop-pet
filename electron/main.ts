@@ -172,6 +172,9 @@ app.whenReady().then(() => {
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   readBehavior();
   win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
+  // Windows setPosition/custom drag emits move; moved is not guaranteed for
+  // programmatic movement. Keep speech attached throughout the drag.
+  win.on('move',()=>positionSpeech());
   win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{save();positionSpeech();}); win.on('close',save);
   win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
   win.on('closed',()=>{speechText='';clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
