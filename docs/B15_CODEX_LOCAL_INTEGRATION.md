@@ -72,3 +72,25 @@ sequences in the behavior controller remain authoritative.
 B-13.4 Windows focus/click-through title-ribbon regression remains deferred.
 Reload/Maintenance art was not generated or integrated, approved sprite hashes
 remain immutable. Never merge to main or release without user approval.
+
+## B-16 visual & behavior QA (2026-11-09)
+- The context menu is now a **readable, centrally positioned 560 × 610 px glass settings panel**.
+  It opens away from the pet when necessary, allows header drag and bottom-right
+  resize, and remembers the latest position and size. A legacy 316px saved menu
+  is automatically upgraded. Custom sizes are clamped to the current display.
+- The pane keeps the neutral, see-through Liquid Glass finish and attempts native
+  Windows Acrylic; actual blur and desktop projection need visual acceptance
+  on the user's machine.
+- **빈도 → 행동별 등장 빈도** contains nine independent relative weights
+  (0–40). Weight 0 disables an **automatic** pose, not its manual action.
+  The overall movement interval remains separately controlled by the
+  quiet/default/active preset. The selected base pose is excluded from random
+  choices, automatic shooting OFF or cooldown excludes all auto firing poses.
+  All weights zero is supported: the pet remains at its base pose.
+- Editing weights leaves the panel open, saves immediately after release, and
+  does not interrupt a manually held pose or an active event.
+- Dynamic-firing 1s anticipation and jobStart/deploymentComplete 800ms lead-in
+  **hold the previously visible pose**; no artificial Smoking/Idle frame
+  should be inserted. TestPassed and ordinary manual actions switch directly.
+- Windows QA artifacts include screenshots of **Frequency sliders, dialogue
+  archive and readable help**. The package is *not* a main merge or release.

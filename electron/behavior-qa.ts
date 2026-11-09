@@ -56,7 +56,23 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
  const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
  if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
- menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Compact menu scrolls: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="basic"]').click()`);writeFileSync(join(evidence,'menu.png'),(await menu.webContents.capturePage()).toPNG());menu.close();
+ menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
+ await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="frequency"]').click();document.querySelector('[data-frequency-open="weights"]').click();const slider=document.querySelector('[data-weight-row="working"] input');slider.value='20';slider.dispatchEvent(new Event('input',{bubbles:true}));slider.dispatchEvent(new Event('change',{bubbles:true}));return true})()`);
+ await pause(220);
+ if(menu.isDestroyed())throw Error('Frequency slider incorrectly closed the settings panel');
+ const savedWeight=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>info?.status?.actionWeights?.working)`);
+ if(savedWeight!==20)throw Error('Native per-action weight was not persisted: '+savedWeight);
+ writeFileSync(join(uxEvidence,'menu-action-weights.png'),(await menu.webContents.capturePage()).toPNG());
+ await menu.webContents.executeJavaScript(`document.querySelector('#weights-reset').click()`);
+ await pause(160);
+ const resetWeight=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>info?.status?.actionWeights?.working)`);
+ if(resetWeight!==0)throw Error('Native per-action weight reset failed: '+resetWeight);
+ await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="more"]').click();document.querySelector('[data-more-open="archive"]').click();})()`);
+ writeFileSync(join(uxEvidence,'menu-dialogue-archive.png'),(await menu.webContents.capturePage()).toPNG());
+ await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-more-view="archive"] [data-more-back]').click();document.querySelector('[data-more-open="help"]').click();})()`);
+ writeFileSync(join(uxEvidence,'menu-readable-help.png'),(await menu.webContents.capturePage()).toPNG());
+ await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="basic"]').click()`);
+ writeFileSync(join(evidence,'menu.png'),(await menu.webContents.capturePage()).toPNG());menu.close();
  await menuClick('pose:smoking');await pause(180);
  const smoke=[];
  const originalReducedMotion=await win.webContents.executeJavaScript(`matchMedia('(prefers-reduced-motion: reduce)').matches`);
