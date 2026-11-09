@@ -35,6 +35,13 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   }
   await pause(70);return {command};
  };
+ // Exercise a real posture-to-posture menu command and trace every renderer
+ // request. User should never see an intermediate Smoking base frame.
+ await menuClick('pose:sitting');await pause(180);
+ const transitionMark=trace.length;
+ await menuClick('pose:working');
+ const transient=trace.slice(transitionMark).filter(row=>row.phase==='requested'&&row.pose==='smoking');
+ if(transient.length)throw Error('Unexpected intermediate Smoking during manual action: '+JSON.stringify(transient));
  const commands=[];
  for(const pose of ['idle','smoking','sitting','working','drawing','speaking','firing','dual_firing','firing_dynamic'])for(let repeat=0;repeat<2;repeat++)commands.push({...await menuClick('pose:'+pose),repeat});
  for(const pose of ['drawing','speaking','firing','dual_firing','firing_dynamic']){

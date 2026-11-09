@@ -301,8 +301,17 @@ const test=event.target.closest('[data-codex-test]');if(test){
  const name=test.dataset.codexTest;
  const label=document.querySelector('#codex-result');label.textContent='이벤트 전달 중…';
  Promise.resolve(window.castleMenu?.testEvent?.(name)).then(result=>{
-  label.textContent=result?.sent?'시험 이벤트를 보냈어요. 실제 반응을 확인해 주세요.':'전송 실패: 펫 상태를 확인해 주세요.';
-  setTimeout(refreshStatus,350);
+  if(!result?.sent){label.textContent='전송 실패: 펫 상태를 확인해 주세요.';return;}
+  label.textContent='수신 확인 중…';
+  setTimeout(async()=>{
+   try{
+    const info=await window.castleMenu?.getInfo?.(),records=info?.status?.codex?.events||[];
+    if(info?.status)renderStatus(info.status);
+    const latest=records.find(row=>row.id===result.id);
+    label.textContent=latest?.state==='blocked'?'현재 실행 중인 동작 때문에 거부됐어요. 끝난 뒤 다시 눌러 주세요.':
+     latest?.state==='accepted'?'아킬라가 이벤트를 실행했어요.':'이벤트를 전달했어요. 동작과 최근 기록을 확인해 주세요.';
+   }catch{label.textContent='이벤트를 보냈어요. 최근 기록을 확인해 주세요.';}
+  },450);
  }).catch(()=>{label.textContent='시험 이벤트 전송에 실패했어요.';});
  return;
 }
