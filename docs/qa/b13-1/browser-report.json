@@ -12,8 +12,8 @@
   ],
   "errors": [],
   "timing": {
-    "startDelayMs": 1000.7000000000698,
-    "returnAfterShotMs": 851.3999999999069
+    "startDelayMs": 1001,
+    "returnAfterShotMs": 850.7000000001863
   },
   "captures": [
     "120-light.png",

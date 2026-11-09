@@ -26,8 +26,8 @@ try{
  };
  await page.exposeFunction('measureSpeech',async h=>{if(height!==h){height=h;await layout();}});
  await page.exposeFunction('speechFromPet',async text=>{if(speechFrame){await speechFrame.evaluate(text=>window.__text(text),text);await page.locator('#speech-surface').evaluate((el,show)=>el.style.visibility=show?'visible':'hidden',!!text);}});
- await page.evaluate(()=>window.addEventListener('message',event=>{if(event.data?.kind==='pet-speech')window.speechFromPet(event.data.text);if(event.data?.kind==='speech-measure')window.measureSpeech(event.data.height);}));
  await page.setContent(`<style>body{margin:0;background:#f5f5f5}iframe{position:absolute;border:0;background:transparent}#label{position:absolute;top:16px;left:20px;font:14px system-ui;color:#737373}</style><div id="label">B-13.1 browser composition (not Windows)</div><iframe id="pet-surface" src="${origin}/?autonomy=false"></iframe><iframe id="speech-surface" src="${origin}/electron/pet-speech.html"></iframe>`);
+ await page.evaluate(()=>window.addEventListener('message',event=>{if(event.data?.kind==='pet-speech')window.speechFromPet(event.data.text);if(event.data?.kind==='speech-measure')window.measureSpeech(event.data.height);}));
  const pf=page.locator('#pet-surface'),sf=page.locator('#speech-surface');
  petFrame=await (await pf.elementHandle()).contentFrame();speechFrame=await(await sf.elementHandle()).contentFrame();
  await petFrame.waitForFunction(()=>window.__manual&&document.querySelector('.b-presentation img')?.complete);
@@ -66,6 +66,7 @@ try{
  await petFrame.waitForFunction(()=>window.__frames.length===7,null,{timeout:4500});
  const frames=await petFrame.evaluate(()=>window.__frames);assert.deepEqual(frames.map(s=>s.match(/speaking-(\d+)/)[1]),['01','02','03','04','05','06','07']);report.checks.push('approved seven Speaking frames retain their order');
  await petFrame.evaluate(()=>{window.__manual('settings:'+JSON.stringify({base:'smoking',autonomy:false,autoFire:false}));window.__timeline=[];document.querySelector('#app').addEventListener('pet-state',e=>window.__timeline.push([e.detail,performance.now()]));window.__start=performance.now();window.__manual('firing_dynamic');});
+ await speechFrame.waitForFunction(()=>document.querySelector('#speech')?.textContent==='그런 건 중요한 게 아니다, 애송아.');
  await petFrame.waitForFunction(()=>window.__timeline.some(([p])=>p==='firing_dynamic'),null,{timeout:2000});
  assert(await speechFrame.locator('#speech').evaluate(el=>el.classList.contains('visible')));
  await petFrame.waitForFunction(()=>window.__timeline.some(([p])=>p==='smoking'),null,{timeout:4000});
@@ -74,7 +75,7 @@ try{
  report.checks.push('real browser Dynamic timeline and independent visible speech');
  await petFrame.evaluate(()=>{window.__manual('firing_dynamic');window.__manual('working');});await page.waitForTimeout(4200);
  assert.equal(await petFrame.locator('.pet-stage:not([data-exiting])').getAttribute('data-pose'),'working');
- assert.equal(await petFrame.locator('[data-exiting]').count(),0);report.checks.push('manual interruption removes stale transitions/timers');
+ assert.equal(await petFrame.locator('[data-exiting]').count(),0);assert.equal(await speechFrame.locator('#speech').evaluate(el=>el.classList.contains('visible')),false);report.checks.push('manual interruption removes stale transitions/timers');
  await page.emulateMedia({reducedMotion:'reduce'});await petFrame.evaluate(()=>window.__manual('speaking'));await page.waitForTimeout(180);
  assert.equal(await petFrame.locator(current).evaluate(im=>getComputedStyle(im).animationName),'none');
  assert.equal(await petFrame.locator('[data-exiting]').count(),0);assert((await petFrame.locator(current).getAttribute('src')).includes('speaking-01'));
