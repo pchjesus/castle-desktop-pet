@@ -17,10 +17,10 @@ try{
  await page.locator('#dialogue-pose').selectOption('sitting');assert.equal(await page.locator('.archive-item').count(),1);
  assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
- await page.locator('[data-more-back]').first().click();await page.locator('[data-more-open="status"]').click();
+ await page.locator('[data-more-view="archive"] [data-more-back]').click();await page.locator('[data-more-open="status"]').click();
  assert((await page.locator('#status-list').innerText()).includes('연결되지 않음'));
  assert((await page.locator('#status-list').innerText()).includes('앉기'));
- await page.locator('[data-more-back]').first().click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
+ await page.locator('[data-more-view="status"] [data-more-back]').click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');
  await page.locator('#tab-basic').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#tab-frequency').getAttribute('aria-selected'),'true');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__dismissed),true);
  report.checks.push('316px menu: four tabs without scrolling, nine sizes, real size change, keyboard navigation and dismiss');
