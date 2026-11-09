@@ -85,6 +85,7 @@ function positionSpeech(){
  return true;
 }
 function updateSpeech(text:string){
+ if(!win||win.isDestroyed())return;
  speechText=text;clearTimeout(speechHide);
  if(!speechWindow||speechWindow.isDestroyed()){
   if(!text)return;
@@ -173,7 +174,7 @@ app.whenReady().then(() => {
   win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
   win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{save();positionSpeech();}); win.on('close',save);
   win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
-  win.on('closed',()=>{clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
+  win.on('closed',()=>{speechText='';clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
   let ignoresPointer=false;
   let menuRequests=0;
@@ -184,7 +185,7 @@ app.whenReady().then(() => {
     if(!drag)return;
     drag=null;save();
   }
-  const isPet=(event:Electron.IpcMainEvent)=>event.sender===win.webContents&&!win.isDestroyed();
+  const isPet=(event:Electron.IpcMainEvent)=>!win.isDestroyed()&&event.sender===win.webContents;
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
   ipcMain.on('speech:measure',(event,height)=>{
    if(!speechWindow||speechWindow.isDestroyed()||event.sender!==speechWindow.webContents||typeof height!=='number'||!Number.isFinite(height)||height<1||height>2000)return;
@@ -231,6 +232,7 @@ app.whenReady().then(() => {
   const refit = () => { if (!win.isDestroyed()) { win.setBounds(fit(win.getBounds())); save(); positionSpeech(); } };
   if (process.argv.includes('--qa-smoke')) {
     const reportIndex=process.argv.indexOf('--qa-report');const reportFile=reportIndex>=0 ? process.argv[reportIndex+1] : join(app.getPath('userData'),'qa-smoke.json');
+    let qaStage='initializing';
     const startWidth=win.getBounds().width;
     resizePet(140); const smaller=win.getBounds();
     resizePet(180); const larger=win.getBounds();
@@ -238,18 +240,21 @@ app.whenReady().then(() => {
     const qa = openDiagnostics(false);
     qa.webContents.once('did-finish-load', async () => {
       try {
+        qaStage='diagnostic images';
         const result = await qa.webContents.executeJavaScript(`new Promise((resolve,reject)=>{let n=0;const timer=setInterval(()=>{const a=document.querySelector('#pet .pet-stage img'),b=document.querySelector('#b-action-image');if(a?.complete&&a.naturalWidth&&b?.complete&&b.naturalWidth){clearInterval(timer);resolve({petLoaded:true,bReviewLoaded:true,bWidth:b.naturalWidth});}else if(++n>100){clearInterval(timer);reject(Error('image readiness timeout'));}},100);})`);
         const interactions = await qa.webContents.executeJavaScript(`(()=>{const select=document.querySelector('#b-action'),repeat=document.querySelector('#b-repeat');select.value='working';repeat.checked=true;document.querySelector('#b-start').click();document.querySelector('#b-cancel').click();return {repeatChecked:repeat.checked,cancelledToIdle:document.querySelector('#b-action-image').dataset.pose==='idle'};})()`);
         if(win.webContents.isLoading()) await new Promise<void>(resolve=>win.webContents.once('did-finish-load',()=>resolve()));
         await win.webContents.executeJavaScript("window.__lastPetState='';document.querySelector('#app').addEventListener('pet-state',e=>window.__lastPetState=e.detail);true;");
         win.webContents.send('pet:action','drawing');
         const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage:not([data-exiting]) img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+        qaStage='approved runtime poses';
         const approvedPoseChecked:Record<string,boolean>={};
         for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003],['dual_firing',1024],['speaking',956],['firing_dynamic',1004]] as const){
           win.webContents.send('pet:action',pose);
           approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage:not([data-exiting]) img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>100){clearInterval(timer);resolve(false);}},100);})`);
         }
         if(Object.values(approvedPoseChecked).some(value=>!value))throw Error('Approved pose QA failed: '+JSON.stringify(approvedPoseChecked));
+        qaStage='dynamic timing';
         // Actual packaged renderer timing (independent of deterministic unit clocks).
         await win.webContents.executeJavaScript(`window.__hotfixTimeline=[];document.querySelector('#app').addEventListener('pet-state',e=>window.__hotfixTimeline.push({pose:e.detail,at:performance.now()}));true;`);
         win.webContents.send('pet:action','settings:'+JSON.stringify({base:'smoking',autonomy:false,autoFire:false}));
@@ -262,6 +267,7 @@ app.whenReady().then(() => {
         const baseEntry=timeline.find((entry:{pose:string;at:number})=>entry.pose==='smoking'&&entry.at>(firingEntry?.at||Infinity));
         const dynamicTiming={startDelayMs:firingEntry?.at-dynamicStarted,returnAfterShotMs:baseEntry?.at-firingEntry?.at-1500};
         if(!(dynamicTiming.startDelayMs>=800&&dynamicTiming.startDelayMs<=1200&&dynamicTiming.returnAfterShotMs>=700&&dynamicTiming.returnAfterShotMs<=1000))throw Error('Dynamic native timing: '+JSON.stringify(dynamicTiming));
+        qaStage='native composition setup';
         const evidence=join(dirname(reportFile),'windows-b13-1-captures');mkdirSync(evidence,{recursive:true});
         const area=screen.getDisplayMatching(win.getBounds()).workArea;
         const backdrop=new BrowserWindow({...area,frame:false,show:true,backgroundColor:'#f5f5f5',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
@@ -280,6 +286,7 @@ app.whenReady().then(() => {
             const dims=surface.getSize(),corners=[0,(dims.width-1)*4,(dims.height-1)*dims.width*4,(dims.width*dims.height-1)*4];
             const alphaClear=corners.every(offset=>bitmap[offset+3]===0);
             writeFileSync(join(evidence,`${size}-${name}-pet-alpha.png`),surface.toPNG());
+            qaStage=`desktop capture ${size}-${name}`;
             const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:1920,height:1080}});
             const display=screen.getDisplayMatching(win.getBounds());const source=sources.find(item=>item.display_id===String(display.id))||sources[0];
             if(!source||source.thumbnail.isEmpty())throw Error('Windows desktop capture unavailable');
@@ -308,6 +315,7 @@ app.whenReady().then(() => {
         win.webContents.send('pet:action','idle');
         // A synthetic client event proves the pixel-gated right click reaches
         // the preload IPC bridge without creating a native popup in headless QA.
+        qaStage='alpha input';
         const mouseQa=await win.webContents.executeJavaScript(`new Promise(resolve=>{
           let ticks=0;const timer=setInterval(()=>{
             const image=document.querySelector('#app .pet-stage:not([data-exiting]) img');
@@ -351,6 +359,7 @@ app.whenReady().then(() => {
           throw Error('B/window/live pose/mouse QA readiness failed: '+JSON.stringify({resizeChecked,chrome,manualPoseChecked,mouseQa,interactions}));
         await new Promise(resolve=>setTimeout(resolve,100));
         if(menuRequests<1||hitChanges<1)throw Error('Alpha menu/hit-test IPC not received: '+JSON.stringify({menuRequests,hitChanges}));
+        qaStage='custom menu';
         const popup=menuWindow;
         if(!popup || popup.isDestroyed())throw Error('Custom menu window not constructed by alpha right-click');
         if(popup.webContents.isLoading()) await new Promise<void>(resolve=>popup.webContents.once('did-finish-load',()=>resolve()));
@@ -370,9 +379,9 @@ app.whenReady().then(() => {
         writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
           menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,dynamicTiming,compositing,speechEdges,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
-      } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
+      } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,error:String(error)}));app.exit(1); }
     });
-    setTimeout(()=>app.exit(2),85000).unref();
+    setTimeout(()=>{writeFileSync(reportFile,JSON.stringify({passed:false,qaStage,error:'Windows QA stage timed out'}));app.exit(2);},150000).unref();
   }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit);
 });

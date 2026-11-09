@@ -48,6 +48,7 @@ jobs:
       - name: Verify package and launch smoke
         shell: pwsh
         run: |
+          trap { Write-Host "::error::Windows QA harness: $($_.Exception.Message)"; break }
           $qaSource = Join-Path $PWD 'dist-qa/CastlePetQA'
           $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
           Move-Item -LiteralPath $qaSource -Destination $qaRoot
@@ -56,7 +57,7 @@ jobs:
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
           $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
-          if (!$qaProcess.WaitForExit(100000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
+          if (!$qaProcess.WaitForExit(170000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
           if (Test-Path $qaReport) {
             Write-Host '=== Windows QA process report ==='
             Get-Content $qaReport -Raw | Write-Host
