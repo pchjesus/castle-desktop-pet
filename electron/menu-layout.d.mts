@@ -1,5 +1,6 @@
 export interface MenuRect{x:number;y:number;width:number;height:number}
 export interface MenuSize{width:number;height:number}
+export const DEFAULT_MENU:Readonly<MenuSize>;
 export const MIN_MENU:Readonly<MenuSize>;
 export const MAX_MENU:Readonly<MenuSize>;
 export function menuSize(input:Partial<MenuSize>,work:MenuSize):MenuSize;

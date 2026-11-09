@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
-import {placeMenu,menuSize,clampMenu} from './menu-layout.mjs';
+import {placeMenu,menuSize,clampMenu,DEFAULT_MENU} from './menu-layout.mjs';
 import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeAroundFeet, restoreWindowBounds } from './window-size.mjs';
 
 let win: BrowserWindow;
@@ -64,7 +64,7 @@ function resizePet(width: number) {
 }
 function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().width,direction)); }
 
-const menuWidth=316,menuHeight=316;
+const menuWidth=DEFAULT_MENU.width,menuHeight=DEFAULT_MENU.height;
 let menuGesture:{kind:'move'|'resize';point:Electron.Point;bounds:Electron.Rectangle}|undefined;
 const menuStatePath=()=>join(app.getPath('userData'),'menu-window.json');
 function loadMenuState():Electron.Rectangle|null {
@@ -92,8 +92,11 @@ function openPetMenu(showInSmoke=false) {
  const pt=screen.getCursorScreenPoint();
  const work=screen.getDisplayNearestPoint(pt).workArea;
  const saved=loadMenuState();
- const size=menuSize({width:saved?.width??menuWidth,height:saved?.height??menuHeight},work);
- const place=placeMenu(win.getBounds(),work,pt,size,saved);
+ // Upgrade legacy 316px context menus to a readable central settings panel.
+ const legacyCompact=!!saved&&saved.width<=350&&saved.height<=350;
+ const remembered=legacyCompact?null:saved;
+ const size=menuSize({width:remembered?.width??menuWidth,height:remembered?.height??menuHeight},work);
+ const place=placeMenu(win.getBounds(),work,pt,size,remembered);
  const popup=new BrowserWindow({
   ...place,frame:false,transparent:true,titleBarOverlay:false,thickFrame:false,
   backgroundColor:'#00000000',alwaysOnTop:true,skipTaskbar:true,
