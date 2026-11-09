@@ -12,6 +12,7 @@ import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
+import {placeMenu,menuSize,clampMenu} from './menu-layout.mjs';
 import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeAroundFeet, restoreWindowBounds } from './window-size.mjs';
 
 let win: BrowserWindow;
@@ -64,8 +65,24 @@ function resizePet(width: number) {
 function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().width,direction)); }
 
 const menuWidth=316,menuHeight=316;
+let menuGesture:{kind:'move'|'resize';point:Electron.Point;bounds:Electron.Rectangle}|undefined;
+const menuStatePath=()=>join(app.getPath('userData'),'menu-window.json');
+function loadMenuState():{x?:number;y?:number;width?:number;height?:number}|null {
+ try{
+  const data=JSON.parse(readFileSync(menuStatePath(),'utf8'));
+  if(!data||typeof data!=='object'||!['x','y','width','height'].every(key=>Number.isFinite(data[key])))return null;
+  return data;
+ }catch{return null;}
+}
+function saveMenuState(){
+ if(!menuWindow||menuWindow.isDestroyed())return;
+ try{writeFileSync(menuStatePath(),JSON.stringify(menuWindow.getBounds()));}
+ catch(error){log('Menu position save failed: '+String(error));}
+}
 function closePetMenu() {
  const old=menuWindow;
+ menuGesture=undefined;
+ if(old&&!old.isDestroyed())saveMenuState();
  menuWindow=undefined;
  if(old && !old.isDestroyed()) old.close();
 }
@@ -74,7 +91,9 @@ function openPetMenu(showInSmoke=false) {
  closePetMenu();
  const pt=screen.getCursorScreenPoint();
  const work=screen.getDisplayNearestPoint(pt).workArea;
- const place=constrain({x:pt.x+12,y:pt.y-24,width:menuWidth,height:menuHeight},[work]);
+ const saved=loadMenuState();
+ const size=menuSize({width:saved?.width??menuWidth,height:saved?.height??menuHeight},work);
+ const place=placeMenu(win.getBounds(),work,pt,size,saved);
  const popup=new BrowserWindow({
   ...place,frame:false,transparent:true,titleBarOverlay:false,thickFrame:false,
   backgroundColor:'#00000000',alwaysOnTop:true,skipTaskbar:true,
@@ -84,8 +103,14 @@ function openPetMenu(showInSmoke=false) {
  });
  menuWindow=popup;
  popup.setMenu(null);
+ // Windows 11 22H2+ may draw actual desktop acrylic behind a transparent renderer.
+ // Other systems keep a see-through unblurred glass panel without a fixed tint.
+ if(process.platform==='win32'){
+  try{popup.setBackgroundMaterial('acrylic');}
+  catch(error){log('Native acrylic unavailable: '+String(error));}
+ }
  popup.on('system-context-menu',event=>event.preventDefault());
- popup.on('closed',()=>{if(menuWindow===popup)menuWindow=undefined;});
+ popup.on('closed',()=>{if(menuWindow===popup){menuWindow=undefined;menuGesture=undefined;}});
  if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
  popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))}})
@@ -266,6 +291,23 @@ app.whenReady().then(() => {
     if(!isPet(event))return;
     menuRequests++;
     openPetMenu();
+  });
+  // Transparent windows are resized programmatically to preserve the glass corners.
+  ipcMain.on('pet-menu:window-control',(event,command)=>{
+   if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof command!=='string')return;
+   const kind=command.startsWith('resize:')?'resize':command.startsWith('move:')?'move':null;
+   if(!kind)return;
+   const action=command.slice(kind.length+1);
+   if(action==='start'){menuGesture={kind,point:screen.getCursorScreenPoint(),bounds:menuWindow.getBounds()};return;}
+   if(!menuGesture||menuGesture.kind!==kind)return;
+   if(action==='end'){saveMenuState();menuGesture=undefined;return;}
+   if(action!=='update')return;
+   const at=screen.getCursorScreenPoint(),origin=menuGesture;
+   const dx=at.x-origin.point.x,dy=at.y-origin.point.y;
+   const work=screen.getDisplayNearestPoint(at).workArea;
+   const candidate=kind==='move'?{...origin.bounds,x:origin.bounds.x+dx,y:origin.bounds.y+dy}:
+    {...origin.bounds,width:origin.bounds.width+dx,height:origin.bounds.height+dy};
+   menuWindow.setBounds(clampMenu(candidate,work));
   });
   ipcMain.on('pet-menu:command',(event,command)=>{
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
