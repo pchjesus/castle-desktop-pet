@@ -63,6 +63,16 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   const weights=eligible.map(d=>[d,d.rarity==='rare'?.1:1]),total=weights.reduce((sum,[,w])=>sum+w,0);
   let cursor=random()*total;for(const [record,weight] of weights){cursor-=weight;if(cursor<0)return record;}return eligible.at(-1);
  }
+ // One roll per new Sitting/Drawing action: 25% silent, 50% existing pool, 25% dedicated line.
+ // Keep these entry lines separate from the independent automatic-dialogue scheduler.
+ function poseEntryLine(value,source){
+  if(value!=='sitting'&&value!=='drawing')return;
+  if(source==='auto'&&(!settings.dialogueEnabled||now()<speechUntil))return;
+  const roll=random();
+  if(roll<.25)return;
+  if(roll<.75)return line(value);
+  return dialogues.find(d=>d.id===(value==='sitting'?'B14-SIT-01':'B14-DRAW-01'));
+ }
  function autoDialogue(){
   const compatible=mode==='base'||mode==='auto'&&['idle','smoking','sitting','speaking'].includes(pose);
   if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=frequencies.dialogue[settings.dialogueFrequency][0])say(line(pose)||line('speaking'),true);
@@ -74,7 +84,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   // Movement never truncates a line from its independently running scheduler.
   clear(source==='auto');resetClicks();mode=source;
   const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};
-  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
+  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
   if(!record&&source==='manual'&&value==='speaking')record=dialogues.find(d=>d.id==='C-02');
   const speech=say(record,source==='auto');
   const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+range(180000,300000);autoShot=false;}};
@@ -89,7 +99,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function manual(value){
   if(disposed||hidden||!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(value))return false;
   resetClicks();if(value===settings.base){base();return true;}
-  if(['idle','smoking','sitting','working'].includes(value)){clear();mode='manual';show(value);}else action(value,'manual');return true;
+  if(['idle','smoking','sitting','working'].includes(value)){clear();mode='manual';show(value);if(value==='sitting')say(poseEntryLine(value,'manual'));}else action(value,'manual');return true;
  }
  const retainedPose=()=>['sitting','working'].includes(pose)||mode==='manual'&&['idle','smoking'].includes(pose);
  function click(){

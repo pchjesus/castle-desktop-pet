@@ -35,3 +35,43 @@ test('ordinary clicks retain Sitting/Working and manual held rest through speech
 test('fifth/sixth click still warns from Sitting, overrides held posture exactly once',()=>{const f=fixture();f.b.manual('sitting');for(let i=0;i<4;i++){f.b.click();f.tick(200);assert.equal(f.poses.at(-1),'sitting');}f.b.click();assert.equal(f.poses.at(-1),'drawing');f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');for(let i=0;i<20;i++)f.b.click();f.tick(20000);assert.equal(f.poses.at(-1),'smoking');});
 test('clicking an automatic Sitting adopts that pose without its obsolete auto completion',()=>{const f=fixture(()=>.2);f.tick(132000);assert.equal(f.poses.at(-1),'sitting');f.b.click();f.tick(20000);assert.equal(f.poses.at(-1),'sitting');assert.equal(f.b.snapshot().mode,'manual');assert.equal(f.b.snapshot().nextMovement,0);});
 test('moving a held pose retains it, and a stale drag end cannot override a newer manual action',()=>{for(const pose of ['sitting','working']){const f=fixture();f.b.manual(pose);f.b.drag();f.b.dragEnd();f.tick(20000);assert.equal(f.poses.at(-1),pose);}const f=fixture();f.b.drag();f.b.manual('working');f.b.dragEnd();assert.equal(f.poses.at(-1),'working');});
+test('B-14 two new lines are pose-only, confirmed in-app, and not falsely labelled verified comic quotations',()=>{
+ const sitting=dialogues.find(d=>d.id==='B14-SIT-01'),drawing=dialogues.find(d=>d.id==='B14-DRAW-01');
+ assert.equal(sitting.text,'자, 최후변론을 해라');assert.deepEqual(sitting.poses,['sitting']);
+ assert.equal(drawing.text,'웃음이 최후변론인가');assert.deepEqual(drawing.poses,['drawing']);
+ for(const d of [sitting,drawing]){
+  assert.equal(d.approval,'confirmed');assert.equal(d.origin,'original candidate pending verification');
+  assert.deepEqual(d.triggers,['pose-entry']);assert.equal(d.random,false);
+ }
+});
+test('B-14 Sitting entry has silence, old compatible dialogue, or its dedicated line; no loop reroll',()=>{
+ for(const [r,expected] of [[0,undefined],[.25,'O-02'],[.9,'B14-SIT-01']]){
+  const f=fixture(()=>r);f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('sitting');
+  assert.equal(f.lines.filter(([t])=>t).at(-1)?.[1],expected);
+  const spoken=f.lines.filter(([t])=>t).length;f.tick(120000);
+  assert.equal(f.poses.at(-1),'sitting');assert.equal(f.b.snapshot().mode,'manual');
+  assert.equal(f.lines.filter(([t])=>t).length,spoken);f.b.dispose();
+ }
+});
+test('B-14 Drawing entry uses its dedicated line only on a normal action, never in five/six-click warning',()=>{
+ for(const [r,kind] of [[0,'silent'],[.25,'existing'],[.9,'special']]){
+  const f=fixture(()=>r);f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('drawing');
+  const id=f.lines.filter(([t])=>t).at(-1)?.[1];
+  if(kind==='silent')assert.equal(id,undefined);
+  else if(kind==='special')assert.equal(id,'B14-DRAW-01');
+  else assert(id&&id!=='B14-DRAW-01');
+  f.b.dispose();
+ }
+ const f=fixture(()=>.9);f.b.configure({autonomy:false,dialogueEnabled:false});
+ for(let i=0;i<5;i++){f.b.click();f.tick(100);}
+ assert.equal(f.poses.at(-1),'drawing');assert(!f.lines.some(([,id])=>id==='B14-DRAW-01'));
+ f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');f.b.dispose();
+});
+test('B-14 autonomous Sitting speaks once when automatic dialogue is enabled, without queuing repeats',()=>{
+ const rolls=[.2,.5,.2,.9,0];let i=0;const f=fixture(()=>rolls[i++]??.5);
+ f.tick(132000);assert.equal(f.poses.at(-1),'sitting');
+ assert.equal(f.lines.filter(([t])=>t).at(-1)?.[1],'B14-SIT-01');
+ const count=f.lines.filter(([t])=>t).length;
+ f.tick(15000);assert.equal(f.poses.at(-1),'smoking');
+ assert.equal(f.lines.filter(([t])=>t).length,count);f.b.dispose();
+});

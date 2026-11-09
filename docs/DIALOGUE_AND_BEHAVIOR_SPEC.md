@@ -151,3 +151,13 @@ The v1.7 planning baseline above remains the source of approved wording. Impleme
 
 ## B-13.2 user-authorized implementation override
 B-13.2 authorizes the three movement/dialogue presets and independent ON/OFF settings described in [B_CANONICAL_13_2_BEHAVIOR_STABILITY.md](B_CANONICAL_13_2_BEHAVIOR_STABILITY.md). Random autonomous dialogue now uses its own 8–12 / 4–6 / 2–3 minute cadence instead of per-movement probability; Speaking retains its 30% visual weight. Fixed Dynamic O-01 remains when autonomous dialogue is ON; automatic Dynamic is silent when OFF, while manual Dynamic always keeps O-01. Manual Speaking/clicks/events remain available. C-19 is a rare creative/adapted candidate, not an exact quotation. B-14 full UI/custom ranges and B-15 external linkage remain excluded.
+
+## B-14 dialogue-only implementation (2026-11-09)
+- **B14-SIT-01**: `자, 최후변론을 해라` — user-confirmed Sitting-specific line, not a verified verbatim original quotation.
+- **B14-DRAW-01**: `웃음이 최후변론인가` — reassigned from the unbuilt Maintenance pose to ordinary Drawing only; not a verified verbatim original quotation.
+- On each new Sitting or ordinary Drawing action, select once: **silent 25% / existing pose-compatible pool 50% / dedicated line 25%**. A dedicated line is not included in the independent autonomous-dialogue pool. If the existing pool is temporarily empty due to cooldown, its slot may be silent.
+- Manual Sitting keeps the seated pose and speaks at most once per selection. Autonomous Sitting/Drawing may use this one-off line only with automatic dialogue enabled and no ongoing speech to interrupt. The independent dialogue scheduler remains separate.
+- The fifth consecutive click is a silent Drawing warning; the sixth uses the unchanged `CLICK-06`. Never substitute a B-14 line for either.
+- Do not add unapproved Reload or Maintenance poses, change existing approved assets, or claim Codex connectivity. All other existing dialogue records, cooldowns and three planned Codex event mappings remain unchanged.
+- Defer the B-13.4 native title/opaque-band issue to the pre-B-15 Windows stabilization pass; auxiliary CSS smoke was removed earlier in B-13.4.
+

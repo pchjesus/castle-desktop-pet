@@ -1,4 +1,7 @@
 export const dialogues = [
+  // B-14: artwork-free pose-entry lines. Approved wording; exact comic provenance unverified.
+  {id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry'],rarity:'special',cooldownMs:0,random:false,source:'User-confirmed B-14 Sitting line; original wording not independently verified'},
+  {id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry'],rarity:'special',cooldownMs:0,random:false,source:'User-supplied former Maintenance-only line, reassigned to B-14 Drawing; original wording not independently verified'},
   {id:'C-19',text:'사춘기 소년들의 어깨 싸움은 그걸로 끝이다.',origin:'original-inspired adaptation',approval:'proposed',poses:['speaking','drawing'],triggers:['autonomous'],rarity:'rare',cooldownMs:1800000,random:true,source:'User B-13.2 creative/adapted candidate; not an exact comic quotation'},
   {
     "id": "O-01",
