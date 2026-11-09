@@ -74,3 +74,30 @@ test('Liquid glass menu projects the desktop with neutral alpha instead of a sol
  assert(main.includes('placeMenu(win.getBounds()'));assert(main.includes("pet-menu:window-control"));
  assert(preload.includes("ipcRenderer.send('pet-menu:window-control'"));
 });
+
+test('B16 action weights use explicit whitelisted numeric menu commands and a nested panel',async()=>{
+ const h=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const control=await readFile(new URL('../src/behavior/controller.mjs',import.meta.url),'utf8');
+ const cadence=await readFile(new URL('../src/behavior/cadence.mjs',import.meta.url),'utf8');
+ for(const item of ['data-frequency-view="weights"','id="action-weights-list"','data-frequency-open="weights"','id="weights-reset"'])
+  assert(h.includes(item));
+ assert(h.includes("slider.addEventListener('change'"));
+ assert(main.includes("command.startsWith('setting:weight:')"));
+ assert(main.includes('ACTION_WEIGHT_LIMIT')&&main.includes('Object.hasOwn(DEFAULT_ACTION_WEIGHTS,pose)'));
+ assert(main.includes("command==='setting:weights:reset'"));
+ assert(cadence.includes('DEFAULT_ACTION_WEIGHTS'));
+ assert(control.includes('if(!available.length){armMovement();return;}'));
+ assert(control.includes('later(start,1000)'));
+ assert(!control.includes("if(value==='firing_dynamic'){show(settings.base)"));
+});
+test('B16 central popup is large by default, movable and resizable with legacy 316px upgrade',async()=>{
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const geometry=await readFile(new URL('../electron/menu-layout.mjs',import.meta.url),'utf8');
+ assert(geometry.includes('DEFAULT_MENU={width:560,height:610}'));
+ assert(geometry.includes('work.x+(work.width-size.width)/2'));
+ assert(main.includes('legacyCompact'));
+ assert(menu.includes('data-frequency-view="weights"'));
+ assert(menu.includes('menu-resize-handle'));
+});

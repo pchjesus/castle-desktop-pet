@@ -3,7 +3,7 @@ const output='artifacts/b13-3';await mkdir(output,{recursive:true});
 const server=await createServer({server:{host:'127.0.0.1',port:0},logLevel:'error'});await server.listen();let browser;
 const report={passed:false,environment:'Chromium browser; native Windows is a separate workflow',checks:[],errors:[],menu:[],smoke:{}};
 try{
- browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:316,height:316}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
+ browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:560,height:610}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
  await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',codex:{bridgeReady:true,externalEvents:0,filePath:'C:/Users/QA/AppData/Roaming/castle-desktop-pet/codex-events.jsonl',events:[]}},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
@@ -12,6 +12,21 @@ try{
  }
  const glass=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1))}});
  assert(glass.background.includes('rgba('));assert(glass.opacity<.2);assert.equal(glass.radius,'22px');
+ assert((await page.locator('main').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=14);
+ await page.locator('#tab-frequency').click();
+ await page.locator('#edit-action-weights').click();
+ assert.equal(await page.locator('.action-weight-row').count(),9);
+ const working=page.locator('[data-weight-row="working"] input[type="range"]');
+ await working.evaluate(el=>{el.value='20';el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});
+ assert.equal(await page.evaluate(()=>window.__command),'setting:weight:working:20');
+ assert((await page.locator('[data-weight-row="working"] .weight-value').innerText()).includes('20'));
+ await page.screenshot({path:output+'/menu-action-weights-browser.png'});
+ await page.locator('#weights-reset').click();
+ assert.equal(await page.evaluate(()=>window.__command),'setting:weights:reset');
+ await page.locator('[data-frequency-back]').click();
+ assert(await page.locator('#edit-action-weights').isVisible());
+ await page.locator('#tab-more').click();
+ await page.setViewportSize({width:850,height:790});
  await page.locator('#tab-more').click();await page.locator('[data-more-open="archive"]').click();
  await page.waitForFunction(()=>document.querySelector('#archive-count')?.textContent?.includes('3'));
  assert.equal(await page.locator('.archive-item').count(),3);
@@ -27,7 +42,7 @@ try{
  await page.locator('[data-more-view="status"] [data-more-back]').click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');
  await page.locator('#tab-basic').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#tab-frequency').getAttribute('aria-selected'),'true');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__dismissed),true);
- report.checks.push('316px menu: four tabs without scrolling, nine sizes, real size change, keyboard navigation and dismiss');
+ report.checks.push('560px roomy glass menu: four tabs, 9 per-action sliders, reset, keyboard, sizing and dialogue readability');
  await page.setViewportSize({width:360,height:450});await page.goto(origin+'/?autonomy=false&dialogueEnabled=false');const stage='.pet-stage:not([data-exiting])';await page.waitForSelector(stage+' img');
  const opaque=async()=>page.locator(stage+' img').evaluate(im=>{const r=im.getBoundingClientRect(),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);const a=g.getImageData(0,0,c.width,c.height).data;let x=Math.floor(c.width*.5),y=Math.floor(c.height*.45);while(a[(y*c.width+x)*4+3]<200)y++;const z=Math.min(r.width/c.width,r.height/c.height);return{x:r.x+(r.width-c.width*z)/2+x*z,y:r.y+(r.height-c.height*z)/2+y*z}});
  for(const pose of ['sitting','working']){
