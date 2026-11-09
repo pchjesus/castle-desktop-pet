@@ -72,6 +72,7 @@ jobs:
           if (@($result.speechEdges.PSObject.Properties).Count -ne 8 -or @($result.speechEdges.PSObject.Properties | Where-Object { !$_.Value }).Count -gt 0) { throw 'B13.1 screen edge speech placement failed' }
           if (!$result.behavior132.passed -or $result.behavior132.commands.Count -ne 18 -or $result.behavior132.smoke.Count -ne 4 -or !$result.behavior132.reducedMotion) { throw 'B13.2 native manual/smoking validation failed' }
           if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or !$result.approvedPoseChecked.idle -or !$result.approvedPoseChecked.smoking -or !$result.approvedPoseChecked.sitting -or !$result.approvedPoseChecked.dual_firing -or !$result.approvedPoseChecked.speaking -or !$result.approvedPoseChecked.firing_dynamic -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.menuChrome.passed -or !$result.menuQA.hasSizing -or !$result.menuQA.hasPose -or !$result.menuQA.hasBlocked -or !$result.resizedFromMenu -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
+          Write-Host "::notice::B13.2 native QA passed: $($result.behavior132.commands.Count) menu pose commands, 4 smoke sizes; original Reduced Motion=$($result.behavior132.originalReducedMotion)."
       - uses: actions/upload-artifact@v4
         if: always()
         with:
