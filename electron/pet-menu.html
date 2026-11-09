@@ -35,8 +35,40 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 #codex-logs p{margin:0;font-size:10px}
 #codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
 
+
+/* Liquid glass: real desktop remains visible, with no brown/grey panel tint.
+   Windows 11 Acrylic is provided by the native window; CSS alone cannot blur
+   applications that live behind a transparent BrowserWindow. */
+html,body{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+main{
+ position:relative;border-radius:22px;
+ background:rgba(255,255,255,.085);
+ border:1px solid rgba(255,255,255,.48);
+ box-shadow:inset 0 1.5px 1px rgba(255,255,255,.64),
+  inset 0 -1px 0 rgba(255,255,255,.16),0 12px 27px rgba(0,0,0,.2);
+ backdrop-filter:blur(22px) saturate(1.15);
+ -webkit-backdrop-filter:blur(22px) saturate(1.15);
+}
+header{cursor:move;user-select:none;touch-action:none}
+header strong{font-weight:650;letter-spacing:.01em}
+header button{cursor:pointer;background:rgba(0,0,0,.22)!important;border-radius:50%}
+nav button{border:1px solid transparent;background:rgba(0,0,0,.08);color:rgba(255,255,255,.94);border-radius:9px}
+nav button[aria-selected=true]{background:rgba(255,255,255,.22);color:#fff;border-color:rgba(255,255,255,.62)}
+button,select,#dialogue-search{color:#fff;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.32);border-radius:10px;text-shadow:0 1px 2px rgba(0,0,0,.75)}
+button:hover,button:focus-visible,select:focus-visible{background:rgba(255,255,255,.27);outline:1px solid rgba(255,255,255,.75)}
+button[aria-pressed=true]{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.85)}
+h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:rgba(255,255,255,.93)}
+.archive-item{background:rgba(0,0,0,.17);border-color:rgba(255,255,255,.28)}
+.archive-item strong,.archive-item p,.status-list{color:#fff}
+.archive-status{color:#fff}
+footer{border-color:rgba(255,255,255,.36)}
+footer button{color:#fff}
+#menu-resize-handle{position:absolute;z-index:5;right:2px;bottom:2px;width:24px;height:24px;border-radius:0 0 19px 0;cursor:nwse-resize;touch-action:none}
+#menu-resize-handle:after{content:'';position:absolute;right:6px;bottom:7px;width:10px;height:10px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);border-radius:0 0 2px 0}
+#menu-resize-handle:hover{background:rgba(255,255,255,.15)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body><main>
-<header><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
+<header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
 <section id="panel-basic" role="tabpanel" aria-labelledby="tab-basic" data-panel="basic">
 <h2>평소 자세</h2><div class="grid"><button data-action="setting:base:smoking">흡연</button><button data-action="setting:base:idle">서 있기</button><button data-action="setting:base:sitting">앉기</button></div>
@@ -88,6 +120,7 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 </div>
 </section>
 <footer><span>설정은 자동 저장돼요</span><button data-action="quit">펫 종료</button></footer>
+<div id="menu-resize-handle" role="button" tabindex="0" aria-label="메뉴 크기 조절" title="모서리를 끌어 메뉴 크기 조절"></div>
 </main><script>
 const params=new URL(location.href).searchParams;
 for(const [id,key,label] of [['autonomy-setting','autonomy','움직임'],['dialogue-setting','dialogueEnabled','대사'],['fire-setting','autoFire','사격']]){const button=document.getElementById(id);const enabled=params.get(key)!=='false';button.textContent=label+' '+(enabled?'켜짐':'꺼짐');button.dataset.action='setting:'+key+':'+String(!enabled);button.setAttribute('aria-pressed',String(enabled));}
@@ -155,5 +188,26 @@ const button=event.target.closest('button[data-action]');if(button)window.castle
 document.querySelector('#pet-size').addEventListener('change',event=>window.castleMenu?.invoke('size:'+event.target.value));
 document.querySelector('#close-menu').addEventListener('click',()=>window.castleMenu?.dismiss());
 window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();if(event.target.matches('[data-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tabs=Array.from(document.querySelectorAll('[data-tab]'));const i=tabs.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length;selectTab(tabs[next].dataset.tab);tabs[next].focus();}});
+
+let menuGesture=null;
+const headerHandle=document.querySelector('#menu-drag-handle'),resizeHandle=document.querySelector('#menu-resize-handle');
+function beginMenuGesture(event,kind,element){
+ if(event.button!==0||(kind==='move'&&event.target.closest('button')))return;
+ menuGesture={kind,pointerId:event.pointerId,element};element.setPointerCapture?.(event.pointerId);
+ window.castleMenu?.windowControl?.(kind+':start');event.preventDefault();
+}
+headerHandle.addEventListener('pointerdown',event=>beginMenuGesture(event,'move',headerHandle));
+resizeHandle.addEventListener('pointerdown',event=>beginMenuGesture(event,'resize',resizeHandle));
+document.addEventListener('pointermove',event=>{
+ if(menuGesture&&event.pointerId===menuGesture.pointerId)window.castleMenu?.windowControl?.(menuGesture.kind+':update');
+});
+function finishMenuGesture(event){
+ if(!menuGesture||event.pointerId!==menuGesture.pointerId)return;
+ const {kind,element,pointerId}=menuGesture;menuGesture=null;
+ if(element.hasPointerCapture?.(pointerId))element.releasePointerCapture(pointerId);
+ window.castleMenu?.windowControl?.(kind+':end');
+}
+document.addEventListener('pointerup',finishMenuGesture);
+document.addEventListener('pointercancel',finishMenuGesture);
 document.addEventListener('contextmenu',event=>event.preventDefault());selectTab('basic');
 </script></body></html>

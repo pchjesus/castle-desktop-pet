@@ -62,3 +62,15 @@ test('B15 event bridge has allowlisted IPC, safe status, and three test buttons'
  assert(preload.includes("ipcRenderer.invoke('pet-menu:test-event'"));
  assert(menu.includes('codex-logs'));assert(menu.includes('로컬 파일 수신 대기'));
 });
+
+test('Liquid glass menu projects the desktop with neutral alpha instead of a solid or brown tint',async()=>{
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ assert(menu.includes('background:rgba(255,255,255,.085)'));
+ assert(menu.includes('border-radius:22px'));assert(menu.includes('menu-drag-handle'));assert(menu.includes('menu-resize-handle'));
+ assert(!menu.includes('background:#22262ef5')); // Replace the original opaque panel, not merely mask it.
+ assert(main.includes("setBackgroundMaterial('acrylic')"));
+ assert(main.includes('placeMenu(win.getBounds()'));assert(main.includes("pet-menu:window-control"));
+ assert(preload.includes("ipcRenderer.send('pet-menu:window-control'"));
+});
