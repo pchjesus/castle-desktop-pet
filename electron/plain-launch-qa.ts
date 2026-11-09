@@ -1,7 +1,7 @@
 import {BrowserWindow,screen,desktopCapturer} from 'electron';
 import {writeFileSync,mkdirSync} from 'node:fs';import {join,dirname} from 'node:path';
 import {nativeWindowAudit} from './native-window-audit';import {compareClearRegions} from './transparent-gaps.mjs';
-async function desktop(win:BrowserWindow){const display=screen.getDisplayMatching(win.getBounds());const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:1920,height:1080}});const source=sources.find(s=>s.display_id===String(display.id))||sources[0];if(!source||source.thumbnail.isEmpty())throw Error('Desktop capture unavailable');return {image:source.thumbnail,display};}
+export async function desktop(win:BrowserWindow){const display=screen.getDisplayMatching(win.getBounds());const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:1920,height:1080}});const source=sources.find(s=>s.display_id===String(display.id))||sources[0];if(!source||source.thumbnail.isEmpty())throw Error('Desktop capture unavailable');return {image:source.thumbnail,display};}
 export async function beforePlainShow(win:BrowserWindow){return desktop(win);}
 export async function finishPlainLaunch(win:BrowserWindow,before:Awaited<ReturnType<typeof desktop>>,windows:{role:string;window:BrowserWindow}[],report:string){
  const capture=await desktop(win),surface=await win.webContents.capturePage(),size=surface.getSize();
@@ -9,6 +9,7 @@ export async function finishPlainLaunch(win:BrowserWindow,before:Awaited<ReturnT
  const clear=compareClearRegions(surface.toBitmap(),size.width,size.height,win.getBounds(),sample(capture),sample(before));
  const audit=nativeWindowAudit(windows);const native=audit.native as {role:string;caption:boolean}[];
  const unexpected=windows.some(row=>row.role!=='pet'&&row.window.isVisible());
- const result={passed:clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',clear,audit};
+ const petLoaded=await win.webContents.executeJavaScript(`(()=>{const i=document.querySelector('.pet-stage:not([data-exiting]) img');return !!i?.complete&&i.naturalWidth>0})()`);
+ const result={petLoaded,passed:petLoaded&&clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',clear,audit};
  const out=join(dirname(report),'windows-b13-3-captures');mkdirSync(out,{recursive:true});writeFileSync(join(out,'plain-launch-desktop.png'),capture.image.toPNG());writeFileSync(join(out,'plain-launch-alpha.png'),surface.toPNG());writeFileSync(report,JSON.stringify(result));return result;
 }

@@ -1,3 +1,4 @@
+import {desktop} from './plain-launch-qa';
 import {BrowserWindow,screen} from 'electron';
 import {writeFileSync,mkdirSync} from 'node:fs';
 import {join} from 'node:path';
@@ -40,13 +41,24 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const rows=commands.filter(row=>'pose' in row&&row.pose===pose);
   if(rows.some(row=>!('entries' in row)||!row.entries!.some((entry:any)=>entry.phase==='rendered'&&entry.pose===pose)))throw Error('Repeat did not create a fresh action '+pose);
  }
+ const uxEvidence=join(evidence,'../windows-b13-3-captures');mkdirSync(uxEvidence,{recursive:true});
+ const clicks=[];
+ for(const pose of ['sitting','working']){
+  await menuClick('pose:'+pose);await pause(180);
+  const point=await win.webContents.executeJavaScript(`(()=>{const i=document.querySelector('.pet-stage:not([data-exiting]) img'),r=i.getBoundingClientRect(),c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const g=c.getContext('2d');g.drawImage(i,0,0);const a=g.getImageData(0,0,c.width,c.height).data;let x=Math.floor(c.width*.5),y=Math.floor(c.height*.45);while(a[(y*c.width+x)*4+3]<200&&y<c.height-2)y++;const z=Math.min(r.width/c.width,r.height/c.height);return{x:Math.round(r.x+(r.width-c.width*z)/2+x*z),y:Math.round(r.y+(r.height-c.height*z)/2+y*z)}})()`);
+  win.focus();win.webContents.sendInputEvent({type:'mouseMove',...point});await pause(30);win.webContents.sendInputEvent({type:'mouseDown',...point,button:'left',clickCount:1});win.webContents.sendInputEvent({type:'mouseUp',...point,button:'left',clickCount:1});await pause(450);
+  const after=await win.webContents.executeJavaScript(`document.querySelector('.pet-stage:not([data-exiting])').dataset.pose`);
+  writeFileSync(join(uxEvidence,`click-${pose}-desktop.png`),(await desktop(win)).image.toPNG());await pause(4300);
+  const settled=await win.webContents.executeJavaScript(`document.querySelector('.pet-stage:not([data-exiting])').dataset.pose`);
+  if(after!==pose||settled!==pose)throw Error('Click changed held posture '+pose);clicks.push({pose,after,settled});
+ }
  for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
  const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
  if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
- menu.show();writeFileSync(join(evidence,'menu.png'),(await menu.webContents.capturePage()).toPNG());menu.close();
+ menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Compact menu scrolls: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="basic"]').click()`);writeFileSync(join(evidence,'menu.png'),(await menu.webContents.capturePage()).toPNG());menu.close();
  await menuClick('pose:smoking');await pause(180);
- const smoke=[];
+ const smoke=[];let smokeVisibility={visiblePixels:0,movingPixels:0};
  const originalReducedMotion=await win.webContents.executeJavaScript(`matchMedia('(prefers-reduced-motion: reduce)').matches`);
  win.webContents.debugger.attach('1.3');
  try{
@@ -57,10 +69,18 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   if(metrics.missing||metrics.error>=1.2||metrics.strands!==2||metrics.duration!=='2s')throw Error('Native smoke alignment '+JSON.stringify(metrics));
   smoke.push({width,...metrics});writeFileSync(join(evidence,`${width}-smoking.png`),(await win.webContents.capturePage()).toPNG());
  }
+  await win.webContents.executeJavaScript(`document.querySelectorAll('.b-presentation img,.b-smoking-layer').forEach(e=>e.style.animation='none')`);
+  await pause(40);const on=await win.webContents.capturePage();writeFileSync(join(uxEvidence,'smoke-motion-0.png'),on.toPNG());await pause(500);const moved=await win.webContents.capturePage();writeFileSync(join(uxEvidence,'smoke-motion-1.png'),moved.toPNG());
+  await win.webContents.executeJavaScript(`document.querySelector('.b-smoking-layer').style.visibility='hidden'`);await pause(40);const off=await win.webContents.capturePage();
+  const a=on.toBitmap(),b=moved.toBitmap(),c=off.toBitmap();let visiblePixels=0,movingPixels=0;
+  for(let i=0;i<a.length;i+=4){if(Math.max(...[0,1,2,3].map(j=>Math.abs(a[i+j]-c[i+j])))>=12)visiblePixels++;if(Math.max(...[0,1,2,3].map(j=>Math.abs(a[i+j]-b[i+j])))>=12)movingPixels++;}
+  smokeVisibility={visiblePixels,movingPixels};
+  if(visiblePixels<12||movingPixels<8)throw Error('Smoke not visibly rendered '+JSON.stringify({visiblePixels,movingPixels}));
+  await win.webContents.executeJavaScript(`document.querySelector('.b-smoking-layer').style.visibility='';document.querySelectorAll('.b-presentation img,.b-smoking-layer').forEach(e=>e.style.removeProperty('animation'))`);
   await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});await pause(70);
   if(!await win.webContents.executeJavaScript(`(()=>{const e=document.querySelector('.b-smoke-strand');return !!e&&getComputedStyle(e).transform==='none'&&getComputedStyle(e).animationName==='b-smoke-quiet'})()`))throw Error('Reduced Motion smoke must be stationary and visible');
   await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});await pause(70);
   if(!await win.webContents.executeJavaScript(`!!document.querySelector('.b-smoking-layer')`))throw Error('Smoke did not resume');
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
- return {passed:true,commands,settings,smoke,reducedMotion:true,originalReducedMotion};
+ return {passed:true,commands,settings,smoke,clicks,reducedMotion:true,originalReducedMotion,smokeVisibility};
 }
