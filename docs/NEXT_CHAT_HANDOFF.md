@@ -39,3 +39,6 @@ All nine B poses are registered; Speaking and Firing Dynamic use user-approved c
 
 ## B-CANONICAL-13
 Implemented v1.7 behavior/controller and dialogue registry. Default Smoking; renderer uses managed animation completion and restores configured base. Settings persist in behavior.json via the existing custom menu. See B_CANONICAL_13_BEHAVIOR.md for proposed timing/cooldown defaults and tests. External Codex integration and B-14 UI remain out of scope. Approved image files/mappings are unchanged.
+
+## B-CANONICAL-13.1
+See [B_CANONICAL_13_1_UX_HOTFIX.md](B_CANONICAL_13_1_UX_HOTFIX.md). Native speech now uses a separate click-through transparent surface; pet window geometry/settings are unchanged. Dynamic lead-in is 1s, approved shot 1.5s, aftermath .85s; speech readability is independent. B-only managed rendering decodes before 160ms crossfade and uses restrained presentation effects. Approved assets/mappings/hashes and B-13 behavior contracts remain unchanged. Browser evidence is not native Windows approval; see the matching Windows smoke run and QA artifact, then user-device visual review. Keep PR #11 draft; no merge/release/deploy.

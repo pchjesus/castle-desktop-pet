@@ -1,5 +1,6 @@
 import {contextBridge,ipcRenderer} from 'electron';
 contextBridge.exposeInMainWorld('pet',{
+ showSpeech:(text:string)=>ipcRenderer.send('pet:speech',text),
  showMenu:()=>ipcRenderer.send('show-menu'),
  onAction:(callback:(state:string)=>void)=>{
   const listener=(_event:Electron.IpcRendererEvent,state:string)=>callback(state);

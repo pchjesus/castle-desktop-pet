@@ -7,13 +7,14 @@ export function choose(rows,random){let cursor=random();for(const [pose,w] of ro
 export const readableMs=text=>Math.min(16000,Math.max(4000,Array.from(text).length*110+1600));
 export function createBehavior({render,speak,settings:initial,random=Math.random,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,reduced=()=>false}){
  let settings=normalizeSettings(initial),timers=new Set(),generation=0,mode='base',hidden=false,disposed=false,cooldown=0,clicks=[],warning=false,locked=false,autoShot=false,currentEvent='';
+ let speechUntil=0;
  const used=new Map();const range=(a,b)=>a+random()*(b-a);
  function later(fn,ms){const version=generation,due=now()+ms;const id=setTimer(()=>{timers.delete(id);if(!disposed&&!hidden&&version===generation){if(now()>due+5000)base();else fn();}},ms);timers.add(id);return id;}
- function clear(){if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}generation++;for(const id of timers)clearTimer(id);timers.clear();speak('');}
+ function clear(keepSpeech=false){if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}generation++;for(const id of timers)clearTimer(id);timers.clear();if(!keepSpeech){speechUntil=0;speak('');}}
  function resetClicks(){clicks=[];warning=false;locked=false;}
  function idleWait(){if(!disposed&&!hidden&&settings.autonomy&&mode==='base')later(auto,range(120000,180000));}
- function base(){if(disposed)return;clear();currentEvent='';resetClicks();mode='base';render(settings.base);idleWait();}
- function say(record){if(!record)return 0;used.set(record.id,now());speak(record.text,record);return readableMs(record.text);}
+ function base(preserveSpeech=false){if(disposed)return;const remaining=preserveSpeech?Math.max(0,speechUntil-now()):0;clear(remaining>0);currentEvent='';resetClicks();mode='base';render(settings.base);if(remaining>0){speechUntil=now()+remaining;later(()=>{speechUntil=0;speak('');},remaining);}idleWait();}
+ function say(record){if(!record)return 0;used.set(record.id,now());speak(record.text,record);speechUntil=now()+readableMs(record.text);return readableMs(record.text);}
  function line(pose,trigger='autonomous'){
   let eligible=dialogues.filter(d=>d.random&&d.triggers.includes(trigger)&&(trigger==='click'||d.poses.includes(pose))&&now()-(used.get(d.id)??-Infinity)>=d.cooldownMs);
   if(!eligible.length)return;
@@ -21,7 +22,25 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   return eligible[Math.min(eligible.length-1,Math.floor(random()*eligible.length))];
  }
  function duration(pose){return pose==='sitting'||pose==='idle'||pose==='smoking'?range(10000,20000):pose==='drawing'?range(3000,6000):pose==='speaking'?(reduced()?1000:3500):pose==='dual_firing'?2400:pose==='working'?15000:1500;}
- function action(pose,source,forced){clear();resetClicks();mode=source;const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};const record=forced||(pose==='firing_dynamic'?dialogues.find(d=>d.id==='O-01'):random()<(probability[pose]||0)?line(pose):undefined);const speech=say(record);const start=()=>{autoShot=source==='auto'&&shots.has(pose);render(pose);const hold=Math.max(duration(pose),pose==='firing_dynamic'?0:speech);later(()=>{if(source==='auto'&&shots.has(pose)){cooldown=now()+range(180000,300000);autoShot=false;}base();},hold);};if(pose==='firing_dynamic'){render(settings.base);later(start,speech);}else start();}
+ function action(pose,source,forced){
+  clear();resetClicks();mode=source;
+  const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};
+  const record=forced||(pose==='firing_dynamic'?dialogues.find(d=>d.id==='O-01'):random()<(probability[pose]||0)?line(pose):undefined);
+  const speech=say(record);
+  const endShot=()=>{if(source==='auto'&&shots.has(pose)){cooldown=now()+range(180000,300000);autoShot=false;}};
+  const start=()=>{
+   autoShot=source==='auto'&&shots.has(pose);render(pose);
+   if(pose==='firing_dynamic'){
+    // Dialogue readability does not delay the shot or its 850ms aftermath.
+    later(()=>{endShot();later(()=>base(true),850);},duration(pose));
+   }else later(()=>{endShot();base();},Math.max(duration(pose),speech));
+  };
+  if(pose==='firing_dynamic'){
+   render(settings.base);
+   later(()=>{speechUntil=0;speak('');},speech);
+   later(start,1000);
+  }else start();
+ }
  function auto(){action(choose(actionWeights(settings,now()<cooldown),random),'auto');}
  function manual(pose){if(disposed||hidden)return;resetClicks();if(pose===settings.base){base();return;}if(['idle','smoking','sitting','working'].includes(pose)){clear();mode='manual';render(pose);}else action(pose,'manual');}
  function click(){if(disposed||hidden||locked)return;if(warning){clear();mode='manual';warning=true;locked=true;const ms=say(dialogues.find(d=>d.id==='CLICK-06'));later(base,ms);return;}

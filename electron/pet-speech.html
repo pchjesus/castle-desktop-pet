@@ -1,0 +1,14 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-XPNdz165ZI/HVIyQOPdamkVE2M4deFDRCpoBua5btlU='">
+<title>Castle Pet Speech</title><style>
+html,body{margin:0;background:transparent!important;overflow:hidden;color-scheme:normal;pointer-events:none;user-select:none}
+body{padding:4px;box-sizing:border-box}
+#speech{display:table;box-sizing:border-box;max-width:100%;padding:8px 11px;border:1px solid #b7a68180;border-radius:12px;background:#20242ce8;color:#f3f0e9;font:13px/1.55 system-ui,sans-serif;overflow-wrap:anywhere;white-space:pre-wrap;opacity:0;transform:translateY(2px);transition:opacity 140ms ease,transform 140ms ease}
+#speech.visible{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){#speech{transition:none;transform:none}}
+</style></head><body><div id="speech" role="status" aria-live="polite"></div><script>
+const speech=document.querySelector('#speech');
+const measure=()=>window.castleSpeech?.measure(Math.ceil(speech.getBoundingClientRect().height+8));
+window.castleSpeech?.onText(text=>{if(text)speech.textContent=text;speech.classList.toggle('visible',!!text);measure();});
+new ResizeObserver(measure).observe(speech);
+</script></body></html>

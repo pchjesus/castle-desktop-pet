@@ -5,7 +5,9 @@ import { playFrames } from './animation';
 import { startEffects } from './effects';
 import { startWorking } from './working';
 import { createTransition } from './transition.mjs';
+import {mountManagedPet} from './managed-presentation';
 export function mountPet(root: HTMLElement, character: Character, getSpeed: () => number = () => 1, options:{managed?:boolean;initialState?:PetState}={}) {
+  if(options.managed && outfitPolicy.active==='mustang')return mountManagedPet(root,character,options.initialState||character.initialState);
   let stop = () => {};
   let previousRenderedState: PetState | undefined;
   const render = (state: PetState) => {

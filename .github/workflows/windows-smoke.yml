@@ -4,6 +4,8 @@ on:
     branches:
       - main
     paths:
+      - 'index.html'
+      - 'scripts/copy-pet-menu.mjs'
       - 'electron/**'
       - 'scripts/package-windows-qa.mjs'
       - 'scripts/export-preview.mjs'
@@ -40,24 +42,28 @@ jobs:
           $qaSource = Join-Path $PWD 'dist-qa/CastlePetQA'
           $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
           Move-Item -LiteralPath $qaSource -Destination $qaRoot
-          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/dist-electron/pet-menu.html','resources/app/dist-electron/menu-preload.cjs','resources/app/preview.html','resources/app/preview-assets')) {
+          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/dist-electron/pet-menu.html','resources/app/dist-electron/menu-preload.cjs','resources/app/dist-electron/pet-speech.html','resources/app/dist-electron/speech-preload.cjs','resources/app/preview.html','resources/app/preview-assets')) {
             if (!(Test-Path (Join-Path $qaRoot $name))) { throw "Missing package file: $name" }
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
           $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
-          if (!$qaProcess.WaitForExit(60000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
+          if (!$qaProcess.WaitForExit(100000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
           if (Test-Path $qaReport) {
             Write-Host '=== Windows QA process report ==='
             Get-Content $qaReport -Raw | Write-Host
           } else { Write-Host 'Windows QA process report was not written.' }
           if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
           $result = Get-Content $qaReport | ConvertFrom-Json
+          if ($result.dynamicTiming.startDelayMs -lt 800 -or $result.dynamicTiming.startDelayMs -gt 1200 -or $result.dynamicTiming.returnAfterShotMs -lt 700 -or $result.dynamicTiming.returnAfterShotMs -gt 1000) { throw 'B13.1 dynamic timing failed' }
+          if (@($result.compositing.PSObject.Properties).Count -ne 12 -or @($result.compositing.PSObject.Properties | Where-Object { !$_.Value }).Count -gt 0) { throw 'B13.1 transparency/speech surface failed' }
+          if (@($result.speechEdges.PSObject.Properties).Count -ne 8 -or @($result.speechEdges.PSObject.Properties | Where-Object { !$_.Value }).Count -gt 0) { throw 'B13.1 screen edge speech placement failed' }
           if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or !$result.approvedPoseChecked.idle -or !$result.approvedPoseChecked.smoking -or !$result.approvedPoseChecked.sitting -or !$result.approvedPoseChecked.dual_firing -or !$result.approvedPoseChecked.speaking -or !$result.approvedPoseChecked.firing_dynamic -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.menuChrome.passed -or !$result.menuQA.hasSizing -or !$result.menuQA.hasPose -or !$result.menuQA.hasBlocked -or !$result.resizedFromMenu -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: castle-pet-windows-qa-unapproved
+          name: castle-pet-windows-b13-1-qa-unapproved
           path: |
             dist-qa/검수 QA/
             windows-qa-report.json
+            windows-b13-1-captures/
           if-no-files-found: warn

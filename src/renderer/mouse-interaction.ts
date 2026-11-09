@@ -8,7 +8,7 @@ export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dra
  let pointerId:number|null=null;
  let origin:{x:number;y:number}|null=null;
  const masks=new Map<string,AlphaMask>();
- function currentImg(){return root.querySelector<HTMLImageElement>('.pet-stage img');}
+ function currentImg(){return root.querySelector<HTMLImageElement>('.pet-stage:not([data-exiting]) img');}
  function maskFor(img:HTMLImageElement):AlphaMask|null {
   if(!img.complete||img.naturalWidth<=0||img.naturalHeight<=0) return null;
   const key=img.currentSrc||img.src;

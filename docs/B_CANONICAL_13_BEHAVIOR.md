@@ -33,3 +33,6 @@ B-14 전체 상태창·도감·빈도 확장 설정, B-15 외부 Codex 연동은
 O-13은 승인된 문구를 보존하되 반복 오류 문맥 후보로만 등록하여 자율 일반 대사에서는 제외했다. deploymentComplete는 중복 대사 레코드 없이 O-10을 직접 참조한다.
 
 OS suspend/resume 신호를 전달하며, 타이머가 예정 시각보다 5초 이상 늦게 실행되면 이전 행동을 실행하지 않고 새 대기로 정리한다. 설정 변경 중에도 유효한 사격 쿨다운은 보존한다.
+
+## B-13.1 timing / presentation override
+The B-13.1 user instruction supersedes the old Dynamic readable pre-shot delay: O-01 is immediate, preparation 1000ms, shot 1500ms, aftermath 850ms; readable speech remains independent. Cooldown starts at shot end. See [B_CANONICAL_13_1_UX_HOTFIX.md](B_CANONICAL_13_1_UX_HOTFIX.md) for native side speech, transparency/presentation and new validation evidence. All approved wording and other behavior rules remain unchanged.

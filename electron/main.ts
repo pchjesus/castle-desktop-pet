@@ -1,8 +1,10 @@
+import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
-import { app, BrowserWindow, screen, ipcMain, powerMonitor } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer } from 'electron';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
 import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeAroundFeet, restoreWindowBounds } from './window-size.mjs';
 
@@ -70,6 +72,36 @@ function openPetMenu() {
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
 }
+// Non-focusing, always click-through speech surface. Does not change pet bounds.
+let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=180;
+let speechHide:ReturnType<typeof setTimeout>|undefined;
+function positionSpeech(){
+ if(!speechWindow||speechWindow.isDestroyed()||!win||win.isDestroyed())return false;
+ const pet=win.getBounds(),area=screen.getDisplayMatching(pet).workArea;
+ const {placement,...bounds}=speechBounds(pet,area,speechHeight);
+ speechWindow.setBounds(bounds);
+ if(placement==='unavailable'){speechWindow.hide();log('Speech: display has no unobstructed space');return false;}
+ if(speechText&&win.isVisible()&&!speechWindow.webContents.isLoading()&&!speechWindow.isVisible())speechWindow.showInactive();
+ return true;
+}
+function updateSpeech(text:string){
+ speechText=text;clearTimeout(speechHide);
+ if(!speechWindow||speechWindow.isDestroyed()){
+  if(!text)return;
+  const popup=new BrowserWindow({width:244,height:180,show:false,parent:win,frame:false,
+   transparent:true,backgroundColor:'#00000000',hasShadow:false,alwaysOnTop:true,
+   skipTaskbar:true,focusable:false,resizable:false,thickFrame:false,
+   webPreferences:{preload:join(__dirname,'speech-preload.cjs'),sandbox:true,contextIsolation:true,nodeIntegration:false}});
+  speechWindow=popup;popup.setMenu(null);popup.setIgnoreMouseEvents(true);
+  popup.on('closed',()=>{if(speechWindow===popup)speechWindow=undefined;});
+  popup.loadFile(join(__dirname,'pet-speech.html')).then(()=>updateSpeech(speechText)).catch(error=>log('speech load: '+String(error)));
+  return;
+ }
+ if(speechWindow.webContents.isLoading())return;
+ speechWindow.webContents.send('speech:text',text);
+ if(text){if(positionSpeech()&&win.isVisible())speechWindow.showInactive();}
+ else speechHide=setTimeout(()=>{if(!speechText&&!speechWindow?.isDestroyed())speechWindow?.hide();},160);
+}
 function inspectMenuChrome(popup:BrowserWindow) {
  const outer=popup.getBounds(),content=popup.getContentBounds();
  return {passed:Math.abs(outer.width-content.width)<=1&&Math.abs(outer.height-content.height)<=1,
@@ -126,11 +158,12 @@ function nativeFrameless() {
 }
 
 app.whenReady().then(() => {
-  const suspend=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
+  const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
   app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
-  win = new BrowserWindow({ ...restore(), transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
+  win = new BrowserWindow({ ...restore(), show:false, transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
+  win.once('ready-to-show',()=>{if(!win.isDestroyed())win.show();});
   win.setMenu(null);
   win.setMenuBarVisibility(false);
   // Suppress Windows' native titlebar/system menu on non-client right clicks.
@@ -138,7 +171,9 @@ app.whenReady().then(() => {
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   readBehavior();
   win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
-  win.on('moved', save); win.on('resize', save); win.on('close', save);
+  win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{save();positionSpeech();}); win.on('close',save);
+  win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
+  win.on('closed',()=>{clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
   let ignoresPointer=false;
   let menuRequests=0;
@@ -150,6 +185,11 @@ app.whenReady().then(() => {
     drag=null;save();
   }
   const isPet=(event:Electron.IpcMainEvent)=>event.sender===win.webContents&&!win.isDestroyed();
+  ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
+  ipcMain.on('speech:measure',(event,height)=>{
+   if(!speechWindow||speechWindow.isDestroyed()||event.sender!==speechWindow.webContents||typeof height!=='number'||!Number.isFinite(height)||height<1||height>2000)return;
+   if(speechHeight===Math.ceil(height))return;speechHeight=Math.ceil(height);positionSpeech();
+  });
   ipcMain.on('show-menu',(event)=>{
     if(!isPet(event))return;
     menuRequests++;
@@ -188,7 +228,7 @@ app.whenReady().then(() => {
     else if(input.key==='='||input.key==='+'||input.key==='Add'){event.preventDefault();changeSizeBy(1);}
   });
   const chrome=nativeFrameless();log('frameless: '+JSON.stringify(chrome));
-  const refit = () => { if (!win.isDestroyed()) { win.setBounds(fit(win.getBounds())); save(); } };
+  const refit = () => { if (!win.isDestroyed()) { win.setBounds(fit(win.getBounds())); save(); positionSpeech(); } };
   if (process.argv.includes('--qa-smoke')) {
     const reportIndex=process.argv.indexOf('--qa-report');const reportFile=reportIndex>=0 ? process.argv[reportIndex+1] : join(app.getPath('userData'),'qa-smoke.json');
     const startWidth=win.getBounds().width;
@@ -203,20 +243,75 @@ app.whenReady().then(() => {
         if(win.webContents.isLoading()) await new Promise<void>(resolve=>win.webContents.once('did-finish-load',()=>resolve()));
         await win.webContents.executeJavaScript("window.__lastPetState='';document.querySelector('#app').addEventListener('pet-state',e=>window.__lastPetState=e.detail);true;");
         win.webContents.send('pet:action','drawing');
-        const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
+        const manualPoseChecked=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage:not([data-exiting]) img');if(window.__lastPetState==='drawing'&&im?.complete&&im.naturalWidth>0&&im.currentSrc.includes('drawing-')){clearInterval(timer);resolve(true);}else if(++n>40){clearInterval(timer);resolve(false);}},100);})`);
         const approvedPoseChecked:Record<string,boolean>={};
         for(const [pose,width] of [['idle',956],['smoking',1003],['sitting',1003],['dual_firing',1024],['speaking',956],['firing_dynamic',1004]] as const){
           win.webContents.send('pet:action',pose);
-          approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>100){clearInterval(timer);resolve(false);}},100);})`);
+          approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage:not([data-exiting]) img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>100){clearInterval(timer);resolve(false);}},100);})`);
         }
         if(Object.values(approvedPoseChecked).some(value=>!value))throw Error('Approved pose QA failed: '+JSON.stringify(approvedPoseChecked));
+        // Actual packaged renderer timing (independent of deterministic unit clocks).
+        await win.webContents.executeJavaScript(`window.__hotfixTimeline=[];document.querySelector('#app').addEventListener('pet-state',e=>window.__hotfixTimeline.push({pose:e.detail,at:performance.now()}));true;`);
+        win.webContents.send('pet:action','settings:'+JSON.stringify({base:'smoking',autonomy:false,autoFire:false}));
+        await new Promise(resolve=>setTimeout(resolve,180));
+        const dynamicStarted=await win.webContents.executeJavaScript(`performance.now()`);
+        win.webContents.send('pet:action','firing_dynamic');
+        await new Promise(resolve=>setTimeout(resolve,4300));
+        const timeline=await win.webContents.executeJavaScript(`window.__hotfixTimeline`);
+        const firingEntry=timeline.find((entry:{pose:string;at:number})=>entry.pose==='firing_dynamic');
+        const baseEntry=timeline.find((entry:{pose:string;at:number})=>entry.pose==='smoking'&&entry.at>(firingEntry?.at||Infinity));
+        const dynamicTiming={startDelayMs:firingEntry?.at-dynamicStarted,returnAfterShotMs:baseEntry?.at-firingEntry?.at-1500};
+        if(!(dynamicTiming.startDelayMs>=800&&dynamicTiming.startDelayMs<=1200&&dynamicTiming.returnAfterShotMs>=700&&dynamicTiming.returnAfterShotMs<=1000))throw Error('Dynamic native timing: '+JSON.stringify(dynamicTiming));
+        const evidence=join(dirname(reportFile),'windows-b13-1-captures');mkdirSync(evidence,{recursive:true});
+        const area=screen.getDisplayMatching(win.getBounds()).workArea;
+        const backdrop=new BrowserWindow({...area,frame:false,show:true,backgroundColor:'#f5f5f5',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
+        await backdrop.loadURL('data:text/html,<html><body style="margin:0"></body></html>');
+        const compositing:Record<string,boolean>={},speechEdges:Record<string,boolean>={};
+        for(const size of [120,180,240,360]){
+          resizePet(size);win.setPosition(Math.round(area.x+area.width/2-size/2),Math.round(area.y+area.height-size*1.25-16));
+          win.webContents.send('pet:action','smoking');
+          await win.webContents.executeJavaScript(`window.pet.showSpeech('너까지 움직일 필요도 없다. 이 간격 안에선 하나님이 온다 한들 못 피하니까.');true;`);
+          for(const [name,background] of [['light','#f5f5f5'],['dark','#151922'],['checker','repeating-conic-gradient(%23ddd 0% 25%,%23999 0% 50%) 0 0 / 24px 24px']]){
+            await backdrop.webContents.executeJavaScript(`document.body.style.cssText=${JSON.stringify('margin:0;height:100vh;background:'+background.replaceAll('%23','#'))};true;`);
+            await new Promise(resolve=>setTimeout(resolve,240));
+            // capturePage verifies renderer alpha; desktopCapturer records the
+            // actual Windows compositor against the separate backdrop window.
+            const surface=await win.webContents.capturePage();const bitmap=surface.toBitmap();
+            const dims=surface.getSize(),corners=[0,(dims.width-1)*4,(dims.height-1)*dims.width*4,(dims.width*dims.height-1)*4];
+            const alphaClear=corners.every(offset=>bitmap[offset+3]===0);
+            writeFileSync(join(evidence,`${size}-${name}-pet-alpha.png`),surface.toPNG());
+            const sources=await desktopCapturer.getSources({types:['screen'],thumbnailSize:{width:1920,height:1080}});
+            const display=screen.getDisplayMatching(win.getBounds());const source=sources.find(item=>item.display_id===String(display.id))||sources[0];
+            if(!source||source.thumbnail.isEmpty())throw Error('Windows desktop capture unavailable');
+            writeFileSync(join(evidence,`${size}-${name}-desktop.png`),source.thumbnail.toPNG());
+            const desktopSize=source.thumbnail.getSize(),desktopPixels=source.thumbnail.toBitmap(),petBounds=win.getBounds();
+            const px=Math.round((petBounds.x+2-display.bounds.x)/display.bounds.width*desktopSize.width);
+            const py=Math.round((petBounds.y+2-display.bounds.y)/display.bounds.height*desktopSize.height);
+            const offset=(py*desktopSize.width+px)*4;
+            const rgb=[desktopPixels[offset+2],desktopPixels[offset+1],desktopPixels[offset]];
+            const expected=name==='light'?[245,245,245]:name==='dark'?[21,25,34]:null;
+            const desktopClear=expected?rgb.every((value,index)=>Math.abs(value-expected[index])<=8):Math.max(...rgb)-Math.min(...rgb)<8&&rgb[0]>=145&&rgb[0]<=229;
+
+            const {placement,...bubble}=speechBounds(win.getBounds(),area,speechHeight);
+            const actualSpeech=speechWindow?.getBounds();
+            const beside=placement!=='unavailable'&&actualSpeech&&Math.abs(actualSpeech.x-bubble.x)<2&&Math.abs(actualSpeech.y-bubble.y)<2;
+            compositing[`${size}-${name}`]=alphaClear&&desktopClear&&!!beside&&!!speechWindow?.isVisible();
+          }
+          for(const [edge,x] of [['left',area.x],['right',area.x+area.width-size]] as const){
+            win.setPosition(x,win.getBounds().y);await new Promise(resolve=>setTimeout(resolve,100));
+            const expected=speechBounds(win.getBounds(),area,speechHeight),actual=speechWindow?.getBounds();
+            speechEdges[`${size}-${edge}`]=!!actual&&expected.placement===(edge==='left'?'right':'left')&&Math.abs(actual.x-expected.x)<2&&Math.abs(actual.y-expected.y)<2;
+          }
+        }
+        backdrop.close();updateSpeech('');resizePet(180);
+        if([...Object.values(compositing),...Object.values(speechEdges)].some(value=>!value))throw Error('Windows alpha/speech bounds: '+JSON.stringify({compositing,speechEdges}));
         win.webContents.send('pet:action','idle');
         // A synthetic client event proves the pixel-gated right click reaches
         // the preload IPC bridge without creating a native popup in headless QA.
         const mouseQa=await win.webContents.executeJavaScript(`new Promise(resolve=>{
-          const image=document.querySelector('#app .pet-stage img');
           let ticks=0;const timer=setInterval(()=>{
-            if(!image?.complete||!image.naturalWidth){if(++ticks>60){clearInterval(timer);resolve({success:false,reason:'no idle image'});}return;}
+            const image=document.querySelector('#app .pet-stage:not([data-exiting]) img');
+            if(!image?.currentSrc.includes('idle-')||!image?.complete||!image.naturalWidth){if(++ticks>60){clearInterval(timer);resolve({success:false,reason:'no idle image'});}return;}
             clearInterval(timer);
             const rect=image.getBoundingClientRect();
             const c=document.createElement('canvas');c.width=image.naturalWidth;c.height=image.naturalHeight;
@@ -273,11 +368,11 @@ app.whenReady().then(() => {
         resizePet(180);
         if(!resizedFromMenu)throw Error('Custom menu size command did not reach main window');
         writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,dynamicTiming,compositing,speechEdges,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,error:String(error)}));app.exit(1); }
     });
-    setTimeout(()=>app.exit(2),45000).unref();
+    setTimeout(()=>app.exit(2),85000).unref();
   }
   screen.on('display-removed', refit); screen.on('display-metrics-changed', refit);
 });
