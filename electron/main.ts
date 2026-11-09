@@ -1,9 +1,11 @@
+import {beforePlainShow,finishPlainLaunch} from './plain-launch-qa';
+import {compareClearRegions} from './transparent-gaps.mjs';
 import {nativeWindowAudit} from './native-window-audit';
 import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
-import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -17,9 +19,10 @@ const isSmoke=process.argv.includes('--qa-smoke');
 function log(message: string) { try { appendFileSync(join(app.getPath('userData'),'qa.log'), `${new Date().toISOString()} ${message}\n`); } catch { /* stderr remains available */ } }
 function openDiagnostics(show=true) {
  if (diagnostics && !diagnostics.isDestroyed()) { diagnostics.show(); return diagnostics; }
- diagnostics = new BrowserWindow({width:1280,height:900,show,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
+ diagnostics = new BrowserWindow({title:'캐슬 펫 · 이미지 검수 도구',width:1280,height:900,show,webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
  diagnostics.webContents.on('render-process-gone', (_event, details) => log(`diagnostic renderer gone: ${details.reason}`));
  diagnostics.webContents.on('did-fail-load', (_event, code, message) => log(`diagnostic load ${code}: ${message}`));
+ diagnostics.on('page-title-updated',event=>{event.preventDefault();diagnostics?.setTitle('캐슬 펫 · 이미지 검수 도구');});
  diagnostics.loadFile(join(__dirname,'../preview.html'));
  return diagnostics;
 }
@@ -44,7 +47,7 @@ function resizePet(width: number) {
 }
 function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().width,direction)); }
 
-const menuWidth=270,menuHeight=486;
+const menuWidth=316,menuHeight=316;
 function closePetMenu() {
  const old=menuWindow;
  menuWindow=undefined;
@@ -75,13 +78,14 @@ function openPetMenu(showInSmoke=false) {
  return popup;
 }
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
-let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=180;
+let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=96,speechWidth=236,currentPose='smoking';
 let speechHide:ReturnType<typeof setTimeout>|undefined;
 function positionSpeech(){
  if(!speechWindow||speechWindow.isDestroyed()||!win||win.isDestroyed())return false;
  const pet=win.getBounds(),area=screen.getDisplayMatching(pet).workArea;
- const {placement,...bounds}=speechBounds(pet,area,speechHeight);
+ const {placement,tailX,...bounds}=speechBounds(pet,area,speechHeight,currentPose,speechWidth);
  speechWindow.setBounds(bounds);
+ if(!speechWindow.webContents.isLoading())speechWindow.webContents.send('speech:placement',{placement,tailX});
  if(placement==='unavailable'){speechWindow.hide();log('Speech: display has no unobstructed space');return false;}
  if(speechText&&win.isVisible()&&!speechWindow.webContents.isLoading()&&!speechWindow.isVisible())speechWindow.showInactive();
  return true;
@@ -103,8 +107,7 @@ function updateSpeech(text:string){
  }
  if(speechWindow.webContents.isLoading())return;
  speechWindow.webContents.send('speech:text',text);
- if(text){if(positionSpeech()&&win.isVisible())speechWindow.showInactive();}
- else speechHide=setTimeout(()=>{if(!speechText&&!speechWindow?.isDestroyed())speechWindow?.hide();},160);
+ if(!text)speechHide=setTimeout(()=>{if(!speechText&&!speechWindow?.isDestroyed())speechWindow?.hide();},160);
 }
 function inspectMenuChrome(popup:BrowserWindow) {
  const outer=popup.getBounds(),content=popup.getContentBounds();
@@ -163,18 +166,35 @@ function nativeFrameless() {
  return {passed:Math.abs(deltaWidth)<=1&&Math.abs(deltaHeight)<=1,deltaWidth,deltaHeight};
 }
 
+// Portable folders must enter through the validated root launcher. Development
+// npm start remains supported; it has no packaged runtime marker.
+const hasPortableMarker=(()=>{try{readFileSync(join(__dirname,'../castle-runtime.json'));return true;}catch{return false;}})();
+const validPortableLaunch=!hasPortableMarker||process.argv.includes('--castle-pet-launcher');
+const singleInstance=app.requestSingleInstanceLock();
+if(!singleInstance)app.quit();
+app.on('second-instance',()=>{if(win&&!win.isDestroyed()){win.show();dialog.showMessageBox(win,{type:'info',title:'캐슬 펫',message:'이미 실행 중인 펫이 있습니다.',detail:'새 검수 버전은 기존 펫을 우클릭 → 펫 종료로 닫은 뒤 실행해 주세요.'});}});
 app.whenReady().then(() => {
+  if(!singleInstance)return;
+  if(!validPortableLaunch){dialog.showErrorBox('캐슬 펫 실행 방법','ZIP 전체를 먼저 압축 풀기 한 뒤, 최상위 CastlePet.exe를 실행하세요.');app.quit();return;}
+
   const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
   app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
   win = new BrowserWindow({ ...restore(), show:false, transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
-  win.once('ready-to-show',()=>{if(!win.isDestroyed())win.show();});
+  win.once('ready-to-show',async()=>{
+   if(win.isDestroyed())return;
+   const index=process.argv.indexOf('--qa-plain-report'),report=process.argv[index+1];
+   if(index<0){win.show();return;}
+   try{const before=await beforePlainShow(win);win.show();setTimeout(async()=>{try{const result=await finishPlainLaunch(win,before,[{role:'pet',window:win},...(speechWindow?[{role:'speech',window:speechWindow}]:[])],report);app.exit(result.passed?0:1);}catch(error){writeFileSync(report,JSON.stringify({passed:false,error:String(error)}));app.exit(1);}},1200);}catch(error){writeFileSync(report,JSON.stringify({passed:false,error:String(error)}));app.exit(1);}
+  });
+  win.setTitle('아킬라 펫 · B-13.3');win.on('page-title-updated',event=>event.preventDefault());
   win.setMenu(null);
   win.setMenuBarVisibility(false);
   // Suppress Windows' native titlebar/system menu on non-client right clicks.
   win.on('system-context-menu',event=>{event.preventDefault();log('Windows system context menu suppressed');});
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
+  log('launch '+JSON.stringify({portable:hasPortableMarker,validated:validPortableLaunch,executable:process.execPath,entry:__filename,resources:process.resourcesPath}));
   readBehavior();
   win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
@@ -198,12 +218,14 @@ app.whenReady().then(() => {
    if(!isPet(event)||!value||typeof value!=='object'||!['received','accepted','blocked','requested','rendered','reused','failed','superseded'].includes(value.phase)||!Number.isSafeInteger(value.commandId)||value.commandId<0||value.commandId>commandSequence)return;
    const {phase,pose,commandId,version,documentHidden,hidden,source}=value;
    if(!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(pose)||source!==undefined&&!['manual','auto','base','event'].includes(source)||version!==undefined&&!Number.isSafeInteger(version))return;
+   if(phase==='rendered'||phase==='reused'){currentPose=pose;positionSpeech();}
    commandTrace.push({phase,pose,commandId,version,documentHidden,hidden,source,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();
   });
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
-  ipcMain.on('speech:measure',(event,height)=>{
+  ipcMain.on('speech:measure',(event,height,width)=>{
    if(!speechWindow||speechWindow.isDestroyed()||event.sender!==speechWindow.webContents||typeof height!=='number'||!Number.isFinite(height)||height<1||height>2000)return;
-   if(speechHeight===Math.ceil(height))return;speechHeight=Math.ceil(height);positionSpeech();
+   if(typeof width!=='number'||!Number.isFinite(width)||width<1||width>2000)return;
+   speechHeight=Math.ceil(height);speechWidth=Math.min(236,Math.max(64,Math.ceil(width)));positionSpeech();
   });
   ipcMain.on('show-menu',(event)=>{
     if(!isPet(event))return;
@@ -291,6 +313,7 @@ app.whenReady().then(() => {
         const area=screen.getDisplayMatching(win.getBounds()).workArea;
         const backdrop=new BrowserWindow({...area,frame:false,show:true,backgroundColor:'#f5f5f5',webPreferences:{sandbox:true,contextIsolation:true,nodeIntegration:false}});
         await backdrop.loadURL('data:text/html,<html><body style="margin:0"></body></html>');
+        const clearRegions:Record<string,unknown>={};
         const compositing:Record<string,boolean>={},speechEdges:Record<string,boolean>={};
         for(const size of [120,180,240,360]){
           resizePet(size);win.setPosition(Math.round(area.x+area.width/2-size/2),Math.round(area.y+area.height-size*1.25-16));
@@ -318,15 +341,18 @@ app.whenReady().then(() => {
             const expected=name==='light'?[245,245,245]:name==='dark'?[21,25,34]:null;
             const desktopClear=expected?rgb.every((value,index)=>Math.abs(value-expected[index])<=8):Math.max(...rgb)-Math.min(...rgb)<8&&rgb[0]>=145&&rgb[0]<=229;
 
-            const {placement,...bubble}=speechBounds(win.getBounds(),area,speechHeight);
+            const {placement,tailX,...bubble}=speechBounds(win.getBounds(),area,speechHeight,currentPose,speechWidth);
             const actualSpeech=speechWindow?.getBounds();
             const beside=placement!=='unavailable'&&actualSpeech&&Math.abs(actualSpeech.x-bubble.x)<2&&Math.abs(actualSpeech.y-bubble.y)<2;
-            compositing[`${size}-${name}`]=alphaClear&&desktopClear&&!!beside&&!!speechWindow?.isVisible();
+            const sample=(x:number,y:number)=>{const xx=Math.floor((x-display.bounds.x)/display.bounds.width*desktopSize.width),yy=Math.floor((y-display.bounds.y)/display.bounds.height*desktopSize.height),i=(yy*desktopSize.width+xx)*4;return[desktopPixels[i+2],desktopPixels[i+1],desktopPixels[i]];};
+            const expectedBackground=(x:number,y:number)=>name==='light'?[245,245,245]:name==='dark'?[21,25,34]:[((Math.floor((x-area.x)/12)+Math.floor((y-area.y)/12))%2)?153:221].flatMap(v=>[v,v,v]);
+            const clear=compareClearRegions(bitmap,dims.width,dims.height,petBounds,sample,expectedBackground,actualSpeech?[actualSpeech]:[]);clearRegions[`${size}-${name}`]=clear;
+            compositing[`${size}-${name}`]=alphaClear&&desktopClear&&clear.passed&&!!beside&&!!speechWindow?.isVisible();
           }
           for(const [edge,x] of [['left',area.x],['right',area.x+area.width-size]] as const){
             win.setPosition(x,win.getBounds().y);await new Promise(resolve=>setTimeout(resolve,100));
-            const expected=speechBounds(win.getBounds(),area,speechHeight),actual=speechWindow?.getBounds();
-            speechEdges[`${size}-${edge}`]=!!actual&&expected.placement===(edge==='left'?'right':'left')&&Math.abs(actual.x-expected.x)<2&&Math.abs(actual.y-expected.y)<2;
+            const expected=speechBounds(win.getBounds(),area,speechHeight,currentPose,speechWidth),actual=speechWindow?.getBounds();
+            speechEdges[`${size}-${edge}`]=!!actual&&expected.placement!=='unavailable'&&Math.abs(actual.x-expected.x)<2&&Math.abs(actual.y-expected.y)<2;
           }
         }
         backdrop.close();updateSpeech('');resizePet(180);
@@ -390,7 +416,7 @@ app.whenReady().then(() => {
         if(!menuChrome.passed||!menuQA.hasSizing||!menuQA.hasPose||!menuQA.hasBlocked||menuQA.buttonCount<20)
           throw Error('Custom frameless menu QA failed: '+JSON.stringify({menuChrome,menuQA}));
         // Validate actual menu command routing, not just static HTML presence.
-        await popup.webContents.executeJavaScript(`document.querySelector('[data-action="size:160"]').click()`);
+        await popup.webContents.executeJavaScript(`(()=>{const size=document.querySelector('#pet-size');size.value='160';size.dispatchEvent(new Event('change',{bubbles:true}));})()`);
         await new Promise(resolve=>setTimeout(resolve,100));
         const resizedFromMenu=win.getBounds().width===160;
         resizePet(180);
@@ -402,7 +428,7 @@ app.whenReady().then(() => {
         finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
         const windowAudit=nativeWindowAudit([{role:'pet',window:win},...(diagnostics?[{role:'diagnostics',window:diagnostics}]:[]),...(speechWindow?[{role:'speech',window:speechWindow}]:[])]);
         writeFileSync(reportFile,JSON.stringify({passed:true,windowAudit,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dynamicTiming,compositing,speechEdges,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dynamicTiming,compositing,speechEdges,clearRegions,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,commandSequence,recentCommandTrace:commandTrace.slice(-16),error:String(error)}));app.exit(1); }
     });

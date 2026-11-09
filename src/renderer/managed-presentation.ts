@@ -20,7 +20,7 @@ export function mountManagedPet(root:HTMLElement,character:Character,initial:Pet
  let lifecycleHidden=false;
  let frameVersion=0,stopSmoke=()=>{};
  const report=(phase:string,pose:PetState,version:number)=>root.dispatchEvent(new CustomEvent('pet-render',{detail:{phase,pose,version}}));
- const syncSmoke=()=>{stopSmoke();stopSmoke=()=>{};if(stage?.dataset.pose==='smoking'&&!document.hidden&&!lifecycleHidden&&!motion.matches){const image=stage.querySelector('img');if(image)stopSmoke=smokingLayer(stage,image);}};
+ const syncSmoke=()=>{stopSmoke();stopSmoke=()=>{};if(stage?.dataset.pose==='smoking'&&!document.hidden&&!lifecycleHidden){const image=stage.querySelector('img');if(image)stopSmoke=smokingLayer(stage,image);}};
  const muzzlePoints:Partial<Record<PetState,number[][]>>={
   // Barrel/embedded flash coordinates in the approved source PNGs.
   firing:[[754/1024,490/1600]],dual_firing:[[92/1024,183/1536],[948/1024,299/1536]],

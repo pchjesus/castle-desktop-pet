@@ -3,6 +3,7 @@ import {createServer} from 'vite';
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir,writeFile} from 'node:fs/promises';
+import {headBounds} from '../electron/head-geometry.mjs';
 import {speechBounds} from '../electron/speech-bounds.mjs';
 const output='artifacts/b13-1';await mkdir(output,{recursive:true});
 const server=await createServer({server:{host:'127.0.0.1',port:0},logLevel:'error'});await server.listen();
@@ -45,12 +46,12 @@ try{
    const content=await speechFrame.locator('#speech').boundingBox();
    assert(content.width<=bounds.width&&content.height<=bounds.height);
    const image=await petFrame.locator(current).boundingBox();assert(image.height>0);
-   assert(bounds.x+ bounds.width<=pet.x||bounds.x>=pet.x+pet.width||bounds.y+bounds.height<=pet.y||bounds.y>=pet.y+pet.height);
+   const head=headBounds(pet);assert(content.x+content.width<=head.x||content.x>=head.x+head.width||content.y+content.height<=head.y||content.y>=head.y+head.height);
    assert.equal(await speechFrame.locator('#speech').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
    const nameOut=`${size}-${name}.png`;await page.screenshot({path:`${output}/${nameOut}`});report.captures.push(nameOut);
   }
  }
- report.checks.push('12 browser compositions: 120/180/240/360px × light/dark/checker; long speech fits outside whole pet; pointer-events none');
+ report.checks.push('12 browser compositions: 120/180/240/360px × light/dark/checker; long speech stays clear of the protected head; pointer-events none');
  // Native-sized pet capture with its background omitted preserves PNG alpha.
  await sf.evaluate(el=>el.style.visibility='hidden');await page.evaluate(()=>document.body.style.background='transparent');
  await pf.screenshot({path:`${output}/pet-alpha.png`,omitBackground:true});

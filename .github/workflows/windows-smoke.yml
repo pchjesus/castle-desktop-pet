@@ -52,11 +52,11 @@ jobs:
           $qaSource = Join-Path $PWD 'dist-qa/CastlePetQA'
           $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
           Move-Item -LiteralPath $qaSource -Destination $qaRoot
-          foreach ($name in @('electron.exe','resources/app/dist/index.html','resources/app/dist-electron/main.cjs','resources/app/dist-electron/pet-menu.html','resources/app/dist-electron/menu-preload.cjs','resources/app/dist-electron/pet-speech.html','resources/app/dist-electron/speech-preload.cjs','resources/app/preview.html','resources/app/preview-assets')) {
+          foreach ($name in @('CastlePet.exe','runtime/electron.exe','runtime/resources/app/dist/index.html','runtime/resources/app/dist-electron/main.cjs','runtime/resources/app/dist-electron/pet-menu.html','runtime/resources/app/dist-electron/menu-preload.cjs','runtime/resources/app/dist-electron/pet-speech.html','runtime/resources/app/dist-electron/speech-preload.cjs','runtime/resources/app/preview.html','runtime/resources/app/preview-assets')) {
             if (!(Test-Path (Join-Path $qaRoot $name))) { throw "Missing package file: $name" }
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'
-          $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'electron.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
+          $qaProcess = Start-Process -FilePath (Join-Path $qaRoot 'CastlePet.exe') -ArgumentList @('--qa-smoke','--qa-report',"`"$qaReport`"") -PassThru
           if (!$qaProcess.WaitForExit(170000)) { $qaProcess.Kill(); throw 'QA startup timed out' }
           if (Test-Path $qaReport) {
             Write-Host '=== Windows QA process report ==='
@@ -74,13 +74,33 @@ jobs:
           if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or !$result.approvedPoseChecked.idle -or !$result.approvedPoseChecked.smoking -or !$result.approvedPoseChecked.sitting -or !$result.approvedPoseChecked.dual_firing -or !$result.approvedPoseChecked.speaking -or !$result.approvedPoseChecked.firing_dynamic -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.menuChrome.passed -or !$result.menuQA.hasSizing -or !$result.menuQA.hasPose -or !$result.menuQA.hasBlocked -or !$result.resizedFromMenu -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
           Write-Host "::notice::Native window roles: $($result.windowAudit.native | ConvertTo-Json -Compress)"
           Write-Host "::notice::B13.2 native QA passed: $($result.behavior132.commands.Count) menu pose commands, 4 smoke sizes; original Reduced Motion=$($result.behavior132.originalReducedMotion)."
+      - name: Verify normal launch path and incomplete ZIP extraction rejection
+        shell: pwsh
+        run: |
+          $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
+          $plain = Join-Path $PWD 'windows-plain-launch.json'
+          $process = Start-Process -FilePath (Join-Path $qaRoot 'CastlePet.exe') -ArgumentList @('--qa-plain-report',"`"$plain`"") -PassThru
+          if (!$process.WaitForExit(30000)) { $process.Kill(); throw 'Normal launch timed out' }
+          $result = Get-Content $plain -Raw | ConvertFrom-Json
+          if ($process.ExitCode -ne 0 -or !$result.passed) { $data=Get-Content $plain -Raw; Write-Host "::error::Normal portable route: $data"; throw 'Normal transparent pet route failed' }
+          Write-Host "::notice::Normal launch passed: whole transparent region mismatch=$($result.clear.ratio), no diagnostic window or caption."
+          $incomplete = Join-Path $PWD 'dist-qa/incomplete'
+          New-Item -ItemType Directory -Path $incomplete -Force | Out-Null
+          Copy-Item (Join-Path $qaRoot 'CastlePet.exe') $incomplete
+          $rejected = Join-Path $PWD 'launcher-incomplete.json'
+          $process = Start-Process -FilePath (Join-Path $incomplete 'CastlePet.exe') -ArgumentList @('--qa-report',"`"$rejected`"") -PassThru
+          if (!$process.WaitForExit(10000)) { $process.Kill(); throw 'Incomplete launcher timed out' }
+          if ($process.ExitCode -ne 2 -or !(Get-Content $rejected -Raw | ConvertFrom-Json).launcherRejected) { throw 'Incomplete ZIP execution was not rejected' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: castle-pet-windows-b13-2-qa-unapproved
+          name: castle-pet-windows-b13-3-qa-unapproved
           path: |
             dist-qa/검수 QA/
             windows-qa-report.json
             windows-b13-1-captures/
             windows-b13-2-captures/
+            windows-b13-3-captures/
+            windows-plain-launch.json
+            launcher-incomplete.json
           if-no-files-found: warn

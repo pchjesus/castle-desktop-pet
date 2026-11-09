@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('castleSpeech',{
   ipcRenderer.on('speech:text',listener);
   return ()=>ipcRenderer.removeListener('speech:text',listener);
  },
- measure:(height:number)=>ipcRenderer.send('speech:measure',height)
+ onPlacement:(callback:(placement:{placement:string;tailX:number})=>void)=>{const listener=(_event:Electron.IpcRendererEvent,placement:{placement:string;tailX:number})=>callback(placement);ipcRenderer.on('speech:placement',listener);return ()=>ipcRenderer.removeListener('speech:placement',listener);},
+ measure:(height:number,width:number)=>ipcRenderer.send('speech:measure',height,width)
 });

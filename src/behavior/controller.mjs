@@ -7,6 +7,7 @@ export function choose(rows,random){let cursor=random();for(const [pose,w] of ro
 export const readableMs=text=>Math.min(16000,Math.max(4000,Array.from(text).length*110+1600));
 export function createBehavior({render,speak,settings:initial,random=Math.random,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,reduced=()=>false}){
  let settings=normalizeSettings(initial),generation=0,mode='base',hidden=false,disposed=false,cooldown=0;
+ let dragGeneration=-1,keepDragPose=false;
  let clicks=[],warning=false,locked=false,autoShot=false,currentEvent='',pose=settings.base;
  const timers=new Set(),used=new Map();
  let speechRevision=0;const scheduleRevision={movement:0,dialogue:0};
@@ -90,17 +91,20 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   resetClicks();if(value===settings.base){base();return true;}
   if(['idle','smoking','sitting','working'].includes(value)){clear();mode='manual';show(value);}else action(value,'manual');return true;
  }
+ const retainedPose=()=>['sitting','working'].includes(pose)||mode==='manual'&&['idle','smoking'].includes(pose);
  function click(){
   if(disposed||hidden||locked)return;
   if(warning){clear();mode='manual';warning=true;locked=true;later(base,say(dialogues.find(d=>d.id==='CLICK-06')));return;}
   clicks=clicks.filter(t=>now()-t<=3000);clicks.push(now());
   if(clicks.length>=5){clear();mode='manual';warning=true;show('drawing');later(base,6000);return;}
-  const history=clicks;clear();mode='manual';show(settings.base);clicks=history;
-  const ms=say(random()<.5?line(settings.base,'click'):undefined);
-  later(()=>{const history=clicks.filter(t=>now()-t<=3000);base();clicks=history;},ms||800);
+  const retain=retainedPose();
+  const restingPose=retain?pose:settings.base;
+  const history=clicks;clear();mode='manual';show(restingPose);clicks=history;
+  const ms=say(random()<.5?line(restingPose,'click'):undefined);
+  later(()=>{const history=clicks.filter(t=>now()-t<=3000);if(!retain)base();clicks=history;},ms||800);
  }
- function drag(){if(disposed||hidden)return;clear();resetClicks();mode='manual';show(settings.base);}
- function dragEnd(){if(mode==='manual'&&!warning)base();}
+ function drag(){if(disposed||hidden)return;keepDragPose=retainedPose();const target=keepDragPose?pose:settings.base;clear();resetClicks();mode='manual';show(target);dragGeneration=generation;}
+ function dragEnd(){const current=dragGeneration===generation;dragGeneration=-1;if(current&&mode==='manual'&&!warning&&!keepDragPose)base();}
  function configure(value){if(disposed)return;settings=normalizeSettings(value);stopDialogue();base();}
  function visibility(value,force=false){
   if(disposed||!force&&hidden===value)return;hidden=value;clear();stopDialogue();resetClicks();mode='base';show(settings.base);
