@@ -10,6 +10,6 @@ export async function finishPlainLaunch(win:BrowserWindow,before:Awaited<ReturnT
  const audit=nativeWindowAudit(windows);const native=audit.native as {role:string;caption:boolean}[];
  const unexpected=windows.some(row=>row.role!=='pet'&&row.window.isVisible());
  const petLoaded=await win.webContents.executeJavaScript(`(()=>{const i=document.querySelector('.pet-stage:not([data-exiting]) img');return !!i?.complete&&i.naturalWidth>0})()`);
- const result={petLoaded,passed:petLoaded&&clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',clear,audit};
+ const result={cursor:screen.getCursorScreenPoint(),petLoaded,passed:petLoaded&&clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',clear,audit};
  const out=join(dirname(report),'windows-b13-3-captures');mkdirSync(out,{recursive:true});writeFileSync(join(out,'plain-launch-desktop.png'),capture.image.toPNG());writeFileSync(join(out,'plain-launch-alpha.png'),surface.toPNG());writeFileSync(report,JSON.stringify(result));return result;
 }
