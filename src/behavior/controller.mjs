@@ -1,8 +1,19 @@
 import {dialogues,codexEvents} from './dialogues.mjs';
-import {defaults,normalizeSettings,cadence,frequencies} from './cadence.mjs';
+import {defaults,normalizeSettings,cadence,frequencies,DEFAULT_ACTION_WEIGHTS} from './cadence.mjs';
 export {defaults,normalizeSettings} from './cadence.mjs';
 export const shots=new Set(['firing','dual_firing','firing_dynamic']);
-export function actionWeights(settings,cooldown=false){const rest=settings.base==='smoking'?'idle':'smoking';const rows=[[rest,10],['sitting',18],['speaking',30],['drawing',12],['firing',18],['dual_firing',6],['firing_dynamic',6]].filter(([pose])=>pose!==settings.base&&(!shots.has(pose)||(settings.autoFire&&!cooldown)));const total=rows.reduce((n,[,w])=>n+w,0);return rows.map(([pose,w])=>[pose,w/total]);}
+export function actionWeights(settings,cooldown=false){
+ // Preserve old first-action ordering for default settings and allow Working.
+ const base=settings.base;
+ const poses=[base==='smoking'?'idle':'smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'];
+ if(base==='sitting')poses.splice(1,0,'idle');
+ const weights=settings.actionWeights||DEFAULT_ACTION_WEIGHTS;
+ const rows=poses.filter((pose,i)=>poses.indexOf(pose)===i&&pose!==base&&(!shots.has(pose)||(settings.autoFire&&!cooldown)))
+  .map(pose=>[pose,weights[pose]??DEFAULT_ACTION_WEIGHTS[pose]])
+  .filter(([,w])=>w>0);
+ const total=rows.reduce((n,[,w])=>n+w,0);
+ return total>0?rows.map(([pose,w])=>[pose,w/total]):[];
+}
 export function choose(rows,random){let cursor=random();for(const [pose,w] of rows){cursor-=w;if(cursor<0)return pose;}return rows.at(-1)[0];}
 export const readableMs=text=>Math.min(16000,Math.max(4000,Array.from(text).length*110+1600));
 export function createBehavior({render,speak,settings:initial,random=Math.random,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,reduced=()=>false}){
@@ -94,9 +105,18 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
    if(value==='firing_dynamic')later(()=>{endShot();later(()=>base(true),850);},1500);
    else later(()=>{endShot();base(true);},shots.has(value)?duration(value):Math.max(duration(value),speech));
   };
-  if(value==='firing_dynamic'){show(settings.base);later(start,1000);}else start();
+  if(value==='firing_dynamic'){
+   // Preserve the *current* visible pose during the 1s lead-in. Never
+   // insert Smoking/Idle as a fake intermediate between selected actions.
+   later(start,1000);
+  }else start();
  }
- function auto(){if(mode==='base')action(choose(actionWeights(settings,now()<cooldown),random),'auto');else armMovement();}
+ function auto(){
+  if(mode!=='base'){armMovement();return;}
+  const available=actionWeights(settings,now()<cooldown);
+  if(!available.length){armMovement();return;} // all weights zero / fire cooldown
+  action(choose(available,random),'auto');
+ }
  function manual(value){
   if(disposed||hidden||!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(value))return false;
   resetClicks();if(value===settings.base){base();return true;}
@@ -130,7 +150,14 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   if(current&&mode==='manual'&&!warning){if(keepDragPose)holdManual(dragHold);else base();}
   dragHold=0;keepDragPose=false;
  }
- function configure(value){if(disposed)return;settings=normalizeSettings(value);stopDialogue();base();}
+ function configure(value){
+  if(disposed)return;
+  const previous=settings,next=normalizeSettings(value);settings=next;
+  // Weight tuning is purely a future random-selection preference. Do not
+  // interrupt an active pose, spoken line or event to update a slider.
+  if(['base','autonomy','autoFire','movementFrequency','dialogueEnabled','dialogueFrequency'].every(k=>previous[k]===next[k]))return;
+  stopDialogue();base();
+ }
  function visibility(value,force=false){
   if(disposed||!force&&hidden===value)return;hidden=value;clear();stopDialogue();resetClicks();mode='base';show(settings.base);
   if(!hidden){armMovement();armDialogue();}
@@ -139,7 +166,9 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   if(disposed||hidden||mode==='manual')return false;
   const spec=Object.hasOwn(codexEvents,name)?codexEvents[name]:undefined;if(!spec)return false;
   const priorities={jobStart:1,testPassed:2,deploymentComplete:3};if(mode==='event'&&priorities[name]<priorities[currentEvent])return false;
-  currentEvent=name;clear();resetClicks();mode='event';show(spec.sequence[0]);
+  currentEvent=name;clear();resetClicks();mode='event';
+  // Wait for the established 800ms lead-in without showing a forced
+  // Smoking frame. The actual action starts from the existing pose.
   later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;
  }
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}

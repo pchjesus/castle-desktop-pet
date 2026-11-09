@@ -111,3 +111,45 @@ test('Sitting is a persistable persistent base pose, not a redundant autonomous 
  const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');
  const dir=await mkdtemp(join(tmpdir(),'castle-sitting-'));try{const file=join(dir,'behavior.json');saveSettings(file,original);assert.equal(loadSettings(file).base,'sitting');}finally{await rm(dir,{recursive:true});}
 });
+
+test('per-action weights normalize, save, and never allow invalid or unknown names',async()=>{
+ const normalized=normalizeSettings({base:'smoking',actionWeights:{idle:0,sitting:38,working:20,firing:-2,dual_firing:999,evil:18}});
+ assert.deepEqual(normalized.actionWeights,{idle:0,smoking:10,sitting:38,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:20});
+ const rows=actionWeights({...normalized,autoFire:true});
+ assert(!rows.some(([pose])=>pose==='idle'));assert(rows.some(([pose])=>pose==='working'));
+ assert(Math.abs(rows.reduce((sum,[,p])=>sum+p,0)-1)<1e-10);
+ assert(!actionWeights({...normalized,autoFire:false}).some(([pose])=>['firing','dual_firing','firing_dynamic'].includes(pose)));
+ const {mkdtempSync,rmSync}=await import('node:fs'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const {saveSettings,loadSettings}=await import('../src/behavior/settings-store.mjs');
+ const dir=mkdtempSync(join(tmpdir(),'castle-weights-'));
+ try{const file=join(dir,'settings.json');saveSettings(file,normalized);assert.deepEqual(loadSettings(file).actionWeights,normalized.actionWeights);}finally{rmSync(dir,{recursive:true,force:true});}
+});
+test('zero chance excludes selected pose and zeroing every action does not crash the scheduler',()=>{
+ const zero={idle:0,smoking:0,sitting:0,speaking:0,drawing:0,firing:0,dual_firing:0,firing_dynamic:0,working:0};
+ assert.deepEqual(actionWeights({base:'smoking',autoFire:true,actionWeights:zero}),[]);
+ const f=fixture(()=>0);f.b.configure({base:'smoking',autonomy:true,dialogueEnabled:false,actionWeights:zero});
+ f.tick(121000);assert.equal(f.poses.at(-1),'smoking');
+ assert.equal(f.b.snapshot().mode,'base');assert(f.b.snapshot().nextMovement>f.now());f.b.dispose();
+});
+test('changing only action frequency preserves an active manual pose and event, then affects later actions',()=>{
+ const f=fixture(()=>0);f.b.manual('working');f.tick(3000);
+ const before=f.poses.length;
+ f.b.configure({...f.b.snapshot().settings,actionWeights:{speaking:0,working:40}});
+ assert.equal(f.poses.length,before);assert.equal(f.poses.at(-1),'working');
+ f.tick(12000);assert.equal(f.poses.at(-1),'smoking');f.b.dispose();
+});
+test('manual dynamic and Codex events do not insert Smoking between current and requested action',()=>{
+ const f=fixture(()=>0);f.b.configure({base:'smoking',autonomy:false,dialogueEnabled:false});
+ f.b.manual('sitting');f.b.manual('firing_dynamic');
+ assert.equal(f.poses.at(-1),'sitting');f.tick(999);assert.equal(f.poses.at(-1),'sitting');
+ f.tick(1);assert.equal(f.poses.at(-1),'firing_dynamic');
+ f.tick(2350);assert.equal(f.poses.at(-1),'smoking');
+ f.b.manual('idle');const pos=f.poses.length;assert.equal(f.b.event('testPassed'),false);
+ f.tick(13000);assert.equal(f.poses.at(-1),'smoking');
+ f.b.manual('sitting');f.tick(20000);
+ // Event starts on idle and holds until a real target pose is ready.
+ f.b.configure({base:'idle',autonomy:false,dialogueEnabled:false});const at=f.poses.length;
+ assert.equal(f.b.event('jobStart'),true);assert.equal(f.poses.length,at);
+ f.tick(799);assert.equal(f.poses.length,at);f.tick(1);assert.equal(f.poses.at(-1),'working');
+ f.b.dispose();
+});
