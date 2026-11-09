@@ -82,7 +82,8 @@ jobs:
           $process = Start-Process -FilePath (Join-Path $qaRoot 'CastlePet.exe') -ArgumentList @('--qa-plain-report',"`"$plain`"") -PassThru
           if (!$process.WaitForExit(30000)) { $process.Kill(); throw 'Normal launch timed out' }
           $result = Get-Content $plain -Raw | ConvertFrom-Json
-          if ($process.ExitCode -ne 0 -or !$result.passed) { $data=Get-Content $plain -Raw; Write-Host "::error::Normal portable route: $data"; throw 'Normal transparent pet route failed' }
+          if ($result.edgeEvidence) { foreach ($side in @('before','after')) { Write-Host "::notice::Native edge $side`: $($result.edgeEvidence.$side)" }; $result.PSObject.Properties.Remove('edgeEvidence') }
+          if ($process.ExitCode -ne 0 -or !$result.passed) { $data=$result | ConvertTo-Json -Compress -Depth 12; Write-Host "::error::Normal portable route: $data"; throw 'Normal transparent pet route failed' }
           Write-Host "::notice::Normal launch passed: whole transparent region mismatch=$($result.clear.ratio), no diagnostic window or caption."
           $incomplete = Join-Path $PWD 'dist-qa/incomplete'
           New-Item -ItemType Directory -Path $incomplete -Force | Out-Null

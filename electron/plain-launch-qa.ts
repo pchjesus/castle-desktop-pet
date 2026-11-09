@@ -16,8 +16,15 @@ export async function finishPlainLaunch(win:BrowserWindow,before:Awaited<ReturnT
  const audit=nativeWindowAudit(windows);const native=audit.native as {role:string;caption:boolean}[];
  const unexpected=windows.some(row=>row.role!=='pet'&&row.window.isVisible());
  const petLoaded=await win.webContents.executeJavaScript(`(()=>{const i=document.querySelector('.pet-stage:not([data-exiting]) img');return !!i?.complete&&i.naturalWidth>0})()`);
- const strip=(data:typeof capture)=>{const area=data.display.bounds,size=data.image.getSize();return data.image.crop({x:Math.round((area.width-64)/area.width*size.width),y:Math.round((win.getBounds().y-area.y)/area.height*size.height),width:Math.round(64/area.width*size.width),height:Math.round(win.getBounds().height/area.height*size.height)}).resize({width:64,height:450}).toDataURL();};
+ const strip=(data:typeof capture)=>{const area=data.display.bounds,size=data.image.getSize();return data.image.crop({x:Math.round((area.width-64)/area.width*size.width),y:Math.round((win.getBounds().y-area.y)/area.height*size.height),width:Math.round(64/area.width*size.width),height:Math.round(win.getBounds().height/area.height*size.height)}).resize({width:8,height:90}).toDataURL();};
  const desktopChange=compareClearRegions(new Uint8Array(capture.display.bounds.width*capture.display.bounds.height*4),capture.display.bounds.width,capture.display.bounds.height,capture.display.bounds,sample(capture),sample(before));
- const result={...(clear.passed?{}:{edgeEvidence:{before:strip(before),after:strip(capture)},desktopChange}),baselineStability,captureSize:capture.image.getSize(),display:capture.display.bounds,cursor:screen.getCursorScreenPoint(),petLoaded,passed:petLoaded&&clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',clear,audit};
+ const probes=[];
+ if(!clear.passed){
+  const original=win.getBounds();
+  win.setPosition(original.x-48,original.y);await new Promise(resolve=>setTimeout(resolve,250));
+  const moved=await desktop(win),page=await win.webContents.capturePage(),sz=page.getSize();
+  probes.push({case:'moved-left-48px',bounds:win.getBounds(),clear:compareClearRegions(page.toBitmap(),sz.width,sz.height,win.getBounds(),sample(moved),sample(before))});
+ }
+ const result={clear,baselineStability,desktopChange,probes,captureSize:capture.image.getSize(),display:capture.display.bounds,cursor:screen.getCursorScreenPoint(),petLoaded,passed:petLoaded&&clear.passed&&!unexpected&&native.find(row=>row.role==='pet')?.caption===false,route:'CastlePet.exe -> validated runtime/resources/app -> normal pet startup; no diagnostic window',audit,...(clear.passed?{}:{edgeEvidence:{before:strip(before),after:strip(capture)}})};
  const out=join(dirname(report),'windows-b13-3-captures');mkdirSync(out,{recursive:true});writeFileSync(join(out,'plain-launch-before.png'),before.image.toPNG());writeFileSync(join(out,'plain-launch-initial.png'),before.initial.image.toPNG());writeFileSync(join(out,'plain-launch-desktop.png'),capture.image.toPNG());writeFileSync(join(out,'plain-launch-alpha.png'),surface.toPNG());writeFileSync(report,JSON.stringify(result));return result;
 }
