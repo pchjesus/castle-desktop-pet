@@ -69,8 +69,8 @@ try{
  await speechFrame.waitForFunction(()=>document.querySelector('#speech')?.textContent==='그런 건 중요한 게 아니다, 애송아.');
  await petFrame.waitForFunction(()=>window.__timeline.some(([p])=>p==='firing_dynamic'),null,{timeout:2000});
  assert(await speechFrame.locator('#speech').evaluate(el=>el.classList.contains('visible')));
- await petFrame.waitForFunction(()=>window.__timeline.some(([p])=>p==='smoking'),null,{timeout:4000});
- report.timing=await petFrame.evaluate(()=>{const shot=window.__timeline.find(([p])=>p==='firing_dynamic')[1];const end=window.__timeline.find(([p])=>p==='smoking')[1];return {startDelayMs:shot-window.__start,returnAfterShotMs:end-shot-1500};});
+ await petFrame.waitForFunction(()=>window.__timeline.some(([p,t])=>p==='smoking'&&t>(window.__timeline.find(([p])=>p==='firing_dynamic')?.[1]??Infinity)),null,{timeout:4000});
+ report.timing=await petFrame.evaluate(()=>{const shot=window.__timeline.find(([p])=>p==='firing_dynamic')[1];const end=window.__timeline.find(([p,t])=>p==='smoking'&&t>shot)[1];return {startDelayMs:shot-window.__start,returnAfterShotMs:end-shot-1500};});
  assert(report.timing.startDelayMs>=800&&report.timing.startDelayMs<=1200);assert(report.timing.returnAfterShotMs>=700&&report.timing.returnAfterShotMs<=1000);
  report.checks.push('real browser Dynamic timeline and independent visible speech');
  await petFrame.evaluate(()=>{window.__manual('firing_dynamic');window.__manual('working');});await page.waitForTimeout(4200);

@@ -1,58 +1,119 @@
 import {dialogues,codexEvents} from './dialogues.mjs';
-export const defaults=Object.freeze({base:'smoking',autonomy:true,autoFire:true});
-export function normalizeSettings(value){return {base:value?.base==='idle'?'idle':'smoking',autonomy:typeof value?.autonomy==='boolean'?value.autonomy:true,autoFire:typeof value?.autoFire==='boolean'?value.autoFire:true};}
+import {defaults,normalizeSettings,cadence,frequencies} from './cadence.mjs';
+export {defaults,normalizeSettings} from './cadence.mjs';
 export const shots=new Set(['firing','dual_firing','firing_dynamic']);
 export function actionWeights(settings,cooldown=false){const rows=[[settings.base==='smoking'?'idle':'smoking',10],['sitting',18],['speaking',30],['drawing',12],['firing',18],['dual_firing',6],['firing_dynamic',6]].filter(([pose])=>!shots.has(pose)||(settings.autoFire&&!cooldown));const total=rows.reduce((n,[,w])=>n+w,0);return rows.map(([pose,w])=>[pose,w/total]);}
 export function choose(rows,random){let cursor=random();for(const [pose,w] of rows){cursor-=w;if(cursor<0)return pose;}return rows.at(-1)[0];}
 export const readableMs=text=>Math.min(16000,Math.max(4000,Array.from(text).length*110+1600));
 export function createBehavior({render,speak,settings:initial,random=Math.random,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,reduced=()=>false}){
- let settings=normalizeSettings(initial),timers=new Set(),generation=0,mode='base',hidden=false,disposed=false,cooldown=0,clicks=[],warning=false,locked=false,autoShot=false,currentEvent='';
- let speechUntil=0;
- const used=new Map();const range=(a,b)=>a+random()*(b-a);
- function later(fn,ms){const version=generation,due=now()+ms;const id=setTimer(()=>{timers.delete(id);if(!disposed&&!hidden&&version===generation){if(now()>due+5000)base();else fn();}},ms);timers.add(id);return id;}
- function clear(keepSpeech=false){if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}generation++;for(const id of timers)clearTimer(id);timers.clear();if(!keepSpeech){speechUntil=0;speak('');}}
+ let settings=normalizeSettings(initial),generation=0,mode='base',hidden=false,disposed=false,cooldown=0;
+ let clicks=[],warning=false,locked=false,autoShot=false,currentEvent='',pose=settings.base;
+ const timers=new Set(),used=new Map();
+ let speechRevision=0;const scheduleRevision={movement:0,dialogue:0};
+ let movementTimer,dialogueTimer,speechTimer,nextMovement=0,nextDialogue=0,speechUntil=0,lastAutoSpeech=-Infinity;
+ const range=(a,b)=>a+random()*(b-a);
+ const show=value=>{pose=value;render(value,{source:mode});};
+ function cancel(id){if(id!==undefined){clearTimer(id);timers.delete(id);}}
+ function later(fn,ms){
+  const version=generation,due=now()+ms;
+  const id=setTimer(()=>{timers.delete(id);if(disposed||hidden||version!==generation)return;if(now()>due+5000){visibility(false,true);return;}fn();},ms);
+  timers.add(id);return id;
+ }
+ function schedule(kind,fn){
+  const delay=cadence(kind,kind==='movement'?settings.movementFrequency:settings.dialogueFrequency,random);
+  // Scheduler handles are deliberately outside action generation/timers.
+  const revision=++scheduleRevision[kind];
+  const due=now()+delay,id=setTimer(()=>{
+   if(revision!==scheduleRevision[kind])return;
+   if(kind==='movement'){movementTimer=undefined;nextMovement=0;}else{dialogueTimer=undefined;nextDialogue=0;}
+   if(disposed||hidden)return;
+   if(now()>due+5000){visibility(false,true);return;}fn();
+  },delay);
+  if(kind==='movement'){movementTimer=id;nextMovement=due;}else{dialogueTimer=id;nextDialogue=due;}
+ }
+ function stopMovement(){scheduleRevision.movement++;cancel(movementTimer);movementTimer=undefined;nextMovement=0;}
+ function stopDialogue(){scheduleRevision.dialogue++;cancel(dialogueTimer);dialogueTimer=undefined;nextDialogue=0;}
+ function armMovement(){if(!disposed&&!hidden&&settings.autonomy&&mode==='base'&&movementTimer===undefined)schedule('movement',auto);}
+ function armDialogue(){if(!disposed&&!hidden&&settings.dialogueEnabled&&dialogueTimer===undefined)schedule('dialogue',autoDialogue);}
+ function clearSpeech(){speechRevision++;cancel(speechTimer);speechTimer=undefined;speechUntil=0;speak('');}
+ function clear(keepSpeech=false){
+  if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}
+  generation++;for(const id of timers)clearTimer(id);timers.clear();stopMovement();
+  if(!keepSpeech)clearSpeech();
+ }
  function resetClicks(){clicks=[];warning=false;locked=false;}
- function idleWait(){if(!disposed&&!hidden&&settings.autonomy&&mode==='base')later(auto,range(120000,180000));}
- function base(preserveSpeech=false){if(disposed)return;const remaining=preserveSpeech?Math.max(0,speechUntil-now()):0;clear(remaining>0);currentEvent='';resetClicks();mode='base';render(settings.base);if(remaining>0){speechUntil=now()+remaining;later(()=>{speechUntil=0;speak('');},remaining);}idleWait();}
- function say(record){if(!record)return 0;used.set(record.id,now());speak(record.text,record);speechUntil=now()+readableMs(record.text);return readableMs(record.text);}
- function line(pose,trigger='autonomous'){
-  let eligible=dialogues.filter(d=>d.random&&d.triggers.includes(trigger)&&(trigger==='click'||d.poses.includes(pose))&&now()-(used.get(d.id)??-Infinity)>=d.cooldownMs);
+ function base(preserveSpeech=false){if(disposed)return;clear(preserveSpeech);currentEvent='';resetClicks();mode='base';show(settings.base);armMovement();armDialogue();}
+ function say(record,automatic=false){
+  if(!record)return 0;clearSpeech();used.set(record.id,now());speak(record.text,record);const ms=readableMs(record.text);speechUntil=now()+ms;
+  if(automatic)lastAutoSpeech=now();
+  // Separate speech clock survives a normal pose completion, not interruption.
+  const revision=speechRevision;
+  speechTimer=setTimer(()=>{if(!disposed&&revision===speechRevision){speechTimer=undefined;speechUntil=0;speak('');}},ms);
+  return ms;
+ }
+ function line(value,trigger='autonomous'){
+  let eligible=dialogues.filter(d=>d.random&&d.triggers.includes(trigger)&&(trigger==='click'||d.poses.includes(value))&&now()-(used.get(d.id)??-Infinity)>=d.cooldownMs);
   if(!eligible.length)return;
-  const original=random()<.3;const group=eligible.filter(d=>d.origin.startsWith('original')&&d.origin!=='original creative'||d.origin==='user-supplied comic line');const creative=eligible.filter(d=>d.origin==='original creative');eligible=(original?group:creative).length?(original?group:creative):eligible;
-  return eligible[Math.min(eligible.length-1,Math.floor(random()*eligible.length))];
+  const original=random()<.3;
+  const group=eligible.filter(d=>d.origin.startsWith('original')&&d.origin!=='original creative'||d.origin==='user-supplied comic line');
+  const creative=eligible.filter(d=>d.origin==='original creative');
+  eligible=(original?group:creative).length?(original?group:creative):eligible;
+  // Rare candidates are ten times less likely within their source group.
+  const weights=eligible.map(d=>[d,d.rarity==='rare'?.1:1]),total=weights.reduce((sum,[,w])=>sum+w,0);
+  let cursor=random()*total;for(const [record,weight] of weights){cursor-=weight;if(cursor<0)return record;}return eligible.at(-1);
  }
- function duration(pose){return pose==='sitting'||pose==='idle'||pose==='smoking'?range(10000,20000):pose==='drawing'?range(3000,6000):pose==='speaking'?(reduced()?1000:3500):pose==='dual_firing'?2400:pose==='working'?15000:1500;}
- function action(pose,source,forced){
-  clear();resetClicks();mode=source;
+ function autoDialogue(){
+  const compatible=mode==='base'||mode==='auto'&&['idle','smoking','sitting','speaking'].includes(pose);
+  if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=frequencies.dialogue[settings.dialogueFrequency][0])say(line(pose)||line('speaking'),true);
+  // Busy/manual/event slots are discarded. Never queue a burst behind the user.
+  armDialogue();
+ }
+ function duration(value){return ['sitting','idle','smoking'].includes(value)?range(10000,20000):value==='drawing'?range(3000,6000):value==='speaking'?(reduced()?1000:3500):value==='dual_firing'?2400:value==='working'?15000:1500;}
+ function action(value,source,forced){
+  // Movement never truncates a line from its independently running scheduler.
+  clear(source==='auto');resetClicks();mode=source;
   const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};
-  const record=forced||(pose==='firing_dynamic'?dialogues.find(d=>d.id==='O-01'):random()<(probability[pose]||0)?line(pose):undefined);
-  const speech=say(record);
-  const endShot=()=>{if(source==='auto'&&shots.has(pose)){cooldown=now()+range(180000,300000);autoShot=false;}};
+  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
+  if(!record&&source==='manual'&&value==='speaking')record=dialogues.find(d=>d.id==='C-02');
+  const speech=say(record,source==='auto');
+  const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+range(180000,300000);autoShot=false;}};
   const start=()=>{
-   autoShot=source==='auto'&&shots.has(pose);render(pose);
-   if(pose==='firing_dynamic'){
-    // Dialogue readability does not delay the shot or its 850ms aftermath.
-    later(()=>{endShot();later(()=>base(true),850);},duration(pose));
-   }else later(()=>{endShot();base();},Math.max(duration(pose),speech));
+   autoShot=source==='auto'&&shots.has(value);show(value);
+   if(value==='firing_dynamic')later(()=>{endShot();later(()=>base(true),850);},1500);
+   else later(()=>{endShot();base(true);},shots.has(value)?duration(value):Math.max(duration(value),speech));
   };
-  if(pose==='firing_dynamic'){
-   render(settings.base);
-   later(()=>{speechUntil=0;speak('');},speech);
-   later(start,1000);
-  }else start();
+  if(value==='firing_dynamic'){show(settings.base);later(start,1000);}else start();
  }
- function auto(){action(choose(actionWeights(settings,now()<cooldown),random),'auto');}
- function manual(pose){if(disposed||hidden)return;resetClicks();if(pose===settings.base){base();return;}if(['idle','smoking','sitting','working'].includes(pose)){clear();mode='manual';render(pose);}else action(pose,'manual');}
- function click(){if(disposed||hidden||locked)return;if(warning){clear();mode='manual';warning=true;locked=true;const ms=say(dialogues.find(d=>d.id==='CLICK-06'));later(base,ms);return;}
-  clicks=clicks.filter(t=>now()-t<=3000);clicks.push(now());if(clicks.length>=5){clear();mode='manual';warning=true;render('drawing');later(base,6000);return;}
-  // Ordinary click preempts an autonomous/event action, without resetting combo count.
-  const history=clicks;clear();mode='manual';render(settings.base);clicks=history;const record=random()<.5?line(settings.base,'click'):undefined;const ms=say(record);later(()=>{const history=clicks.filter(t=>now()-t<=3000);base();clicks=history;},ms||800);
+ function auto(){if(mode==='base')action(choose(actionWeights(settings,now()<cooldown),random),'auto');else armMovement();}
+ function manual(value){
+  if(disposed||hidden||!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(value))return false;
+  resetClicks();if(value===settings.base){base();return true;}
+  if(['idle','smoking','sitting','working'].includes(value)){clear();mode='manual';show(value);}else action(value,'manual');return true;
  }
- function drag(){if(disposed||hidden)return;clear();resetClicks();mode='manual';render(settings.base);}
+ function click(){
+  if(disposed||hidden||locked)return;
+  if(warning){clear();mode='manual';warning=true;locked=true;later(base,say(dialogues.find(d=>d.id==='CLICK-06')));return;}
+  clicks=clicks.filter(t=>now()-t<=3000);clicks.push(now());
+  if(clicks.length>=5){clear();mode='manual';warning=true;show('drawing');later(base,6000);return;}
+  const history=clicks;clear();mode='manual';show(settings.base);clicks=history;
+  const ms=say(random()<.5?line(settings.base,'click'):undefined);
+  later(()=>{const history=clicks.filter(t=>now()-t<=3000);base();clicks=history;},ms||800);
+ }
+ function drag(){if(disposed||hidden)return;clear();resetClicks();mode='manual';show(settings.base);}
  function dragEnd(){if(mode==='manual'&&!warning)base();}
- function configure(value){if(disposed)return;settings=normalizeSettings(value);base();}
- function visibility(value){if(disposed)return;hidden=value;clear();resetClicks();mode='base';render(settings.base);if(!hidden)idleWait();}
- function event(name){if(disposed||hidden||mode==='manual')return false;const spec=Object.hasOwn(codexEvents,name)?codexEvents[name]:undefined;if(!spec)return false;const priorities={jobStart:1,testPassed:2,deploymentComplete:3};if(mode==='event'&&priorities[name]<priorities[currentEvent])return false;currentEvent=name;clear();resetClicks();mode='event';render(spec.sequence[0]);later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;}
- function dispose(){disposed=true;clear();resetClicks();}
- base();return {manual,click,drag,dragEnd,configure,visibility,event,dispose,snapshot:()=>({settings:{...settings},mode,cooldown,pending:timers.size,warning,locked})};
+ function configure(value){if(disposed)return;settings=normalizeSettings(value);stopDialogue();base();}
+ function visibility(value,force=false){
+  if(disposed||!force&&hidden===value)return;hidden=value;clear();stopDialogue();resetClicks();mode='base';show(settings.base);
+  if(!hidden){armMovement();armDialogue();}
+ }
+ function event(name){
+  if(disposed||hidden||mode==='manual')return false;
+  const spec=Object.hasOwn(codexEvents,name)?codexEvents[name]:undefined;if(!spec)return false;
+  const priorities={jobStart:1,testPassed:2,deploymentComplete:3};if(mode==='event'&&priorities[name]<priorities[currentEvent])return false;
+  currentEvent=name;clear();resetClicks();mode='event';show(spec.sequence[0]);
+  later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;
+ }
+ function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
+ base();
+ return {manual,click,drag,dragEnd,configure,visibility,event,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }

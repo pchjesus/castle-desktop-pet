@@ -1,3 +1,4 @@
+import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
@@ -48,7 +49,7 @@ function closePetMenu() {
  menuWindow=undefined;
  if(old && !old.isDestroyed()) old.close();
 }
-function openPetMenu() {
+function openPetMenu(showInSmoke=false) {
  if(!win || win.isDestroyed())return;
  closePetMenu();
  const pt=screen.getCursorScreenPoint();
@@ -65,10 +66,10 @@ function openPetMenu() {
  popup.setMenu(null);
  popup.on('system-context-menu',event=>event.preventDefault());
  popup.on('closed',()=>{if(menuWindow===popup)menuWindow=undefined;});
- if(!isSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
+ if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
  popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))}})
-  .then(()=>{if(!isSmoke && !popup.isDestroyed())popup.show();})
+  .then(()=>{if((!isSmoke||showInSmoke) && !popup.isDestroyed())popup.show();})
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
 }
@@ -124,9 +125,11 @@ function openDiagnosticsAt(pose:'dual_firing'|'firing_dynamic'|'speaking_referen
  };
  if(diag.webContents.isLoading())diag.webContents.once('did-finish-load',select);else select();
 }
+const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
+function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
- if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
+ if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire'||key==='dialogueEnabled')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else if((key==='movementFrequency'||key==='dialogueFrequency')&&['quiet','default','active'].includes(value))behaviorSettings[key]=value as 'quiet'|'default'|'active';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
  if(command==='quit'){app.quit();return;}
  if(command==='diagnostics'){openDiagnostics();return;}
  if(command==='diagnostics:dual_firing'){openDiagnosticsAt('dual_firing');return;}
@@ -140,15 +143,15 @@ function dispatchPetMenuCommand(command:string) {
   return;
  }
  switch(command) {
-  case 'pose:idle':win.webContents.send('pet:action','idle');break;
-  case 'pose:smoking':win.webContents.send('pet:action','smoking');break;
-  case 'pose:working':win.webContents.send('pet:action','working');break;
-  case 'pose:drawing':win.webContents.send('pet:action','drawing');break;
-  case 'pose:firing':win.webContents.send('pet:action','firing');break;
-  case 'pose:dual_firing':win.webContents.send('pet:action','dual_firing');break;
-  case 'pose:speaking':win.webContents.send('pet:action','speaking');break;
-  case 'pose:firing_dynamic':win.webContents.send('pet:action','firing_dynamic');break;
-  case 'pose:sitting':win.webContents.send('pet:action','sitting');break;
+  case 'pose:idle':sendManualPose('idle');break;
+  case 'pose:smoking':sendManualPose('smoking');break;
+  case 'pose:working':sendManualPose('working');break;
+  case 'pose:drawing':sendManualPose('drawing');break;
+  case 'pose:firing':sendManualPose('firing');break;
+  case 'pose:dual_firing':sendManualPose('dual_firing');break;
+  case 'pose:speaking':sendManualPose('speaking');break;
+  case 'pose:firing_dynamic':sendManualPose('firing_dynamic');break;
+  case 'pose:sitting':sendManualPose('sitting');break;
   default:log('Unknown pet menu command rejected');
  }
 }
@@ -190,6 +193,12 @@ app.whenReady().then(() => {
     drag=null;save();
   }
   const isPet=(event:Electron.IpcMainEvent)=>!win.isDestroyed()&&event.sender===win.webContents;
+  ipcMain.on('pet:action-result',(event,value)=>{
+   if(!isPet(event)||!value||typeof value!=='object'||!['received','accepted','blocked','requested','rendered','reused','failed','superseded'].includes(value.phase)||!Number.isSafeInteger(value.commandId)||value.commandId<0||value.commandId>commandSequence)return;
+   const {phase,pose,commandId,version,documentHidden,hidden,source}=value;
+   if(!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(pose)||source!==undefined&&!['manual','auto','base','event'].includes(source)||version!==undefined&&!Number.isSafeInteger(version))return;
+   commandTrace.push({phase,pose,commandId,version,documentHidden,hidden,source,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();
+  });
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
   ipcMain.on('speech:measure',(event,height)=>{
    if(!speechWindow||speechWindow.isDestroyed()||event.sender!==speechWindow.webContents||typeof height!=='number'||!Number.isFinite(height)||height<1||height>2000)return;
@@ -202,6 +211,7 @@ app.whenReady().then(() => {
   });
   ipcMain.on('pet-menu:command',(event,command)=>{
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
+    if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     closePetMenu();
     dispatchPetMenuCommand(command);
   });
@@ -384,8 +394,13 @@ app.whenReady().then(() => {
         const resizedFromMenu=win.getBounds().width===160;
         resizePet(180);
         if(!resizedFromMenu)throw Error('Custom menu size command did not reach main window');
+        qaStage='B13.2 manual menu and smoke';
+        const savedBehavior={...behaviorSettings};
+        let behavior132;
+        try{behavior132=await behaviorQa(win,()=>openPetMenu(true),commandTrace,resizePet,join(dirname(reportFile),'windows-b13-2-captures'));}
+        finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
         writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,dynamicTiming,compositing,speechEdges,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dynamicTiming,compositing,speechEdges,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,error:String(error)}));app.exit(1); }
     });

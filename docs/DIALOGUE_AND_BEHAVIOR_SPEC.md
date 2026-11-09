@@ -148,3 +148,6 @@ Dark charcoal / steel / muted gold. Right-click entry into:
 
 ## B-13 implementation note
 The v1.7 planning baseline above remains the source of approved wording. Implementation and chosen PROPOSED defaults, validation evidence and outstanding Windows/CI checks are documented in `B_CANONICAL_13_BEHAVIOR.md`. B-14/B-15 remain excluded.
+
+## B-13.2 user-authorized implementation override
+B-13.2 authorizes the three movement/dialogue presets and independent ON/OFF settings described in [B_CANONICAL_13_2_BEHAVIOR_STABILITY.md](B_CANONICAL_13_2_BEHAVIOR_STABILITY.md). Random autonomous dialogue now uses its own 8–12 / 4–6 / 2–3 minute cadence instead of per-movement probability; Speaking retains its 30% visual weight. Fixed Dynamic O-01 remains when autonomous dialogue is ON; automatic Dynamic is silent when OFF, while manual Dynamic always keeps O-01. Manual Speaking/clicks/events remain available. C-19 is a rare creative/adapted candidate, not an exact quotation. B-14 full UI/custom ranges and B-15 external linkage remain excluded.

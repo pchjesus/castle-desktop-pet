@@ -1,4 +1,5 @@
 export const dialogues = [
+  {id:'C-19',text:'사춘기 소년들의 어깨 싸움은 그걸로 끝이다.',origin:'original-inspired adaptation',approval:'proposed',poses:['speaking','drawing'],triggers:['autonomous'],rarity:'rare',cooldownMs:1800000,random:true,source:'User B-13.2 creative/adapted candidate; not an exact comic quotation'},
   {
     "id": "O-01",
     "text": "그런 건 중요한 게 아니다, 애송아.",

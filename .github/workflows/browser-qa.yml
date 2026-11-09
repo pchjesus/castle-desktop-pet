@@ -9,6 +9,7 @@ on:
       - 'electron/pet-speech.html'
       - 'electron/speech-bounds.mjs'
       - 'tests/ux-hotfix-browser-qa.mjs'
+      - 'tests/behavior-stability-browser-qa.mjs'
       - 'tests/browser-qa.mjs'
       - 'tests/b07-proportions-browser-qa.mjs'
       - 'tests/b10-browser-qa.mjs'
@@ -52,6 +53,8 @@ jobs:
         run: node tests/behavior-browser-qa.mjs
       - name: B13.1 transparency side speech and Dynamic timing
         run: node tests/ux-hotfix-browser-qa.mjs
+      - name: B13.2 independent cadence and manual smoke
+        run: node tests/behavior-stability-browser-qa.mjs
       - name: File offline verification
         run: node tests/offline-preview-qa.mjs
       - name: Package offline review
@@ -71,5 +74,6 @@ jobs:
             artifacts/b11/
             artifacts/b13/
             artifacts/b13-1/
+            artifacts/b13-2/
             preview-offline.zip
           if-no-files-found: warn
