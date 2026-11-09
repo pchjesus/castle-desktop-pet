@@ -36,36 +36,35 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 #codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
 
 
-/* Liquid glass: real desktop remains visible, with no brown/grey panel tint.
-   Windows 11 Acrylic is provided by the native window; CSS alone cannot blur
-   applications that live behind a transparent BrowserWindow. */
-html,body{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
-main{
- position:relative;border-radius:22px;
- background:rgba(255,255,255,.085);
- border:1px solid rgba(255,255,255,.48);
- box-shadow:inset 0 1.5px 1px rgba(255,255,255,.64),
-  inset 0 -1px 0 rgba(255,255,255,.16),0 12px 27px rgba(0,0,0,.2);
- backdrop-filter:blur(22px) saturate(1.15);
- -webkit-backdrop-filter:blur(22px) saturate(1.15);
-}
+/* Deliberately dark, readable, rectangular native panel. No Acrylic trickery. */
+html,body{color:#e8ecf2;text-shadow:none}
+main{position:relative;border-radius:0;background:rgba(10,12,16,.95);border:1px solid rgba(139,150,165,.5);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 header{cursor:move;user-select:none;touch-action:none}
 header strong{font-weight:650;letter-spacing:.01em}
-header button{cursor:pointer;background:rgba(0,0,0,.22)!important;border-radius:50%}
-nav button{border:1px solid transparent;background:rgba(0,0,0,.08);color:rgba(255,255,255,.94);border-radius:9px}
-nav button[aria-selected=true]{background:rgba(255,255,255,.22);color:#fff;border-color:rgba(255,255,255,.62)}
-button,select,#dialogue-search{color:#fff;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.32);border-radius:10px;text-shadow:0 1px 2px rgba(0,0,0,.75)}
-button:hover,button:focus-visible,select:focus-visible{background:rgba(255,255,255,.27);outline:1px solid rgba(255,255,255,.75)}
-button[aria-pressed=true]{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.85)}
-h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:rgba(255,255,255,.93)}
-.archive-item{background:rgba(0,0,0,.17);border-color:rgba(255,255,255,.28)}
-.archive-item strong,.archive-item p,.status-list{color:#fff}
-.archive-status{color:#fff}
-footer{border-color:rgba(255,255,255,.36)}
-footer button{color:#fff}
-#menu-resize-handle{position:absolute;z-index:5;right:2px;bottom:2px;width:24px;height:24px;border-radius:0 0 19px 0;cursor:nwse-resize;touch-action:none}
-#menu-resize-handle:after{content:'';position:absolute;right:6px;bottom:7px;width:10px;height:10px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);border-radius:0 0 2px 0}
-#menu-resize-handle:hover{background:rgba(255,255,255,.15)}
+header button{cursor:pointer;background:#292d38!important;border-radius:4px}
+nav button{border:1px solid #424a57;background:#242a35;color:#d7dfe9;border-radius:4px}
+nav button[aria-selected=true]{background:#43546c;color:#fff;border-color:#a9b7cb}
+button,select,#dialogue-search{color:#edf1f7;background:#292f3d;border:1px solid #535f71;border-radius:4px;text-shadow:none}
+button:hover,button:focus-visible,select:focus-visible{background:#45556c;outline:1px solid #b9c6d9}
+button[aria-pressed=true]{background:#405d7b;border-color:#b3c9db}
+h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:#cbd4de}
+.archive-item{background:#242b38;border-color:#495566;border-radius:4px}
+.archive-item strong,.archive-item p,.status-list{color:#ecf0f5}
+.archive-status{color:#d2deec}
+footer{border-color:#495363}
+footer button{color:#e6b9bc}
+/* Four accessible drag corners, no fake rounded-window mask. */
+.menu-resize-corner{position:absolute;z-index:6;width:26px;height:26px;padding:0;border:0;background:transparent;touch-action:none;user-select:none}
+.menu-resize-corner:hover,.menu-resize-corner:focus-visible{background:#465265;outline:1px solid #c1cee0}
+.menu-resize-corner[data-resize-corner="nw"]{top:0;left:0;cursor:nwse-resize}
+.menu-resize-corner[data-resize-corner="ne"]{top:0;right:0;cursor:nesw-resize}
+.menu-resize-corner[data-resize-corner="sw"]{bottom:0;left:0;cursor:nesw-resize}
+.menu-resize-corner[data-resize-corner="se"]{bottom:0;right:0;cursor:nwse-resize}
+.menu-resize-corner::after{content:'';position:absolute;width:9px;height:9px;border-color:#c8d2e0;border-style:solid}
+.menu-resize-corner[data-resize-corner="nw"]::after{top:6px;left:6px;border-width:2px 0 0 2px}
+.menu-resize-corner[data-resize-corner="ne"]::after{top:6px;right:6px;border-width:2px 2px 0 0}
+.menu-resize-corner[data-resize-corner="sw"]::after{bottom:6px;left:6px;border-width:0 0 2px 2px}
+.menu-resize-corner[data-resize-corner="se"]::after{bottom:6px;right:6px;border-width:0 2px 2px 0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
 /* Readable, resizable center-panel layout. Transparent glass is retained. */
@@ -192,7 +191,10 @@ footer button{min-height:30px}
 </div>
 </section>
 <footer><span>설정은 자동 저장돼요</span><button data-action="quit">펫 종료</button></footer>
-<div id="menu-resize-handle" role="button" tabindex="0" aria-label="메뉴 크기 조절" title="모서리를 끌어 메뉴 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="nw" role="button" tabindex="0" aria-label="nw 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="ne" role="button" tabindex="0" aria-label="ne 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="sw" role="button" tabindex="0" aria-label="sw 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="se" role="button" tabindex="0" aria-label="se 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
 </main><script>
 const params=new URL(location.href).searchParams;
 for(const [id,key,label] of [['autonomy-setting','autonomy','움직임'],['dialogue-setting','dialogueEnabled','대사'],['fire-setting','autoFire','사격']]){const button=document.getElementById(id);const enabled=params.get(key)!=='false';button.textContent=label+' '+(enabled?'켜짐':'꺼짐');button.dataset.action='setting:'+key+':'+String(!enabled);button.setAttribute('aria-pressed',String(enabled));}
@@ -321,14 +323,17 @@ document.querySelector('#close-menu').addEventListener('click',()=>window.castle
 window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();if(event.target.matches('[data-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tabs=Array.from(document.querySelectorAll('[data-tab]'));const i=tabs.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length;selectTab(tabs[next].dataset.tab);tabs[next].focus();}});
 
 let menuGesture=null;
-const headerHandle=document.querySelector('#menu-drag-handle'),resizeHandle=document.querySelector('#menu-resize-handle');
+const headerHandle=document.querySelector('#menu-drag-handle');
 function beginMenuGesture(event,kind,element){
- if(event.button!==0||(kind==='move'&&event.target.closest('button')))return;
- menuGesture={kind,pointerId:event.pointerId,element};element.setPointerCapture?.(event.pointerId);
+ if(event.button!==0||(kind==='move'&&event.target.closest('button,[data-resize-corner]')))return;
+ event.stopPropagation();
+ menuGesture={kind,pointerId:event.pointerId,element};
+ element.setPointerCapture?.(event.pointerId);
  window.castleMenu?.windowControl?.(kind+':start');event.preventDefault();
 }
 headerHandle.addEventListener('pointerdown',event=>beginMenuGesture(event,'move',headerHandle));
-resizeHandle.addEventListener('pointerdown',event=>beginMenuGesture(event,'resize',resizeHandle));
+for(const handle of document.querySelectorAll('[data-resize-corner]'))
+ handle.addEventListener('pointerdown',event=>beginMenuGesture(event,'resize:'+handle.dataset.resizeCorner,handle));
 document.addEventListener('pointermove',event=>{
  if(menuGesture&&event.pointerId===menuGesture.pointerId)window.castleMenu?.windowControl?.(menuGesture.kind+':update');
 });

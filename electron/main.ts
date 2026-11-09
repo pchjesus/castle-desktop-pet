@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
-import {placeMenu,menuSize,clampMenu,DEFAULT_MENU} from './menu-layout.mjs';
+import {placeMenu,menuSize,clampMenu,resizeMenuFromCorner,DEFAULT_MENU} from './menu-layout.mjs';
 import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeAroundFeet, restoreWindowBounds } from './window-size.mjs';
 
 let win: BrowserWindow;
@@ -66,7 +66,8 @@ function resizePet(width: number) {
 function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().width,direction)); }
 
 const menuWidth=DEFAULT_MENU.width,menuHeight=DEFAULT_MENU.height;
-let menuGesture:{kind:'move'|'resize';point:Electron.Point;bounds:Electron.Rectangle}|undefined;
+type MenuCorner='nw'|'ne'|'sw'|'se';
+let menuGesture:{kind:'move'|'resize';corner?:MenuCorner;point:Electron.Point;bounds:Electron.Rectangle}|undefined;
 const menuStatePath=()=>join(app.getPath('userData'),'menu-window.json');
 function loadMenuState():Electron.Rectangle|null {
  try{
@@ -107,12 +108,7 @@ function openPetMenu(showInSmoke=false) {
  });
  menuWindow=popup;
  popup.setMenu(null);
- // Windows 11 22H2+ may draw actual desktop acrylic behind a transparent renderer.
- // Other systems keep a see-through unblurred glass panel without a fixed tint.
- if(process.platform==='win32'){
-  try{popup.setBackgroundMaterial('acrylic');}
-  catch(error){log('Native acrylic unavailable: '+String(error));}
- }
+ // Actual near-black panel; no native Acrylic (which appeared opaque white).
  popup.on('system-context-menu',event=>event.preventDefault());
  popup.on('closed',()=>{if(menuWindow===popup){menuWindow=undefined;menuGesture=undefined;}});
  if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
@@ -314,19 +310,23 @@ app.whenReady().then(() => {
   // Transparent windows are resized programmatically to preserve the glass corners.
   ipcMain.on('pet-menu:window-control',(event,command)=>{
    if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof command!=='string')return;
-   const kind=command.startsWith('resize:')?'resize':command.startsWith('move:')?'move':null;
+   const parts=command.split(':');
+   const validCorner=(c:string):c is MenuCorner=>['nw','ne','sw','se'].includes(c);
+   const kind=parts[0]==='move'&&parts.length===2?'move':parts[0]==='resize'&&parts.length===3&&validCorner(parts[1])?'resize':null;
    if(!kind)return;
-   const action=command.slice(kind.length+1);
-   if(action==='start'){menuGesture={kind,point:screen.getCursorScreenPoint(),bounds:menuWindow.getBounds()};return;}
-   if(!menuGesture||menuGesture.kind!==kind)return;
+   const corner=kind==='resize'?parts[1] as MenuCorner:undefined;
+   const action=parts[kind==='move'?1:2];
+   if(action==='start'){menuGesture={kind,corner,point:screen.getCursorScreenPoint(),bounds:menuWindow.getBounds()};return;}
+   if(!menuGesture||menuGesture.kind!==kind||menuGesture.corner!==corner)return;
    if(action==='end'){saveMenuState();menuGesture=undefined;return;}
    if(action!=='update')return;
    const at=screen.getCursorScreenPoint(),origin=menuGesture;
    const dx=at.x-origin.point.x,dy=at.y-origin.point.y;
-   const work=screen.getDisplayNearestPoint(at).workArea;
-   const candidate=kind==='move'?{...origin.bounds,x:origin.bounds.x+dx,y:origin.bounds.y+dy}:
-    {...origin.bounds,width:origin.bounds.width+dx,height:origin.bounds.height+dy};
-   menuWindow.setBounds(clampMenu(candidate,work));
+   const work=screen.getDisplayMatching(origin.bounds).workArea;
+   const candidate=kind==='move'
+    ?clampMenu({...origin.bounds,x:origin.bounds.x+dx,y:origin.bounds.y+dy},work)
+    :resizeMenuFromCorner(origin.bounds,dx,dy,corner!,work);
+   menuWindow.setBounds(candidate);
   });
   ipcMain.on('pet-menu:command',(event,command)=>{
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
