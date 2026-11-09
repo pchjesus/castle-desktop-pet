@@ -27,6 +27,14 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 .status-list dt{color:#aab5c5}.status-list dd{margin:0;overflow-wrap:anywhere}
 .more-help{overflow:auto;font-size:11px;padding-right:3px}.more-help p{margin:0 0 8px;font-size:11px}
 .more-view .stack{flex-shrink:0}
+.status-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:3px}
+.status-scroll .status-list{font-size:10px;grid-template-columns:72px 1fr}
+.codex-tests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.codex-tests button{font-size:10px;min-height:32px;padding:4px 1px}
+#codex-logs{font-size:10px;display:grid;gap:3px;color:#c8d1de}
+#codex-logs p{margin:0;font-size:10px}
+#codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
+
 </style></head><body><main>
 <header><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -54,9 +62,14 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 <div id="archive-results" aria-live="polite">대사 데이터를 불러오는 중이에요.</div>
 </div>
 <div class="more-view" data-more-view="status" hidden>
-<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>현재 상태</strong></div>
-<dl class="status-list" id="status-list"><dt>연결</dt><dd>펫에서 확인 중</dd></dl>
-<p class="more-intro">Codex는 실제 연동 완료 전까지 미연결로 표시합니다.</p>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>상태 · Codex 테스트</strong></div>
+<div class="status-scroll">
+<dl class="status-list" id="status-list"><dt>Codex</dt><dd>연결되지 않음</dd></dl>
+<h2>이벤트 시험</h2>
+<div class="codex-tests"><button data-codex-test="jobStart">작업 시작</button><button data-codex-test="testPassed">테스트 통과</button><button data-codex-test="deploymentComplete">배포 완료</button></div>
+<p id="codex-result" role="status" aria-live="polite">테스트는 실제 Codex 연결을 의미하지 않아요.</p>
+<h2>최근 이벤트</h2><div id="codex-logs">아직 수신한 이벤트가 없어요.</div>
+</div>
 </div>
 <div class="more-view" data-more-view="help" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>도움말</strong></div>
@@ -64,7 +77,9 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 <p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
 <p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
 <p>기본/빈도: 평소 자세, 자동 움직임·대사·사격을 각각 설정해요. 대사 간격은 사격 쿨다운과 별개예요.</p>
-<p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요. Codex 이벤트 연결은 B-15에서 진행할 예정이에요.</p></div>
+<p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
+<p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
+<p>외부 Codex 훅 또는 검증 스크립트에서 로컬 이벤트 파일에 기록하면 펫이 감지해요. API 호출이나 추가 AI 비용은 없어요. 자세한 연결 방법은 저장소의 B-15 가이드에서 확인할 수 있어요.</p></div>
 </div>
 <div class="more-view" data-more-view="diagnostics" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
@@ -84,7 +99,7 @@ const poseNames={idle:'서 있기',smoking:'흡연',sitting:'앉기',working:'�
 const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
 let archive=[],infoLoaded=false;
-function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}}
+function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
 function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative',codex:'Codex event'}[kind]===line.origin);}
 function renderArchive(){
  const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
@@ -102,10 +117,22 @@ function renderArchive(){
  }
 }
 function renderStatus(status){
- const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex','연결되지 않음']];
+ const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex',status.codex?.externalEvents>0?'외부 이벤트 수신됨 (Codex 확인 전)':status.codex?.bridgeReady?'로컬 파일 수신 대기':'연결되지 않음']];
+ const codex=status.codex||{};
+ rows.push(['마지막 이벤트',codex.events?.[0]?.name||'없음']);
+ rows.push(['수신 파일',codex.filePath||'확인 중']);
  const box=document.querySelector('#status-list');box.replaceChildren();
  for(const [key,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;box.append(dt,dd);}
+ const list=document.querySelector('#codex-logs');list.replaceChildren();
+ if(!codex.events?.length){list.textContent='아직 수신한 이벤트가 없어요.';return;}
+ for(const entry of codex.events.slice(0,3)){
+  const p=document.createElement('p');const time=new Date(entry.at);
+  p.textContent=(entry.origin==='test'?'[시험] ':'[외부] ')+entry.name+' · '+(entry.state==='accepted'?'실행':entry.state==='blocked'?'보류/거부':'전달 중')+' · '+(Number.isNaN(time.getTime())?'시간 확인 불가':time.toLocaleTimeString('ko-KR'));
+  list.append(p);
+ }
 }
+function refreshStatus(){return Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{if(info?.status)renderStatus(info.status);}).catch(()=>{});}
+
 for(const input of ['dialogue-search','dialogue-origin','dialogue-pose'])input&&document.getElementById(input).addEventListener(input==='dialogue-search'?'input':'change',renderArchive);
 Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  if(!info||!Array.isArray(info.dialogues))return;
@@ -114,7 +141,17 @@ Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  if(info.status)renderStatus(info.status);
 }).catch(()=>{});
 function selectTab(name){if(name!=='more')showMoreView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
-document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
+document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
+const test=event.target.closest('[data-codex-test]');if(test){
+ const name=test.dataset.codexTest;
+ const label=document.querySelector('#codex-result');label.textContent='이벤트 전달 중…';
+ Promise.resolve(window.castleMenu?.testEvent?.(name)).then(result=>{
+  label.textContent=result?.sent?'시험 이벤트를 보냈어요. 실제 반응을 확인해 주세요.':'전송 실패: 펫 상태를 확인해 주세요.';
+  setTimeout(refreshStatus,350);
+ }).catch(()=>{label.textContent='시험 이벤트 전송에 실패했어요.';});
+ return;
+}
+const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
 document.querySelector('#pet-size').addEventListener('change',event=>window.castleMenu?.invoke('size:'+event.target.value));
 document.querySelector('#close-menu').addEventListener('click',()=>window.castleMenu?.dismiss());
 window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();if(event.target.matches('[data-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tabs=Array.from(document.querySelectorAll('[data-tab]'));const i=tabs.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length;selectTab(tabs[next].dataset.tab);tabs[next].focus();}});

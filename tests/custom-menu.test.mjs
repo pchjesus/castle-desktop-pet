@@ -50,3 +50,15 @@ test('Sitting base choice exists beside Smoking and Idle',async()=>{
  const h=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
  for(const v of ['smoking','idle','sitting'])assert(h.includes('data-action="setting:base:'+v+'"'));
 });
+
+test('B15 event bridge has allowlisted IPC, safe status, and three test buttons',async()=>{
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ for(const event of ['jobStart','testPassed','deploymentComplete'])assert(menu.includes('data-codex-test="'+event+'"'));
+ assert(main.includes("ipcMain.handle('pet-menu:test-event'"));
+ assert(main.includes("ipcMain.on('pet:codex-event-result'"));
+ assert(main.includes("watchCodexEvents(filePath"));
+ assert(preload.includes("ipcRenderer.invoke('pet-menu:test-event'"));
+ assert(menu.includes('codex-logs'));assert(menu.includes('로컬 파일 수신 대기'));
+});
