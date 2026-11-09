@@ -345,7 +345,7 @@ app.whenReady().then(() => {
             const actualSpeech=speechWindow?.getBounds();
             const beside=placement!=='unavailable'&&actualSpeech&&Math.abs(actualSpeech.x-bubble.x)<2&&Math.abs(actualSpeech.y-bubble.y)<2;
             const sample=(x:number,y:number)=>{const xx=Math.floor((x-display.bounds.x)/display.bounds.width*desktopSize.width),yy=Math.floor((y-display.bounds.y)/display.bounds.height*desktopSize.height),i=(yy*desktopSize.width+xx)*4;return[desktopPixels[i+2],desktopPixels[i+1],desktopPixels[i]];};
-            const expectedBackground=(x:number,y:number)=>name==='light'?[245,245,245]:name==='dark'?[21,25,34]:[((Math.floor((x-area.x)/12)+Math.floor((y-area.y)/12))%2)?153:221].flatMap(v=>[v,v,v]);
+            const expectedBackground=(x:number,y:number)=>{if(name==='light')return[245,245,245];if(name==='dark')return[21,25,34];const mx=((x-area.x)%12+12)%12,my=((y-area.y)%12+12)%12;if(mx<1.5||mx>10.5||my<1.5||my>10.5)return null;const value=((Math.floor((x-area.x)/12)+Math.floor((y-area.y)/12))%2)?221:153;return[value,value,value];};
             const clear=compareClearRegions(bitmap,dims.width,dims.height,petBounds,sample,expectedBackground,actualSpeech?[actualSpeech]:[]);clearRegions[`${size}-${name}`]=clear;
             compositing[`${size}-${name}`]=alphaClear&&desktopClear&&clear.passed&&!!beside&&!!speechWindow?.isVisible();
           }
@@ -356,7 +356,7 @@ app.whenReady().then(() => {
           }
         }
         backdrop.close();updateSpeech('');resizePet(180);
-        if([...Object.values(compositing),...Object.values(speechEdges)].some(value=>!value))throw Error('Windows alpha/speech bounds: '+JSON.stringify({compositing,speechEdges}));
+        if([...Object.values(compositing),...Object.values(speechEdges)].some(value=>!value))throw Error('Windows alpha/speech bounds: '+JSON.stringify({compositing,speechEdges,clearRegions}));
         win.webContents.send('pet:action','idle');
         // A synthetic client event proves the pixel-gated right click reaches
         // the preload IPC bridge without creating a native popup in headless QA.
