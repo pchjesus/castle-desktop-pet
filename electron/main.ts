@@ -88,7 +88,8 @@ function updateSpeech(text:string){
  if(!win||win.isDestroyed())return;
  speechText=text;clearTimeout(speechHide);
  if(!speechWindow||speechWindow.isDestroyed()){
-  if(!text)return;
+  // Warm the hidden speech renderer on the initial empty message, so the
+  // first dialogue does not pay a new-window startup delay before its shot.
   const popup=new BrowserWindow({width:244,height:180,show:false,parent:win,frame:false,
    transparent:true,backgroundColor:'#00000000',hasShadow:false,alwaysOnTop:true,
    skipTaskbar:true,focusable:false,resizable:false,thickFrame:false,
@@ -262,14 +263,18 @@ app.whenReady().then(() => {
         await win.webContents.executeJavaScript(`window.__hotfixTimeline=[];document.querySelector('#app').addEventListener('pet-state',e=>window.__hotfixTimeline.push({pose:e.detail,at:performance.now()}));true;`);
         win.webContents.send('pet:action','settings:'+JSON.stringify({base:'smoking',autonomy:false,autoFire:false}));
         await new Promise(resolve=>setTimeout(resolve,180));
-        const dynamicStarted=await win.webContents.executeJavaScript(`performance.now()`);
+        if(!speechWindow||speechWindow.isDestroyed())throw Error('Speech renderer was not prewarmed at startup');
+        if(speechWindow.webContents.isLoading())await new Promise<void>(resolve=>speechWindow!.webContents.once('did-finish-load',()=>resolve()));
+        await speechWindow.webContents.executeJavaScript(`window.__lineShownAt=0;new MutationObserver(()=>{const e=document.querySelector('#speech');if(e.classList.contains('visible')&&e.textContent==='그런 건 중요한 게 아니다, 애송아.')window.__lineShownAt=Date.now();}).observe(document.querySelector('#speech'),{childList:true,subtree:true,attributes:true,attributeFilter:['class']});true;`);
+        const dynamicStarted=await win.webContents.executeJavaScript(`({perf:performance.now(),wall:Date.now()})`);
         win.webContents.send('pet:action','firing_dynamic');
         await new Promise(resolve=>setTimeout(resolve,4300));
         const timeline=await win.webContents.executeJavaScript(`window.__hotfixTimeline`);
         const firingEntry=timeline.find((entry:{pose:string;at:number})=>entry.pose==='firing_dynamic');
         const baseEntry=timeline.find((entry:{pose:string;at:number})=>entry.pose==='smoking'&&entry.at>(firingEntry?.at||Infinity));
-        const dynamicTiming={startDelayMs:firingEntry?.at-dynamicStarted,returnAfterShotMs:baseEntry?.at-firingEntry?.at-1500};
-        if(!(dynamicTiming.startDelayMs>=800&&dynamicTiming.startDelayMs<=1200&&dynamicTiming.returnAfterShotMs>=700&&dynamicTiming.returnAfterShotMs<=1000))throw Error('Dynamic native timing: '+JSON.stringify(dynamicTiming));
+        const lineShownAt=await speechWindow.webContents.executeJavaScript(`window.__lineShownAt`);
+        const dynamicTiming={startDelayMs:firingEntry?.at-dynamicStarted.perf,returnAfterShotMs:baseEntry?.at-firingEntry?.at-1500,speechLeadMs:dynamicStarted.wall+firingEntry?.at-dynamicStarted.perf-lineShownAt};
+        if(!(dynamicTiming.startDelayMs>=800&&dynamicTiming.startDelayMs<=1200&&dynamicTiming.returnAfterShotMs>=700&&dynamicTiming.returnAfterShotMs<=1000&&lineShownAt>0&&dynamicTiming.speechLeadMs>=800&&dynamicTiming.speechLeadMs<=1200))throw Error('Dynamic native timing: '+JSON.stringify(dynamicTiming));
         qaStage='native composition setup';
         const evidence=join(dirname(reportFile),'windows-b13-1-captures');mkdirSync(evidence,{recursive:true});
         const area=screen.getDisplayMatching(win.getBounds()).workArea;
