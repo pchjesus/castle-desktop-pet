@@ -29,7 +29,7 @@ function openDiagnostics(show=true) {
  return diagnostics;
 }
 let behaviorSettings=normalizeSettings(null);
-const codexAllowed=new Set(codexEventNames);
+const codexAllowed=new Set<string>(codexEventNames);
 const codexHistory:{id:number;name:string;origin:'test'|'file';state:'sent'|'accepted'|'blocked';at:number}[]=[];
 let codexSequence=0,externalEvents=0,codexWatcherStarted=false;
 function codexSnapshot(){return {bridgeReady:codexWatcherStarted,externalEvents,events:codexHistory.map(x=>({...x})),filePath:join(app.getPath('userData'),'codex-events.jsonl')};}
