@@ -15,7 +15,8 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   popup.setBounds(constrain({...popup.getBounds(),x:pet.x-20,y:pet.y+pet.height-popup.getBounds().height},[area]));
   popup.show();popup.focus();await pause(70);
   const hidden=await win.webContents.executeJavaScript('document.hidden');
-  const point=await popup.webContents.executeJavaScript(`(()=>{const b=Array.from(document.querySelectorAll('[data-action]')).find(b=>b.dataset.action===${JSON.stringify(command)});if(!b)throw Error('Missing QA menu command');b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect();return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2)}})()`);
+  const point=await popup.webContents.executeJavaScript(`(()=>{const b=Array.from(document.querySelectorAll('[data-action]')).find(b=>b.dataset.action===${JSON.stringify(command)});if(!b)return {missing:true};b.scrollIntoView({block:'center'});const r=b.getBoundingClientRect();return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2)}})()`);
+  if(point.missing)throw Error('B13.2 QA menu button unavailable: '+command);
   const before=trace.filter(row=>row.phase==='sent').at(-1)?.commandId||0;
   popup.webContents.sendInputEvent({type:'mouseDown',...point,button:'left',clickCount:1});
   popup.webContents.sendInputEvent({type:'mouseUp',...point,button:'left',clickCount:1});
@@ -39,7 +40,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const rows=commands.filter(row=>'pose' in row&&row.pose===pose);
   if(rows.some(row=>!('entries' in row)||!row.entries!.some((entry:any)=>entry.phase==='rendered'&&entry.pose===pose)))throw Error('Repeat did not create a fresh action '+pose);
  }
- for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
+ for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
  const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
  if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('OFF')||!settings.dialogueOn.endsWith('ON'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));

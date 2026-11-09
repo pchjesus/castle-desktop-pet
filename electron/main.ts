@@ -402,7 +402,7 @@ app.whenReady().then(() => {
         writeFileSync(reportFile,JSON.stringify({passed:true,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
           menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dynamicTiming,compositing,speechEdges,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
-      } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,error:String(error)}));app.exit(1); }
+      } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,commandSequence,recentCommandTrace:commandTrace.slice(-16),error:String(error)}));app.exit(1); }
     });
     setTimeout(()=>{writeFileSync(reportFile,JSON.stringify({passed:false,qaStage,error:'Windows QA stage timed out'}));app.exit(2);},150000).unref();
   }

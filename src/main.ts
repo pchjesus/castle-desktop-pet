@@ -18,7 +18,7 @@ function trace(value:Record<string,unknown>){window.pet?.reportAction?.(value);r
 root.addEventListener('pet-render',((event:CustomEvent)=>{
  const value=event.detail;
  if(value.phase==='requested'){pendingRenders.set(value.version,{...renderContext});if(pendingRenders.size>32)pendingRenders.delete(pendingRenders.keys().next().value!);}
- const context=pendingRenders.get(value.version)||renderContext;
+ const context=pendingRenders.get(value.version)||{source:'base',commandId:0};
  trace({...value,...context});
 }) as EventListener);
 const behavior=createBehavior({settings,render:(pose,context)=>{renderContext={source:context?.source||'base',commandId:manualCallActive||context?.source==='manual'?manualId:0};livePet.set(pose)},speak:(text,record)=>{bubble.textContent=text;bubble.hidden=!text||nativeSpeech;bubble.dataset.dialogue=record?.id||'';if(nativeSpeech)window.pet!.showSpeech!(text);},reduced:()=>matchMedia('(prefers-reduced-motion: reduce)').matches});
