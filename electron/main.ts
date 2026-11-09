@@ -67,11 +67,11 @@ function changeSizeBy(direction: number) { resizePet(nextWidth(win.getBounds().w
 const menuWidth=316,menuHeight=316;
 let menuGesture:{kind:'move'|'resize';point:Electron.Point;bounds:Electron.Rectangle}|undefined;
 const menuStatePath=()=>join(app.getPath('userData'),'menu-window.json');
-function loadMenuState():{x?:number;y?:number;width?:number;height?:number}|null {
+function loadMenuState():Electron.Rectangle|null {
  try{
   const data=JSON.parse(readFileSync(menuStatePath(),'utf8'));
   if(!data||typeof data!=='object'||!['x','y','width','height'].every(key=>Number.isFinite(data[key])))return null;
-  return data;
+  return data as Electron.Rectangle;
  }catch{return null;}
 }
 function saveMenuState(){
