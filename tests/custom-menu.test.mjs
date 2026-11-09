@@ -106,5 +106,5 @@ test('B16 central popup is large by default, movable and resizable with legacy 3
  assert(geometry.includes('work.x+(work.width-size.width)/2'));
  assert(main.includes('legacyCompact'));
  assert(menu.includes('data-frequency-view="weights"'));
- assert.equal((menu.match(/data-resize-corner="(?:nw|ne|sw|se)"/g)||[]).length,4);
+ assert.equal((menu.match(/<div class="menu-resize-corner" data-resize-corner="(?:nw|ne|sw|se)"/g)||[]).length,4);
 });
