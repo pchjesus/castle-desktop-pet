@@ -10,8 +10,18 @@ try{
  for(const tab of ['basic','frequency','poses','more']){
   await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&metrics.scroll<=metrics.height+1);if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
  }
- const glass=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1))}});
- assert(glass.background.includes('rgba('));assert(glass.opacity<.2);assert.equal(glass.radius,'22px');
+ const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
+ assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
+ for(const corner of ['nw','ne','sw','se']){
+  const el=page.locator('[data-resize-corner="'+corner+'"]');assert.equal(await el.count(),1);
+  assert(await el.isVisible());
+  const b=await el.boundingBox();assert(b);
+  await page.mouse.move(b.x+b.width/2,b.y+b.height/2);
+  await page.mouse.down();await page.mouse.move(b.x+b.width/2+(corner.includes('w')?-10:10),b.y+b.height/2+(corner.includes('n')?-10:10),{steps:3});
+  await page.mouse.up();
+  assert.equal(await page.evaluate(()=>window.__windowControl),'resize:'+corner+':end');
+ }
+ report.checks.push('near-black square panel and four functional corner drag controls');
  assert((await page.locator('main').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=14);
  await page.locator('#tab-frequency').click();
  await page.locator('#edit-action-weights').click();

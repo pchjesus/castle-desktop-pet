@@ -11,7 +11,7 @@ test('menu stays off pet even with pet against right, left and bottom screen edg
 test('menu saved location is honored only if it does not obstruct character',()=>{
  const work={x:100,y:50,width:1300,height:780},pet={x:700,y:300,width:180,height:250};
  const saved={x:120,y:100};
- assert.deepEqual(placeMenu(pet,work,{x:750,y:350},{width:316,height:316},saved),{...saved,width:320,height:340});
+ assert.deepEqual(placeMenu(pet,work,{x:750,y:350},{width:316,height:316},saved),{...saved,width:316,height:316});
  assert.equal(overlapArea(placeMenu(pet,work,{x:750,y:350},{width:316,height:316},{x:710,y:340}),pet),0);
 });
 test('resize keeps the transparent menu in the display work area',()=>{
