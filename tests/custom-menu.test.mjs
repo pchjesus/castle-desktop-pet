@@ -45,3 +45,8 @@ test('B-14 menu preserves four top-level tabs and nests safe dialogue/status/hel
  assert(preload.includes("ipcRenderer.invoke('pet-menu:get-info')"));
  assert(menu.includes('Codex'));assert(menu.includes('연결되지 않음'));
 });
+
+test('Sitting base choice exists beside Smoking and Idle',async()=>{
+ const h=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ for(const v of ['smoking','idle','sitting'])assert(h.includes('data-action="setting:base:'+v+'"'));
+});

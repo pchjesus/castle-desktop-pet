@@ -97,3 +97,17 @@ test('held-pose click/drag cannot create an infinite manual lock and stale timer
  f.b.manual('sitting');f.b.click();f.b.manual('working');f.tick(14500);assert.equal(f.poses.at(-1),'working');
  f.tick(500);assert.equal(f.poses.at(-1),'smoking');f.b.dispose();
 });
+
+test('Sitting is a persistable persistent base pose, not a redundant autonomous action',async()=>{
+ const original=normalizeSettings({base:'sitting',autonomy:true});
+ assert.equal(original.base,'sitting');
+ const w=actionWeights(original);assert(!w.some(([pose])=>pose==='sitting'));assert(Math.abs(w.reduce((n,[,p])=>n+p,0)-1)<1e-9);
+ const f=fixture(()=>0);f.b.configure({base:'sitting',autonomy:true,dialogueEnabled:false});
+ assert.equal(f.poses.at(-1),'sitting');f.b.manual('working');f.tick(15000);assert.equal(f.poses.at(-1),'sitting');
+ f.tick(120000);assert.equal(f.poses.at(-1),'smoking');f.tick(10000);assert.equal(f.poses.at(-1),'sitting');f.b.dispose();
+ const {mkdtemp,rm}=await import('node:fs/promises');
+ const {join}=await import('node:path');
+ const {tmpdir}=await import('node:os');
+ const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');
+ const dir=await mkdtemp(join(tmpdir(),'castle-sitting-'));try{const file=join(dir,'behavior.json');saveSettings(file,original);assert.equal(loadSettings(file).base,'sitting');}finally{await rm(dir,{recursive:true});}
+});

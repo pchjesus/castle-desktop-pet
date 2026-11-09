@@ -7,7 +7,7 @@ export const defaults=Object.freeze({base:'smoking',autonomy:true,autoFire:true,
 const preset=value=>['quiet','default','active'].includes(value)?value:'default';
 export function normalizeSettings(value){
  const autonomy=typeof value?.autonomy==='boolean'?value.autonomy:true;
- return {base:value?.base==='idle'?'idle':'smoking',autonomy,autoFire:typeof value?.autoFire==='boolean'?value.autoFire:true,
+ return {base:['idle','smoking','sitting'].includes(value?.base)?value.base:'smoking',autonomy,autoFire:typeof value?.autoFire==='boolean'?value.autoFire:true,
   movementFrequency:preset(value?.movementFrequency),dialogueEnabled:typeof value?.dialogueEnabled==='boolean'?value.dialogueEnabled:autonomy,
   dialogueFrequency:preset(value?.dialogueFrequency)};
 }

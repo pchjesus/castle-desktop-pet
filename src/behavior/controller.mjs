@@ -2,7 +2,7 @@ import {dialogues,codexEvents} from './dialogues.mjs';
 import {defaults,normalizeSettings,cadence,frequencies} from './cadence.mjs';
 export {defaults,normalizeSettings} from './cadence.mjs';
 export const shots=new Set(['firing','dual_firing','firing_dynamic']);
-export function actionWeights(settings,cooldown=false){const rows=[[settings.base==='smoking'?'idle':'smoking',10],['sitting',18],['speaking',30],['drawing',12],['firing',18],['dual_firing',6],['firing_dynamic',6]].filter(([pose])=>!shots.has(pose)||(settings.autoFire&&!cooldown));const total=rows.reduce((n,[,w])=>n+w,0);return rows.map(([pose,w])=>[pose,w/total]);}
+export function actionWeights(settings,cooldown=false){const rest=settings.base==='smoking'?'idle':'smoking';const rows=[[rest,10],['sitting',18],['speaking',30],['drawing',12],['firing',18],['dual_firing',6],['firing_dynamic',6]].filter(([pose])=>pose!==settings.base&&(!shots.has(pose)||(settings.autoFire&&!cooldown)));const total=rows.reduce((n,[,w])=>n+w,0);return rows.map(([pose,w])=>[pose,w/total]);}
 export function choose(rows,random){let cursor=random();for(const [pose,w] of rows){cursor-=w;if(cursor<0)return pose;}return rows.at(-1)[0];}
 export const readableMs=text=>Math.min(16000,Math.max(4000,Array.from(text).length*110+1600));
 export function createBehavior({render,speak,settings:initial,random=Math.random,now=Date.now,setTimer=setTimeout,clearTimer=clearTimeout,reduced=()=>false}){
