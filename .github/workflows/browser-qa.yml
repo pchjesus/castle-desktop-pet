@@ -10,6 +10,7 @@ on:
       - 'electron/speech-bounds.mjs'
       - 'tests/ux-hotfix-browser-qa.mjs'
       - 'tests/behavior-stability-browser-qa.mjs'
+      - 'tests/ux-polish-browser-qa.mjs'
       - 'tests/browser-qa.mjs'
       - 'tests/b07-proportions-browser-qa.mjs'
       - 'tests/b10-browser-qa.mjs'
@@ -55,6 +56,8 @@ jobs:
         run: node tests/ux-hotfix-browser-qa.mjs
       - name: B13.2 independent cadence and manual smoke
         run: node tests/behavior-stability-browser-qa.mjs
+      - name: B13.3 compact menu posture clicks and visible smoke
+        run: node tests/ux-polish-browser-qa.mjs
       - name: File offline verification
         run: node tests/offline-preview-qa.mjs
       - name: Package offline review
@@ -75,5 +78,6 @@ jobs:
             artifacts/b13/
             artifacts/b13-1/
             artifacts/b13-2/
+            artifacts/b13-3/
             preview-offline.zip
           if-no-files-found: warn
