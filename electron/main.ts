@@ -5,6 +5,7 @@ import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
+import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT} from '../src/behavior/cadence.mjs';
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {codexEventNames,watchCodexEvents} from '../src/behavior/codex-bridge.mjs';
@@ -116,7 +117,7 @@ function openPetMenu(showInSmoke=false) {
  popup.on('closed',()=>{if(menuWindow===popup){menuWindow=undefined;menuGesture=undefined;}});
  if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
- popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))}})
+ popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).filter(([k])=>k!=='actionWeights').map(([k,v])=>[k,String(v)])),weights:JSON.stringify(behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS)}})
   .then(()=>{if((!isSmoke||showInSmoke) && !popup.isDestroyed())popup.show();})
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
@@ -124,7 +125,7 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,codex:codexSnapshot()},
+ return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
   dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 ipcMain.handle('pet-menu:test-event',(event,name)=>{
@@ -187,6 +188,21 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command.startsWith('setting:weight:')){
+  const parts=command.split(':');
+  if(parts.length!==4)return;
+  const pose=parts[2],weight=Number(parts[3]);
+  if(!Object.hasOwn(DEFAULT_ACTION_WEIGHTS,pose)||!Number.isInteger(weight)||weight<0||weight>ACTION_WEIGHT_LIMIT)return;
+  behaviorSettings=normalizeSettings({...behaviorSettings,actionWeights:{...DEFAULT_ACTION_WEIGHTS,...behaviorSettings.actionWeights,[pose]:weight}});
+  try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Action weights save failed: '+String(error));}
+  win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;
+ }
+ if(command==='setting:weights:reset'){
+  const {actionWeights:unused,...rest}=behaviorSettings;
+  behaviorSettings=normalizeSettings(rest);
+  try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Action weights reset failed: '+String(error));}
+  win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;
+ }
  if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'||value==='sitting'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire'||key==='dialogueEnabled')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else if((key==='movementFrequency'||key==='dialogueFrequency')&&['quiet','default','active'].includes(value))behaviorSettings[key]=value as 'quiet'|'default'|'active';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
  if(command==='quit'){app.quit();return;}
  if(command==='diagnostics'){openDiagnostics();return;}
@@ -315,6 +331,10 @@ app.whenReady().then(() => {
   ipcMain.on('pet-menu:command',(event,command)=>{
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
+    // Keep the expanded Frequency controls open while tuning multiple weights.
+    if(command.startsWith('setting:weight:')||command==='setting:weights:reset'){
+     dispatchPetMenuCommand(command);return;
+    }
     closePetMenu();
     dispatchPetMenuCommand(command);
   });
