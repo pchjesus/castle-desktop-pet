@@ -30,7 +30,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - name: Unit and immutable asset tests
+        shell: pwsh
+        run: |
+          $testOutput = & npm test 2>&1
+          $testExit = $LASTEXITCODE
+          $testOutput | Write-Host
+          if ($testExit -ne 0) {
+            $testOutput | Select-String -Pattern '✖|not ok|AssertionError|ERR_ASSERTION|error:|expected:|actual:' | ForEach-Object { Write-Host "::error::$($_.Line)" }
+            throw "Unit tests failed ($testExit)"
+          }
       - run: npm run preview:export
       - name: Verify committed offline HTML is reproducible on Windows
         run: git diff --exit-code -- preview.html
@@ -52,7 +61,10 @@ jobs:
             Write-Host '=== Windows QA process report ==='
             Get-Content $qaReport -Raw | Write-Host
           } else { Write-Host 'Windows QA process report was not written.' }
-          if ($qaProcess.ExitCode -ne 0) { throw "QA exit code $($qaProcess.ExitCode)" }
+          if ($qaProcess.ExitCode -ne 0) {
+            if (Test-Path $qaReport) { $failure = (Get-Content $qaReport -Raw).Replace("`r",'').Replace("`n",''); Write-Host "::error::Windows runtime QA: $failure" }
+            throw "QA exit code $($qaProcess.ExitCode)"
+          }
           $result = Get-Content $qaReport | ConvertFrom-Json
           if ($result.dynamicTiming.startDelayMs -lt 800 -or $result.dynamicTiming.startDelayMs -gt 1200 -or $result.dynamicTiming.returnAfterShotMs -lt 700 -or $result.dynamicTiming.returnAfterShotMs -gt 1000) { throw 'B13.1 dynamic timing failed' }
           if (@($result.compositing.PSObject.Properties).Count -ne 12 -or @($result.compositing.PSObject.Properties | Where-Object { !$_.Value }).Count -gt 0) { throw 'B13.1 transparency/speech surface failed' }

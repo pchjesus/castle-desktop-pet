@@ -21,7 +21,8 @@ test('narrow screen falls back outside pet and reports physically impossible pla
 });
 test('speech HTML CSP covers its exact inline script and uses textContent',async()=>{
  const html=await readFile(new URL('../electron/pet-speech.html',import.meta.url),'utf8');
- const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
+ // HTML input preprocessing normalizes CRLF to LF, including on Windows.
+ const script=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/\r\n?/g,'\n');
  assert(html.includes('sha256-'+createHash('sha256').update(script).digest('base64')));
  assert(script.includes('speech.textContent=text'));assert(!script.includes('innerHTML'));
 });
