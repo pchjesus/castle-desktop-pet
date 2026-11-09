@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "environment": "Chromium browser; native Windows is a separate workflow",
+  "checks": [
+    "316px menu: four tabs without scrolling, nine sizes, real size change, keyboard navigation and dismiss",
+    "Sitting/Working remain after real pointer clicks and speech expiry; fifth/sixth warning still fires",
+    "Reduced Motion keeps a visible 2s opacity loop, without displacement or scaling",
+    "tail balloon measures short/long text to its visible width"
+  ],
+  "errors": [],
+  "menu": [
+    {
+      "tab": "basic",
+      "height": 181,
+      "scroll": 181,
+      "buttons": 7
+    },
+    {
+      "tab": "frequency",
+      "height": 181,
+      "scroll": 181,
+      "buttons": 6
+    },
+    {
+      "tab": "poses",
+      "height": 181,
+      "scroll": 181,
+      "buttons": 9
+    },
+    {
+      "tab": "more",
+      "height": 181,
+      "scroll": 181,
+      "buttons": 4
+    }
+  ],
+  "smoke": {
+    "before": {
+      "opacity": 0.25,
+      "transform": "none",
+      "width": 2
+    },
+    "middle": {
+      "opacity": 0.65,
+      "transform": "none"
+    }
+  }
+}
