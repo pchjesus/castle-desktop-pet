@@ -6,6 +6,7 @@ import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
+import {dialogues} from '../src/behavior/dialogues.mjs';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -77,6 +78,12 @@ function openPetMenu(showInSmoke=false) {
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
 }
+// Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
+ipcMain.handle('pet-menu:get-info',event=>{
+ if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
+ return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,codexConnected:false},
+  dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
+});
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
 let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=96,speechWidth=236,currentPose='smoking';
 let speechHide:ReturnType<typeof setTimeout>|undefined;

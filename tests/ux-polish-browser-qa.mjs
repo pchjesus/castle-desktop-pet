@@ -5,11 +5,22 @@ const report={passed:false,environment:'Chromium browser; native Windows is a se
 try{
  browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:316,height:316}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
- await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true}};});
+ await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active'},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
  for(const tab of ['basic','frequency','poses','more']){
   await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&metrics.scroll<=metrics.height+1);
  }
+ await page.locator('#tab-more').click();await page.locator('[data-more-open="archive"]').click();
+ await page.waitForFunction(()=>document.querySelector('#archive-count')?.textContent?.includes('3'));
+ assert.equal(await page.locator('.archive-item').count(),3);
+ await page.fill('#dialogue-search','최후변론');assert.equal(await page.locator('.archive-item').count(),2);
+ await page.locator('#dialogue-pose').selectOption('sitting');assert.equal(await page.locator('.archive-item').count(),1);
+ assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
+ await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
+ await page.locator('[data-more-back]').first().click();await page.locator('[data-more-open="status"]').click();
+ assert((await page.locator('#status-list').innerText()).includes('연결되지 않음'));
+ assert((await page.locator('#status-list').innerText()).includes('앉기'));
+ await page.locator('[data-more-back]').first().click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');
  await page.locator('#tab-basic').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#tab-frequency').getAttribute('aria-selected'),'true');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__dismissed),true);
  report.checks.push('316px menu: four tabs without scrolling, nine sizes, real size change, keyboard navigation and dismiss');

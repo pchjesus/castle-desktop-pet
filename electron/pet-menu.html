@@ -8,6 +8,24 @@ nav,.grid{display:grid;gap:5px;grid-template-columns:repeat(3,minmax(0,1fr))}nav
 section{min-height:0;overflow-y:auto}section[hidden]{display:none}h2{font-size:11px;margin:1px 0 4px;color:#b8c2d0;font-weight:500}h2:not(:first-child){margin-top:8px}p{margin:7px 0 0;color:#a6b0c0;font-size:11px}
 button,select{font:inherit;color:#eff2f7;border:1px solid #535e70;background:#303949;border-radius:7px;cursor:pointer;min-height:30px;padding:5px}button{width:100%}button:hover,button:focus-visible,select:focus-visible{outline:1px solid #a6c5ef;background:#45536a}button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}small{display:block;font-size:10px;color:#afbbc9;margin-top:2px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.toggles button{min-height:39px}.poses button{min-height:43px}.stack{display:grid;gap:6px}.row label{white-space:nowrap;color:#b8c2d0}.row select{min-width:0;flex:1}.row button{width:32px;font-size:17px}
 footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px}footer span{flex:1}footer button{width:auto;min-height:24px;background:transparent;border:0;color:#edb0b0;padding:2px 8px}
+
+.more-view[hidden]{display:none}
+.more-view:not([hidden]){display:flex;flex-direction:column;gap:6px;height:100%;min-height:0}
+.more-view h2{margin:2px 0 3px}.more-head{display:flex;align-items:center;gap:6px;flex-shrink:0}.more-head strong{flex:1;font-size:12px}.more-head .back{width:45px;min-height:26px}
+.more-intro{font-size:10px;margin:0;color:#acb7c7}
+#dialogue-search{width:100%;min-height:28px;background:#303949;border:1px solid #535e70;border-radius:6px;color:white;padding:4px}
+.archive-filters{display:flex;gap:5px}.archive-filters select{width:50%;min-width:0;min-height:27px}
+#archive-count{font-size:10px;color:#adb9c9}
+#archive-results{overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:5px}
+.archive-item{border:1px solid #454f5e;border-radius:7px;padding:6px;background:#282f3a;flex-shrink:0;overflow-wrap:anywhere}
+.archive-item strong{display:block;font-size:11px;color:#f2f4f9;font-weight:500}
+.archive-item small{font-size:10px;color:#afbccc}
+.archive-item p{margin:4px 0 0;font-size:10px;color:#d2d9e3}
+.archive-status{font-size:10px;color:#d7b98d}
+.status-list{display:grid;grid-template-columns:76px 1fr;gap:7px 5px;align-content:start;margin:2px 0;color:#dce3ed;font-size:11px}
+.status-list dt{color:#aab5c5}.status-list dd{margin:0;overflow-wrap:anywhere}
+.more-help{overflow:auto;font-size:11px;padding-right:3px}.more-help p{margin:0 0 8px;font-size:11px}
+.more-view .stack{flex-shrink:0}
 </style></head><body><main>
 <header><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -21,10 +39,37 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 <h2>자동 대사 간격</h2><div class="grid"><button data-action="setting:dialogueFrequency:quiet">조용히<small>8~12분</small></button><button data-action="setting:dialogueFrequency:default">보통<small>4~6분</small></button><button data-action="setting:dialogueFrequency:active">활발히<small>2~3분</small></button></div><p>움직임과 대사를 각각 조절해요.</p>
 </section>
 <section id="panel-poses" role="tabpanel" aria-labelledby="tab-poses" data-panel="poses" hidden>
-<h2>지금 실행할 동작</h2><div class="grid poses"><button data-action="pose:idle">서 있기</button><button data-action="pose:smoking">흡연</button><button data-action="pose:sitting">앉기</button><button data-action="pose:working">작업하기</button><button data-action="pose:speaking">말하기</button><button data-action="pose:drawing">총 꺼내기</button><button data-action="pose:firing">한 발 사격</button><button data-action="pose:dual_firing">양손 사격</button><button data-action="pose:firing_dynamic">허리 사격</button></div><p>앉기·작업 중 클릭해도 자세를 유지해요.</p>
+<h2>지금 실행할 동작</h2><div class="grid poses"><button data-action="pose:idle">서 있기</button><button data-action="pose:smoking">흡연</button><button data-action="pose:sitting">앉기</button><button data-action="pose:working">작업하기</button><button data-action="pose:speaking">말하기</button><button data-action="pose:drawing">총 꺼내기</button><button data-action="pose:firing">한 발 사격</button><button data-action="pose:dual_firing">양손 사격</button><button data-action="pose:firing_dynamic">허리 사격</button></div><p>수동 동작은 잠시 유지한 뒤 평소 자세로 돌아와요.</p>
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
-<h2>이미지 검수 · 별도 창</h2><div class="stack"><button data-action="diagnostics">전체 이미지·비율 보기</button><button data-action="diagnostics:dual_firing">양손 사격 원본 비교</button><button data-action="diagnostics:firing_dynamic">허리 사격 원본 비교</button><button data-action="diagnostics:speaking_reference">대화 표정 7컷 보기</button></div><p>검수 도구는 배경이 있는 별도 창이에요.</p>
+<div class="more-view" data-more-view="home">
+<h2>정보와 도구</h2><div class="stack"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+</div>
+<div class="more-view" data-more-view="archive" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
+<input id="dialogue-search" type="search" placeholder="대사 또는 ID 검색" aria-label="대사 검색">
+<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option><option value="codex">Codex 이벤트</option></select>
+<select id="dialogue-pose" aria-label="동작 필터"><option value="all">모든 동작</option><option value="idle">서 있기</option><option value="smoking">흡연</option><option value="sitting">앉기</option><option value="working">작업</option><option value="speaking">말하기</option><option value="drawing">총 꺼내기</option><option value="firing">한 발 사격</option><option value="dual_firing">양손 사격</option><option value="firing_dynamic">허리 사격</option></select></div>
+<div id="archive-results" aria-live="polite">대사 데이터를 불러오는 중이에요.</div>
+</div>
+<div class="more-view" data-more-view="status" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>현재 상태</strong></div>
+<dl class="status-list" id="status-list"><dt>연결</dt><dd>펫에서 확인 중</dd></dl>
+<p class="more-intro">Codex는 실제 연동 완료 전까지 미연결로 표시합니다.</p>
+</div>
+<div class="more-view" data-more-view="help" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>도움말</strong></div>
+<div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
+<p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
+<p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
+<p>기본/빈도: 평소 자세, 자동 움직임·대사·사격을 각각 설정해요. 대사 간격은 사격 쿨다운과 별개예요.</p>
+<p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요. Codex 이벤트 연결은 B-15에서 진행할 예정이에요.</p></div>
+</div>
+<div class="more-view" data-more-view="diagnostics" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
+<div class="stack"><button data-action="diagnostics">전체 이미지·비율 보기</button><button data-action="diagnostics:dual_firing">양손 사격 원본 비교</button><button data-action="diagnostics:firing_dynamic">허리 사격 원본 비교</button><button data-action="diagnostics:speaking_reference">대화 표정 7컷 보기</button></div>
+<p class="more-intro">검수 도구는 별도 창으로 열려요.</p>
+</div>
 </section>
 <footer><span>설정은 자동 저장돼요</span><button data-action="quit">펫 종료</button></footer>
 </main><script>
@@ -33,8 +78,42 @@ for(const [id,key,label] of [['autonomy-setting','autonomy','움직임'],['dialo
 for(const key of ['movementFrequency','dialogueFrequency'])for(const button of document.querySelectorAll('[data-action^="setting:'+key+':"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:'+key+':'+(params.get(key)||'default')));
 for(const button of document.querySelectorAll('[data-action^="setting:base:"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:base:'+(params.get('base')||'smoking')));
 document.querySelector('#pet-size').value=params.get('size')||'180';
-function selectTab(name){for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
-document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
+
+const poseNames={idle:'서 있기',smoking:'흡연',sitting:'앉기',working:'작업',speaking:'말하기',drawing:'총 꺼내기',firing:'한 발 사격',dual_firing:'양손 사격',firing_dynamic:'허리 사격'};
+const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
+const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
+let archive=[],infoLoaded=false;
+function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}}
+function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative',codex:'Codex event'}[kind]===line.origin);}
+function renderArchive(){
+ const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
+ const category=document.querySelector('#dialogue-origin').value,pose=document.querySelector('#dialogue-pose').value;
+ const selected=archive.filter(line=>lineMatchesOrigin(line,category)&&(pose==='all'||line.poses.includes(pose))&&(line.text.toLocaleLowerCase('ko').includes(q)||line.id.toLocaleLowerCase('ko').includes(q)));
+ document.querySelector('#archive-count').textContent=infoLoaded?selected.length+' / '+archive.length:'준비 중';
+ const list=document.querySelector('#archive-results');list.replaceChildren();
+ if(!selected.length){list.textContent=infoLoaded?'해당 조건의 대사가 없어요.':'대사 데이터를 확인할 수 없어요.';return;}
+ for(const line of selected){
+  const card=document.createElement('article');card.className='archive-item';
+  const title=document.createElement('strong');title.textContent=line.text;
+  const provenance=document.createElement('small');provenance.className='archive-status';provenance.textContent=line.id+' · '+(origins[line.origin]||'출처 미확인')+' · '+(line.approval==='confirmed'?'앱 사용 승인':'후보');
+  const context=document.createElement('p');context.textContent='동작: '+(line.poses.length?line.poses.map(v=>poseNames[v]||v).join(', '):'일반 클릭/공통')+' · '+line.triggers.map(v=>triggerNames[v]||v).join(', ');
+  card.append(title,provenance,context);list.append(card);
+ }
+}
+function renderStatus(status){
+ const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex','연결되지 않음']];
+ const box=document.querySelector('#status-list');box.replaceChildren();
+ for(const [key,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;box.append(dt,dd);}
+}
+for(const input of ['dialogue-search','dialogue-origin','dialogue-pose'])input&&document.getElementById(input).addEventListener(input==='dialogue-search'?'input':'change',renderArchive);
+Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
+ if(!info||!Array.isArray(info.dialogues))return;
+ archive=info.dialogues.filter(line=>typeof line?.id==='string'&&typeof line?.text==='string'&&Array.isArray(line.poses)&&Array.isArray(line.triggers));
+ infoLoaded=true;renderArchive();
+ if(info.status)renderStatus(info.status);
+}).catch(()=>{});
+function selectTab(name){if(name!=='more')showMoreView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
+document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
 document.querySelector('#pet-size').addEventListener('change',event=>window.castleMenu?.invoke('size:'+event.target.value));
 document.querySelector('#close-menu').addEventListener('click',()=>window.castleMenu?.dismiss());
 window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();if(event.target.matches('[data-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tabs=Array.from(document.querySelectorAll('[data-tab]'));const i=tabs.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length;selectTab(tabs[next].dataset.tab);tabs[next].focus();}});

@@ -32,3 +32,16 @@ test('secure dedicated IPC and menu packaged within portable Electron app',async
  assert(packageJson.scripts.build.includes('copy-pet-menu.mjs'));
  assert(pack.includes("dist-electron/pet-menu.html"));
 });
+
+test('B-14 menu preserves four top-level tabs and nests safe dialogue/status/help views',async()=>{
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ for(const tab of ['basic','frequency','poses','more'])assert(menu.includes('id="tab-'+tab+'"'));
+ for(const view of ['home','archive','status','help','diagnostics'])assert(menu.includes('data-more-view="'+view+'"'));
+ for(const control of ['dialogue-search','dialogue-origin','dialogue-pose','archive-results','status-list'])assert(menu.includes('id="'+control+'"'));
+ assert(menu.includes('textContent=line.text'));assert(!menu.includes('innerHTML=line.text'));
+ assert(main.includes("event.sender!==menuWindow.webContents"));assert(main.includes("ipcMain.handle('pet-menu:get-info'"));
+ assert(preload.includes("ipcRenderer.invoke('pet-menu:get-info')"));
+ assert(menu.includes('Codex'));assert(menu.includes('연결되지 않음'));
+});
