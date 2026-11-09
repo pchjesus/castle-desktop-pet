@@ -67,6 +67,68 @@ footer button{color:#fff}
 #menu-resize-handle:after{content:'';position:absolute;right:6px;bottom:7px;width:10px;height:10px;border-right:2px solid rgba(255,255,255,.85);border-bottom:2px solid rgba(255,255,255,.85);border-radius:0 0 2px 0}
 #menu-resize-handle:hover{background:rgba(255,255,255,.15)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Readable, resizable center-panel layout. Transparent glass is retained. */
+html,body{font-size:14px;line-height:1.52}
+main{padding:21px;gap:14px}
+header{min-height:40px}header strong{font-size:19px;letter-spacing:.02em}
+header button{width:31px;min-height:31px;font-size:18px}
+nav{gap:9px}nav button{min-height:43px;font-size:14px;font-weight:600}
+section{padding:3px 2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.4) transparent}
+h2{font-size:13px;margin:4px 0 9px;font-weight:650}
+h2:not(:first-child){margin-top:18px}
+p,.more-help p{font-size:13px;line-height:1.55}
+button,select,#dialogue-search{font-size:13px;min-height:38px;padding:8px 10px}
+.grid{gap:10px}
+small,.more-intro{font-size:11px}
+.toggles button{min-height:48px}.poses button{min-height:58px}
+.row button{width:39px}.row select{height:42px}
+footer{padding-top:11px;font-size:12px;gap:10px}
+footer button{min-height:30px}
+.more-links button{min-height:75px;font-size:15px}
+.more-head{min-height:40px}.more-head strong{font-size:16px}.more-head .back{width:66px;min-height:36px}
+.more-view:not([hidden]){gap:11px}
+#dialogue-search{min-height:42px}
+.archive-filters select{min-height:40px}
+.archive-item{padding:13px 14px;border-radius:13px}
+.archive-item strong{font-size:14px;line-height:1.48}
+.archive-item small{font-size:11px}
+.archive-item p{font-size:12px}
+#archive-results{gap:9px}
+.status-scroll .status-list{font-size:13px;grid-template-columns:95px minmax(0,1fr);gap:11px}
+.codex-tests button{font-size:12px;min-height:46px}
+#codex-logs,#codex-logs p,#codex-result{font-size:12px}
+.more-help{overflow:auto;scrollbar-width:thin}
+.more-help p{margin:0 0 15px}
+.frequency-view[hidden]{display:none}
+.frequency-view:not([hidden]){display:flex;flex-direction:column;gap:11px;height:100%;min-height:0}
+.frequency-view h2{flex-shrink:0}
+.frequency-note{font-size:12px;line-height:1.5;margin:0;color:rgba(255,255,255,.89)}
+.frequency-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:15px;border:1px solid rgba(255,255,255,.33);background:rgba(255,255,255,.08)}
+.frequency-entry strong{font-size:14px}.frequency-entry p{margin:5px 0 0;font-size:12px}
+.frequency-entry button{width:120px;flex-shrink:0}
+.action-weights-list{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;display:grid;align-content:start;gap:10px;padding:1px 5px 2px 0}
+.action-weight-row{display:flex;flex-direction:column;gap:7px;padding:13px 15px;border:1px solid rgba(255,255,255,.29);border-radius:13px;background:rgba(0,0,0,.12)}
+.weight-label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.weight-label strong{font-size:14px}
+.weight-value{font-size:12px;color:#fff;white-space:nowrap}
+.action-weight-row input[type=range]{width:100%;accent-color:#fff;cursor:pointer;min-height:24px}
+.weight-foot{color:rgba(255,255,255,.82);font-size:11px}
+.frequency-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;flex-shrink:0}
+.frequency-actions button{width:auto}
+#weights-feedback{font-size:11px;color:rgba(255,255,255,.86)}
+@media (max-width:395px),(max-height:410px){
+ main{padding:10px;gap:8px}
+ header{min-height:23px}header strong{font-size:14px}header button{min-height:24px}
+ nav{gap:5px}nav button{min-height:30px;font-size:12px}
+ h2{font-size:11px;margin:1px 0 4px}h2:not(:first-child){margin-top:8px}
+ button,select,#dialogue-search{min-height:30px;font-size:12px;padding:5px}
+ .grid{gap:5px}
+ .toggles button{min-height:39px}.poses button{min-height:43px}
+ footer{padding-top:5px;font-size:10px}.more-links button{min-height:46px}
+ p{font-size:11px}.frequency-entry{padding:8px}.frequency-entry button{width:85px}
+ .frequency-view:not([hidden]){gap:6px}
+}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -76,8 +138,18 @@ footer button{color:#fff}
 <h2>펫 크기</h2><div class="row"><button data-action="size:smaller" aria-label="펫 작게">−</button><select id="pet-size" aria-label="펫 크기"><option value="120" data-action="size:120">120 px</option><option value="140" data-action="size:140">140 px</option><option value="160" data-action="size:160">160 px</option><option value="180" data-action="size:180">180 px · 기본</option><option value="200" data-action="size:200">200 px</option><option value="240" data-action="size:240">240 px</option><option value="280" data-action="size:280">280 px</option><option value="320" data-action="size:320">320 px</option><option value="360" data-action="size:360">360 px</option></select><button data-action="size:larger" aria-label="펫 크게">+</button></div>
 </section>
 <section id="panel-frequency" role="tabpanel" aria-labelledby="tab-frequency" data-panel="frequency" hidden>
+<div class="frequency-view" data-frequency-view="home">
 <h2>자동 움직임 간격</h2><div class="grid"><button data-action="setting:movementFrequency:quiet">조용히<small>5~10분</small></button><button data-action="setting:movementFrequency:default">보통<small>2~3분</small></button><button data-action="setting:movementFrequency:active">활발히<small>1~2분</small></button></div>
-<h2>자동 대사 간격</h2><div class="grid"><button data-action="setting:dialogueFrequency:quiet">조용히<small>8~12분</small></button><button data-action="setting:dialogueFrequency:default">보통<small>4~6분</small></button><button data-action="setting:dialogueFrequency:active">활발히<small>2~3분</small></button></div><p>움직임과 대사를 각각 조절해요.</p>
+<h2>자동 대사 간격</h2><div class="grid"><button data-action="setting:dialogueFrequency:quiet">조용히<small>8~12분</small></button><button data-action="setting:dialogueFrequency:default">보통<small>4~6분</small></button><button data-action="setting:dialogueFrequency:active">활발히<small>2~3분</small></button></div>
+<div class="frequency-entry"><div><strong>행동별 등장 빈도</strong><p>앉기, 작업하기, 사격 등을 개별 설정</p></div><button id="edit-action-weights" data-frequency-open="weights">조절하기</button></div>
+<p class="frequency-note">전체 간격과 각 행동의 선택 확률은 별도로 설정돼요.</p>
+</div>
+<div class="frequency-view" data-frequency-view="weights" hidden>
+<div class="more-head"><button class="back" data-frequency-back>‹ 뒤로</button><strong>행동별 등장 빈도</strong><small>자동 행동</small></div>
+<p class="frequency-note">막대는 상대적인 선택 비중이에요. <strong>0</strong>이면 해당 자동 행동을 사용하지 않아요. 기본 자세, 사격 설정, 쿨다운에 따라 실제 확률은 달라져요.</p>
+<div id="action-weights-list" class="action-weights-list" aria-label="행동별 자동 선택 비중"></div>
+<div class="frequency-actions"><button id="weights-reset" data-weights-reset>처음 설정으로 되돌리기</button><span id="weights-feedback" role="status" aria-live="polite">조절을 마치면 자동 저장돼요.</span></div>
+</div>
 </section>
 <section id="panel-poses" role="tabpanel" aria-labelledby="tab-poses" data-panel="poses" hidden>
 <h2>지금 실행할 동작</h2><div class="grid poses"><button data-action="pose:idle">서 있기</button><button data-action="pose:smoking">흡연</button><button data-action="pose:sitting">앉기</button><button data-action="pose:working">작업하기</button><button data-action="pose:speaking">말하기</button><button data-action="pose:drawing">총 꺼내기</button><button data-action="pose:firing">한 발 사격</button><button data-action="pose:dual_firing">양손 사격</button><button data-action="pose:firing_dynamic">허리 사격</button></div><p>수동 동작은 잠시 유지한 뒤 평소 자세로 돌아와요.</p>
@@ -108,7 +180,7 @@ footer button{color:#fff}
 <div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
 <p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
 <p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
-<p>기본/빈도: 평소 자세, 자동 움직임·대사·사격을 각각 설정해요. 대사 간격은 사격 쿨다운과 별개예요.</p>
+<p>기본/빈도: 평소 자세와 움직임·대사 간격을 설정해요. 빈도 탭의 ‘행동별 등장 빈도’에서 각 동작의 자동 선택 비중을 0~40으로 조절할 수 있어요. 0이면 자동 실행하지 않지만 수동 실행은 가능해요.</p><p>이 값은 시간 간격이 아니라 상대적인 등장 확률이에요. 자동 사격이 꺼져 있거나 쿨다운 중이면 사격 동작은 추첨에서 제외돼요.</p>
 <p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
 <p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
 <p>외부 Codex 훅 또는 검증 스크립트에서 로컬 이벤트 파일에 기록하면 펫이 감지해요. API 호출이나 추가 AI 비용은 없어요. 자세한 연결 방법은 저장소의 B-15 가이드에서 확인할 수 있어요.</p></div>
@@ -129,6 +201,50 @@ for(const button of document.querySelectorAll('[data-action^="setting:base:"]'))
 document.querySelector('#pet-size').value=params.get('size')||'180';
 
 const poseNames={idle:'서 있기',smoking:'흡연',sitting:'앉기',working:'작업',speaking:'말하기',drawing:'총 꺼내기',firing:'한 발 사격',dual_firing:'양손 사격',firing_dynamic:'허리 사격'};
+
+const weightDefaults={idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:0};
+const weightOrder=['idle','smoking','sitting','working','speaking','drawing','firing','dual_firing','firing_dynamic'];
+let weightValues={...weightDefaults},weightBase=params.get('base')||'smoking',weightFire=params.get('autoFire')!=='false';
+try{
+ const saved=JSON.parse(params.get('weights')||'null');
+ if(saved&&typeof saved==='object'&&!Array.isArray(saved)){
+  for(const name of weightOrder)if(Number.isInteger(saved[name])&&saved[name]>=0&&saved[name]<=40)weightValues[name]=saved[name];
+ }
+}catch{}
+function weightPercent(pose){
+ const active=weightOrder.filter(name=>name!==weightBase&&weightValues[name]>0&&(!['firing','dual_firing','firing_dynamic'].includes(name)||weightFire));
+ const total=active.reduce((sum,name)=>sum+weightValues[name],0);
+ return total&&active.includes(pose)?Math.round(weightValues[pose]/total*100):0;
+}
+function updateWeightLabels(){
+ for(const row of document.querySelectorAll('[data-weight-row]')){
+  const name=row.dataset.weightRow,value=weightValues[name],output=row.querySelector('.weight-value'),note=row.querySelector('.weight-foot');
+  output.textContent=value===0?'사용 안 함':value+' · 약 '+weightPercent(name)+'%';
+  note.textContent=name===weightBase?'현재 기본 자세 · 자동 선택에서 제외':(['firing','dual_firing','firing_dynamic'].includes(name)&&!weightFire?'자동 사격 꺼짐 · 선택에서 제외':value===0?'자동 행동에서 제외':'전체 움직임 간격 안에서 추첨');
+ }
+}
+function buildWeightRows(){
+ const list=document.querySelector('#action-weights-list');list.replaceChildren();
+ for(const name of weightOrder){
+  const row=document.createElement('label');row.className='action-weight-row';row.dataset.weightRow=name;
+  const head=document.createElement('span');head.className='weight-label';
+  const title=document.createElement('strong');title.textContent=poseNames[name];
+  const output=document.createElement('span');output.className='weight-value';
+  head.append(title,output);
+  const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='40';slider.step='1';slider.value=String(weightValues[name]);slider.setAttribute('aria-label',poseNames[name]+' 자동 행동 비중');
+  slider.addEventListener('input',()=>{weightValues[name]=Number(slider.value);updateWeightLabels();});
+  slider.addEventListener('change',()=>{weightValues[name]=Number(slider.value);window.castleMenu?.invoke('setting:weight:'+name+':'+slider.value);document.querySelector('#weights-feedback').textContent=poseNames[name]+' 빈도를 저장했어요.';updateWeightLabels();});
+  const note=document.createElement('span');note.className='weight-foot';
+  row.append(head,slider,note);list.append(row);
+ }
+ updateWeightLabels();
+}
+function showFrequencyView(name){
+ for(const view of document.querySelectorAll('[data-frequency-view]'))view.hidden=view.dataset.frequencyView!==name;
+ if(name==='weights'){buildWeightRows();document.querySelector('#action-weights-list').scrollTop=0;}
+ document.querySelector('#panel-frequency').scrollTop=0;
+}
+
 const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
 let archive=[],infoLoaded=false;
@@ -173,8 +289,14 @@ Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  infoLoaded=true;renderArchive();
  if(info.status)renderStatus(info.status);
 }).catch(()=>{});
-function selectTab(name){if(name!=='more')showMoreView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
-document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
+function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
+document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
+if(event.target.closest('[data-frequency-back]')){showFrequencyView('home');return;}
+if(event.target.closest('[data-weights-reset]')){
+ weightValues={...weightDefaults};buildWeightRows();window.castleMenu?.invoke('setting:weights:reset');
+ document.querySelector('#weights-feedback').textContent='기본 행동 비중으로 되돌렸어요.';return;
+}
+const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
 const test=event.target.closest('[data-codex-test]');if(test){
  const name=test.dataset.codexTest;
  const label=document.querySelector('#codex-result');label.textContent='이벤트 전달 중…';
