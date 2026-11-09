@@ -9,6 +9,7 @@ section{min-height:0;overflow-y:auto}section[hidden]{display:none}h2{font-size:1
 button,select{font:inherit;color:#eff2f7;border:1px solid #535e70;background:#303949;border-radius:7px;cursor:pointer;min-height:30px;padding:5px}button{width:100%}button:hover,button:focus-visible,select:focus-visible{outline:1px solid #a6c5ef;background:#45536a}button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}small{display:block;font-size:10px;color:#afbbc9;margin-top:2px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.toggles button{min-height:39px}.poses button{min-height:43px}.stack{display:grid;gap:6px}.row label{white-space:nowrap;color:#b8c2d0}.row select{min-width:0;flex:1}.row button{width:32px;font-size:17px}
 footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px}footer span{flex:1}footer button{width:auto;min-height:24px;background:transparent;border:0;color:#edb0b0;padding:2px 8px}
 
+.more-links button{min-height:46px}
 .more-view[hidden]{display:none}
 .more-view:not([hidden]){display:flex;flex-direction:column;gap:6px;height:100%;min-height:0}
 .more-view h2{margin:2px 0 3px}.more-head{display:flex;align-items:center;gap:6px;flex-shrink:0}.more-head strong{flex:1;font-size:12px}.more-head .back{width:45px;min-height:26px}
@@ -43,7 +44,7 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
 <div class="more-view" data-more-view="home">
-<h2>정보와 도구</h2><div class="stack"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
 </div>
 <div class="more-view" data-more-view="archive" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
