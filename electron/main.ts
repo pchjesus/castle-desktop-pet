@@ -8,10 +8,14 @@ import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
 import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/behavior/cadence.mjs';
-import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog, clipboard } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {codexEventNames,watchCodexEvents} from '../src/behavior/codex-bridge.mjs';
 import {inspectCodexIntegration,configureCodexIntegration} from '../src/behavior/codex-hook-install.mjs';
+import {DEFAULT_EXTERNAL_SETTINGS,enabledForEvent} from '../src/behavior/external-events.mjs';
+import {loadExternalSettings,saveExternalSettings} from '../src/behavior/external-settings-store.mjs';
+import {watchWindowsEvents} from '../src/behavior/windows-event-adapter.mjs';
+import {BRAVE_PORT,readOrCreateBraveToken,createBraveDownloadServer} from '../src/behavior/brave-download-server.mjs';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -34,6 +38,30 @@ function openDiagnostics(show=true) {
  return diagnostics;
 }
 let behaviorSettings=normalizeSettings(null);
+let externalSettings={...DEFAULT_EXTERNAL_SETTINGS};
+let braveBridge:ReturnType<typeof createBraveDownloadServer>|null=null;
+let braveError='';
+let lastExternal:{name:string;at:number}|null=null;
+const externalSettingsPath=()=>join(app.getPath('userData'),'external-settings.json');
+const braveTokenPath=()=>join(app.getPath('userData'),'brave-pairing.key');
+function deliverExternal(name:string){
+ if(!enabledForEvent(externalSettings,name)||!win||win.isDestroyed()||win.webContents.isLoading())return;
+ lastExternal={name,at:Date.now()};
+ win.webContents.send('pet:action',{kind:'external-notification',name});
+}
+async function updateBraveBridge(){
+ if(!externalSettings.braveDownload){
+  if(braveBridge){const old=braveBridge;braveBridge=null;await old.stop();}
+  braveError='';return;
+ }
+ if(braveBridge)return;
+ try{
+  const token=readOrCreateBraveToken(braveTokenPath());
+  const receiver=createBraveDownloadServer({token,onDownload:deliverExternal,port:BRAVE_PORT});
+  await receiver.start();braveBridge=receiver;braveError='';
+ }catch(error){braveError=String(error);log('Brave local bridge unavailable: '+braveError);}
+}
+
 const codexAllowed=new Set<string>(codexEventNames);
 const codexHistory:{id:number;name:string;origin:'test'|'file';state:'sent'|'accepted'|'blocked';at:number}[]=[];
 let codexSequence=0,externalEvents=0,codexWatcherStarted=false;
@@ -54,7 +82,11 @@ function emitCodexEvent(name:string,origin:'test'|'file'){
  return {sent:true,id};
 }
 
-function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
+function readBehavior(){
+ behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));
+ externalSettings=loadExternalSettings(externalSettingsPath());
+ return behaviorSettings;
+}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
 function fit(bounds: Electron.Rectangle) { return constrain(bounds, screen.getAllDisplays().map(d => d.workArea)); }
@@ -130,7 +162,7 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
+ return {status:{externalSettings:{...externalSettings},brave:{ready:!!braveBridge,error:braveError,port:BRAVE_PORT},lastExternal,pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
   dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 ipcMain.handle('pet-menu:test-event',(event,name)=>{
@@ -138,6 +170,11 @@ ipcMain.handle('pet-menu:test-event',(event,name)=>{
  return emitCodexEvent(name,'test');
 });
 // Deliberate user interaction only: never modify the user's Codex hooks at startup.
+ipcMain.handle('pet-menu:brave-copy-token',event=>{
+ if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return {success:false};
+ try{const token=readOrCreateBraveToken(braveTokenPath());clipboard.writeText(token);return {success:true};}
+ catch(error){return {success:false,error:String(error)};}
+});
 ipcMain.handle('pet-menu:codex-toggle',(event,enabled)=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof enabled!=='boolean')return {success:false,error:'Invalid menu request'};
  if(process.platform!=='win32')return {success:false,error:'이 버전의 자동 설치는 Windows 전용이에요.'};
@@ -204,6 +241,18 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command.startsWith('setting:external:')){
+  const parts=command.split(':');
+  if(parts.length!==4)return;
+  const key=parts[2],value=parts[3];
+  if(!Object.hasOwn(DEFAULT_EXTERNAL_SETTINGS,key)||!['true','false'].includes(value))return;
+  try{
+   externalSettings=saveExternalSettings(externalSettingsPath(),{...externalSettings,[key]:value==='true'});
+   if(key==='braveDownload')void updateBraveBridge();
+  }catch(error){log('External setting rejected: '+String(error));}
+  return;
+ }
+
  if(command.startsWith('setting:interval:')){
   const parts=command.split(':');
   if(parts.length!==4)return;
@@ -275,7 +324,12 @@ app.whenReady().then(() => {
   const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
-  app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
+  const detachSystem=watchWindowsEvents(powerMonitor,{suspend,resume,emit:deliverExternal});
+  if(!isSmoke)void updateBraveBridge();
+  app.once('will-quit',()=>{
+   powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);
+   detachSystem();if(braveBridge)void braveBridge.stop();
+  });
   win = new BrowserWindow({ ...restore(), show:false, transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
   const focusChromeRepair=createFocusChromeRepair(win,{
    platform:process.platform,
@@ -386,7 +440,7 @@ app.whenReady().then(() => {
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'){
+    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command.startsWith('setting:external:')||command==='setting:weights:reset'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
