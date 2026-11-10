@@ -8,7 +8,7 @@ try{
  await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
  for(const tab of ['basic','frequency','poses','more']){
-  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
+  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),6);
  }
  const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
  assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
@@ -73,10 +73,31 @@ try{
  report.checks.push('compact menu scrolls with all three sliders accessible');
  await page.locator('#tab-more').click();
  await page.setViewportSize({width:850,height:790});
- await page.locator('#tab-more').click();await page.locator('[data-more-open="archive"]').click();
+ await page.locator('#tab-more').click();
+ await page.locator('[data-more-open="personalize"]').click();
+ assert(await page.locator('#position-lock-toggle').isVisible());
+ await page.locator('#position-lock-toggle').click();
+ assert.equal(await page.evaluate(()=>window.__command),'setting:positionLock:true');
+ await page.locator('[data-style="original"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'setting:dialogueStyle:original');
+ assert.equal(await page.locator('[data-style="original"]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-more-back]').first().click();
+ await page.locator('[data-more-open="archive"]').click();
  await page.waitForFunction(()=>document.querySelector('#archive-count')?.textContent?.includes('3'));
  assert.equal(await page.locator('.archive-item').count(),3);
  await page.fill('#dialogue-search','최후변론');assert.equal(await page.locator('.archive-item').count(),2);
+ await page.locator('.archive-item [data-favorite-type="dialogue"]').first().click();
+ assert((await page.evaluate(()=>window.__command)).startsWith('favorite:add:dialogue:'));
+ const bookmarked=(await page.evaluate(()=>window.__command)).split(':').at(-1);
+ await page.locator('[data-more-back]').first().click();
+ await page.locator('[data-more-open="favorites"]').click();
+ assert.equal(await page.locator('#favorites-results .favorite-entry').count(),1);
+ await page.locator('#favorites-results [data-favorite-play]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'favorite:play:dialogue:'+bookmarked);
+ await page.locator('#favorites-results [data-favorite-type="dialogue"]').click();
+ assert.equal(await page.locator('#favorites-results .favorite-entry').count(),0);
+ report.checks.push('B19 position lock, dialogue-style selection and local favorite replay');
+ await page.locator('[data-more-back]').first().click();
  await page.locator('#dialogue-pose').selectOption('sitting');assert.equal(await page.locator('.archive-item').count(),1);
  assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
