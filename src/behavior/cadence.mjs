@@ -23,6 +23,7 @@ export function normalizeSettings(value){
  for(const key of Object.keys(DEFAULT_INTERVALS)){
   if(validInterval(value?.[key]))result[key]=value[key];
  }
+ if(['original','balanced','creative'].includes(value?.dialogueStyle))result.dialogueStyle=value.dialogueStyle;
  const candidate=value?.actionWeights;
  if(candidate&&typeof candidate==='object'&&!Array.isArray(candidate)){
   const actionWeights={...DEFAULT_ACTION_WEIGHTS};
