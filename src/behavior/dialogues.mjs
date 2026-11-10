@@ -485,7 +485,7 @@ export const dialogues = [
     "random": false
   },
   {
-    "id": "E-jobStart",
+    "id": "PWR-AC-01",
     "text": "남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.",
     "origin": "original creative",
     "approval": "confirmed",
@@ -496,7 +496,7 @@ export const dialogues = [
     "random": false
   },
   {
-    "id": "E-testPassed",
+    "id": "C-CODE-01",
     "text": "코딩 실력은 인정하지. 감탄했다, 오픈AI.",
     "origin": "original creative",
     "approval": "confirmed",
