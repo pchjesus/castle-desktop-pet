@@ -1,6 +1,7 @@
 import {beforePlainShow,finishPlainLaunch} from './plain-launch-qa';
 import {compareClearRegions} from './transparent-gaps.mjs';
 import {nativeWindowAudit} from './native-window-audit';
+import {focusLossQa} from './focus-loss-qa';
 import {createFocusChromeRepair} from './focus-chrome-repair.mjs';
 import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
@@ -260,6 +261,22 @@ app.whenReady().then(() => {
   win.on('closed',()=>focusChromeRepair.dispose());
   win.once('ready-to-show',async()=>{
    if(win.isDestroyed())return;
+   const focusIndex=process.argv.indexOf('--qa-focus-report'),focusReport=process.argv[focusIndex+1];
+   if(focusIndex>=0){
+    if(!focusReport){log('Missing focus QA report path');app.exit(2);return;}
+    win.show();
+    setTimeout(async()=>{
+     try{
+      const result=await focusLossQa(win,focusReport,()=>focusChromeRepair.stats());
+      app.exit(result.passed?0:1);
+     }catch(error){
+      log('Focus QA failed: '+String(error));
+      try{writeFileSync(focusReport,JSON.stringify({passed:false,error:String(error)}));}catch{}
+      app.exit(1);
+     }
+    },400);
+    return;
+   }
    const index=process.argv.indexOf('--qa-plain-report'),report=process.argv[index+1];
    if(index<0){win.show();return;}
    try{const before=await beforePlainShow(win);win.show();setTimeout(async()=>{try{const result=await finishPlainLaunch(win,before,[{role:'pet',window:win},...(speechWindow?[{role:'speech',window:speechWindow}]:[])],report);app.exit(result.passed?0:1);}catch(error){writeFileSync(report,JSON.stringify({passed:false,error:String(error)}));app.exit(1);}},1200);}catch(error){writeFileSync(report,JSON.stringify({passed:false,error:String(error)}));app.exit(1);}
