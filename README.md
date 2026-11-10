@@ -13,6 +13,16 @@ The initial prototype and all pre-migration runtime sources are preserved on bra
 ## QA
 `npm ci && npm run build && npm test && npm run preview:package`
 
-Run `npm start` for B as the visible QA desktop pet. `preview.html` and `preview-offline.zip` contain B visual comparisons and user-entered notes. Windows QA executable is generated on GitHub Actions and remains unapproved.
+Run `npm start` for B as the visible desktop pet. `preview.html` and `preview-offline.zip` contain B visual comparisons and user-entered notes.
 
-Do not equate CI pass with visual approval. No GitHub Release or Pages deployment is authorized.
+## B-19 approved default (2026-11-10)
+
+The user approved the standalone B-19 Windows desktop pet (squash merge PR #16). B-19 includes position lock, favorite poses/dialogues, and selectable dialogue tone. The brown mustang later-B outfit remains the default. Local behavior preferences and favorites are stored per user; no Codex/Brave connection.
+
+### Sharing with a friend
+
+The Windows x64 installer workflow (`.github/workflows/b19-installer.yml`) builds `CastlePet-B19-Setup-x64.exe` using the **same pinned Electron runtime** that already passes the packaged Windows QA. Unlike the QA portable `CastlePet.exe`, the installer EXE is a self-contained distribution file: a recipient runs it once to install the desktop pet, with no runtime folder to send separately. It installs for the current Windows user without elevation, adds a Start Menu entry and optionally a desktop icon.
+
+Once the publishing workflow passes on `main`, the public download appears under GitHub [Releases](https://github.com/pchjesus/castle-desktop-pet/releases). Verify published SHA256 if sharing the unsigned EXE; Windows SmartScreen may warn. The intermittent native title strip remains a known visual issue on some PCs.
+
+Maintain clear separation between automatic QA and user visual approval. Never replace the approved B image assets.
