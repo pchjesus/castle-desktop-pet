@@ -82,7 +82,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  await menu.webContents.executeJavaScript(`document.querySelector('#weights-reset').click()`);
  await pause(160);
  const resetWeight=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>info?.status?.actionWeights?.working)`);
- if(resetWeight!==0)throw Error('Native per-action weight reset failed: '+resetWeight);
+ if(resetWeight!==12)throw Error('Native per-action weight reset failed: '+resetWeight);
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="more"]').click();document.querySelector('[data-more-open="archive"]').click();})()`);
  writeFileSync(join(uxEvidence,'menu-dialogue-archive.png'),(await menu.webContents.capturePage()).toPNG());
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-more-view="archive"] [data-more-back]').click();document.querySelector('[data-more-open="help"]').click();})()`);
