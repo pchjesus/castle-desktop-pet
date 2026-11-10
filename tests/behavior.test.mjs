@@ -153,3 +153,35 @@ test('manual dynamic and Codex events do not insert Smoking between current and 
  f.tick(799);assert.equal(f.poses.length,at);f.tick(1);assert.equal(f.poses.at(-1),'working');
  f.b.dispose();
 });
+
+test('fixed minute sliders validate 1–15, migrate older presets and persist independently',async()=>{
+ const input={base:'idle',autonomy:true,movementIntervalMin:1,dialogueIntervalMin:15,shotCooldownMin:8};
+ const settings=normalizeSettings(input);
+ assert.equal(settings.movementIntervalMin,1);assert.equal(settings.dialogueIntervalMin,15);assert.equal(settings.shotCooldownMin,8);
+ const rejected=normalizeSettings({movementIntervalMin:0,dialogueIntervalMin:16,shotCooldownMin:2.5});
+ for(const key of ['movementIntervalMin','dialogueIntervalMin','shotCooldownMin'])assert.equal(Object.hasOwn(rejected,key),false);
+ const {mkdtempSync,rmSync}=await import('node:fs');const {tmpdir}=await import('node:os');const {join}=await import('node:path');
+ const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');
+ const dir=mkdtempSync(join(tmpdir(),'castle-minutes-'));
+ try{const path=join(dir,'settings.json');saveSettings(path,settings);assert.deepEqual(loadSettings(path),settings);}
+ finally{rmSync(dir,{recursive:true,force:true});}
+});
+test('fixed movement/dialogue intervals schedule exactly with no pose interruption',()=>{
+ const f=fixture(()=>.9);
+ f.b.manual('sitting');f.tick(1000);const before=f.poses.length;
+ f.b.configure({...f.b.snapshot().settings,movementIntervalMin:1,dialogueIntervalMin:15});
+ assert.equal(f.poses.length,before);assert.equal(f.poses.at(-1),'sitting');
+ f.tick(19000);assert.equal(f.poses.at(-1),'smoking');
+ assert.equal(f.b.snapshot().nextMovement-f.now(),60000);
+ const due=f.b.snapshot().nextDialogue;
+ assert(due>f.now());assert.equal(due-f.now(),15*60000-19000);
+ f.b.dispose();
+});
+test('shot cooldown slider acts on auto shots only; normal manual firing works unchanged',()=>{
+ const f=fixture(()=>.75);
+ f.b.configure({...f.b.snapshot().settings,movementIntervalMin:1,dialogueIntervalMin:15,shotCooldownMin:15});
+ f.tick(60000);
+ assert.equal(f.poses.at(-1),'firing');f.tick(1500);
+ assert.equal(f.b.snapshot().cooldown-f.now(),900000);
+ assert.equal(f.b.manual('firing'),true);assert.equal(f.poses.at(-1),'firing');f.b.dispose();
+});
