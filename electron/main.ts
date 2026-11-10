@@ -35,6 +35,11 @@ let behaviorSettings=normalizeSettings(null);
 function readBehavior(){
  const file=join(app.getPath('userData'),'behavior.json');
  const stored=loadSettings(file),next={...stored};
+ const legacyTiming=!validInterval(stored.movementIntervalMin)||!validInterval(stored.dialogueIntervalMin)||!validInterval(stored.shotCooldownMin);
+ // A previous auto-weight save materialized Working=0 even when not actively
+ // selected by the user. Upgrade this inherited default once to 12.
+ if(legacyTiming&&stored.actionWeights?.working===0)
+  next.actionWeights={...stored.actionWeights,working:12};
  const movement={quiet:8,default:3,active:2};
  const dialogue={quiet:10,default:5,active:2};
  if(!validInterval(next.movementIntervalMin))next.movementIntervalMin=movement[next.movementFrequency]??3;
