@@ -123,10 +123,10 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   }
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
  // B19: exercise real menu IPC + persistence without changing the user's QA defaults.
- const favoritesBefore=await menu.webContents.executeJavaScript('window.castleMenu.getInfo().then(v=>v.favorites)');
  const b19menu=openMenu()!;
  if(b19menu.webContents.isLoading())await new Promise<void>(resolve=>b19menu.webContents.once('did-finish-load',()=>resolve()));
  b19menu.show();
+ const favoritesBefore=await b19menu.webContents.executeJavaScript('window.castleMenu.getInfo().then(v=>v.favorites)');
  const b19state=await b19menu.webContents.executeJavaScript(`(async()=>{
    document.querySelector('[data-tab="more"]').click();
    document.querySelector('[data-more-open="personalize"]').click();
@@ -153,7 +153,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  const b19restored=await b19menu.webContents.executeJavaScript('window.castleMenu.getInfo()');
  if(b19restored.status.positionLocked||b19restored.status.dialogueStyle!=='balanced'||b19restored.favorites.pose.includes('working'))
   throw Error('B19 native settings restore failed: '+JSON.stringify(b19restored));
- if(favoritesBefore.pose.includes('working'))b19menu.webContents.executeJavaScript("window.castleMenu.invoke('favorite:add:pose:working')").catch(()=>{});
+ if(favoritesBefore.pose.includes('working'))await b19menu.webContents.executeJavaScript("window.castleMenu.invoke('favorite:add:pose:working')");
  writeFileSync(join(uxEvidence,'menu-b19-personalization.png'),(await b19menu.webContents.capturePage()).toPNG());
  return {passed:true,commands,settings:{intervals:saved,sliderLayout,b19:true},smoke,clicks,reducedMotion:true,originalReducedMotion};
 
