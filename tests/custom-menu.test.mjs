@@ -118,6 +118,6 @@ test('standalone UI uses fixed minute sliders and keeps approved rectangular men
  assert(menu.includes("setting:interval:'+key+':'+slider.value"));
  assert(main.includes("command.startsWith('setting:interval:')"));
  assert(!menu.includes('setting:movementFrequency:quiet'));
- assert(menu.includes('data-weight-row=name'));
+ assert(menu.includes('row.dataset.weightRow=name'));
  assert(main.includes('validInterval(value)'));
 });
