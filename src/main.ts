@@ -7,7 +7,7 @@ const root=document.querySelector<HTMLDivElement>('#app')!;
 const params=new URL(location.href).searchParams;
 let queryWeights;
 try{const value=JSON.parse(params.get('weights')||'null');if(value&&typeof value==='object'&&!Array.isArray(value))queryWeights=value;}catch{}
-const settings=normalizeSettings({base:params.get('base'),autonomy:params.get('autonomy')!=='false',autoFire:params.get('autoFire')!=='false',movementFrequency:params.get('movementFrequency'),dialogueEnabled:params.has('dialogueEnabled')?params.get('dialogueEnabled')!=='false':undefined,dialogueFrequency:params.get('dialogueFrequency'),actionWeights:queryWeights});
+const settings=normalizeSettings({base:params.get('base'),autonomy:params.get('autonomy')!=='false',autoFire:params.get('autoFire')!=='false',movementFrequency:params.get('movementFrequency'),dialogueEnabled:params.has('dialogueEnabled')?params.get('dialogueEnabled')!=='false':undefined,dialogueFrequency:params.get('dialogueFrequency'),dialogueStyle:params.get('dialogueStyle'),actionWeights:queryWeights});
 const livePet=mountPet(root,akila,()=>1,{managed:true,initialState:settings.base});
 const bubble=document.createElement('div');bubble.id='pet-speech';bubble.hidden=true;bubble.setAttribute('role','status');document.body.append(bubble);
 // Native speech has its own transparent bounds; the pet's saved bounds never grow.
@@ -32,6 +32,7 @@ const effectivelyHidden=()=>suspended||(!nativeWindow&&document.hidden);
 function updateVisibility(){const hidden=effectivelyHidden();root.dispatchEvent(new CustomEvent('pet-visibility',{detail:hidden}));behavior.visibility(hidden);}
 function manual(pose:PetState,id=0){manualId=id;trace({phase:'received',pose,commandId:id,documentHidden:document.hidden,suspended});manualCallActive=true;let accepted;try{accepted=behavior.manual(pose);}finally{manualCallActive=false;}trace({phase:accepted?'accepted':'blocked',pose,commandId:id,hidden:behavior.snapshot().hidden});}
 const unsubscribe=window.pet?.onAction((state)=>{
+ if(typeof state==='object'&&state?.kind==='favorite-dialogue'){behavior.favoriteDialogue(state.id);return;}
  if(typeof state==='object'&&state?.kind==='windows-event'){
   behavior.windowsNotification?.(state.name);return;
  }

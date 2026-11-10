@@ -17,7 +17,7 @@ export function normalizeSettings(value){
  const autonomy=typeof value?.autonomy==='boolean'?value.autonomy:true;
  const result={base:['idle','smoking','sitting'].includes(value?.base)?value.base:'smoking',autonomy,autoFire:typeof value?.autoFire==='boolean'?value.autoFire:true,
   movementFrequency:preset(value?.movementFrequency),dialogueEnabled:typeof value?.dialogueEnabled==='boolean'?value.dialogueEnabled:autonomy,
-  dialogueFrequency:preset(value?.dialogueFrequency)};
+  dialogueFrequency:preset(value?.dialogueFrequency),dialogueStyle:['reserved','balanced','original'].includes(value?.dialogueStyle)?value.dialogueStyle:'balanced'};
  // Optional fixed-minute overrides. Legacy preset-only files keep their
  // original randomized timing until the user adjusts the new sliders.
  for(const key of Object.keys(DEFAULT_INTERVALS)){

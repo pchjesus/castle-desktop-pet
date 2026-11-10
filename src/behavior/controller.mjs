@@ -69,12 +69,12 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function line(value,trigger='autonomous'){
   let eligible=dialogues.filter(d=>d.random&&d.triggers.includes(trigger)&&(trigger==='click'||d.poses.includes(value))&&now()-(used.get(d.id)??-Infinity)>=d.cooldownMs);
   if(!eligible.length)return;
-  const original=random()<.3;
+  const original=random()<(settings.dialogueStyle==='original'?.7:settings.dialogueStyle==='reserved'?.25:.3);
   const group=eligible.filter(d=>d.origin.startsWith('original')&&d.origin!=='original creative'||d.origin==='user-supplied comic line');
   const creative=eligible.filter(d=>d.origin==='original creative');
   eligible=(original?group:creative).length?(original?group:creative):eligible;
   // Rare candidates are ten times less likely within their source group.
-  const weights=eligible.map(d=>[d,d.rarity==='rare'?.1:1]),total=weights.reduce((sum,[,w])=>sum+w,0);
+  const weights=eligible.map(d=>[d,(d.rarity==='rare'?.1:1)*(settings.dialogueStyle==='reserved'&&d.text.length>24?.25:1)]),total=weights.reduce((sum,[,w])=>sum+w,0);
   let cursor=random()*total;for(const [record,weight] of weights){cursor-=weight;if(cursor<0)return record;}return eligible.at(-1);
  }
  // One roll per new Sitting/Drawing action: 25% silent, 50% existing pool, 25% dedicated line.
@@ -198,7 +198,8 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   say(windowsLines[name],true);
   return true;
  }
+ function favoriteDialogue(id){if(disposed||hidden||typeof id!=='string')return false;const record=dialogues.find(d=>d.id===id);if(!record)return false;say(record);return true;}
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
  base();
- return {manual,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
+ return {manual,favoriteDialogue,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }
