@@ -7,10 +7,10 @@ import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
-import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT} from '../src/behavior/cadence.mjs';
+import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/behavior/cadence.mjs';
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
-import {codexEventNames,watchCodexEvents} from '../src/behavior/codex-bridge.mjs';
+import {watchWindowsEvents} from '../src/behavior/windows-event-adapter.mjs';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -33,20 +33,6 @@ function openDiagnostics(show=true) {
  return diagnostics;
 }
 let behaviorSettings=normalizeSettings(null);
-const codexAllowed=new Set<string>(codexEventNames);
-const codexHistory:{id:number;name:string;origin:'test'|'file';state:'sent'|'accepted'|'blocked';at:number}[]=[];
-let codexSequence=0,externalEvents=0,codexWatcherStarted=false;
-function codexSnapshot(){return {bridgeReady:codexWatcherStarted,externalEvents,events:codexHistory.map(x=>({...x})),filePath:join(app.getPath('userData'),'codex-events.jsonl')};}
-function emitCodexEvent(name:string,origin:'test'|'file'){
- if(!codexAllowed.has(name)||!win||win.isDestroyed()||win.webContents.isLoading())return {sent:false,reason:'pet not ready'};
- const id=++codexSequence;
- codexHistory.unshift({id,name,origin,state:'sent',at:Date.now()});
- if(codexHistory.length>12)codexHistory.length=12;
- if(origin==='file')externalEvents++;
- win.webContents.send('pet:action',{kind:'codex-event',id,name});
- return {sent:true,id};
-}
-
 function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
@@ -123,12 +109,8 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
-  dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
-});
-ipcMain.handle('pet-menu:test-event',(event,name)=>{
- if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof name!=='string'||!codexAllowed.has(name))return {sent:false};
- return emitCodexEvent(name,'test');
+ return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
+ dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
 let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=96,speechWidth=236,currentPose='smoking';
@@ -186,6 +168,15 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command.startsWith('setting:interval:')){
+  const parts=command.split(':');
+  if(parts.length!==4)return;
+  const key=parts[2],value=Number(parts[3]);
+  if(!['movementIntervalMin','dialogueIntervalMin','shotCooldownMin'].includes(key)||!validInterval(value)||!/^\d+$/.test(parts[3]))return;
+  behaviorSettings=normalizeSettings({...behaviorSettings,[key]:value});
+  try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Interval save failed: '+String(error));}
+  win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;
+ }
  if(command.startsWith('setting:weight:')){
   const parts=command.split(':');
   if(parts.length!==4)return;
@@ -248,7 +239,10 @@ app.whenReady().then(() => {
   const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
-  app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
+  const detachWindows=watchWindowsEvents(powerMonitor,{suspend,resume,emit:name=>{
+   if(win&&!win.isDestroyed()&&!win.webContents.isLoading())win.webContents.send('pet:action',{kind:'windows-event',name});
+  }});
+  app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);detachWindows();});
   win = new BrowserWindow({ ...restore(), show:false, transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
   const focusChromeRepair=createFocusChromeRepair(win,{
    platform:process.platform,
@@ -289,10 +283,6 @@ app.whenReady().then(() => {
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   log('launch '+JSON.stringify({portable:hasPortableMarker,validated:validPortableLaunch,executable:process.execPath,entry:__filename,resources:process.resourcesPath}));
   readBehavior();
-  const filePath=join(app.getPath('userData'),'codex-events.jsonl');
-  const localEvents=watchCodexEvents(filePath,name=>emitCodexEvent(name,'file'));
-  codexWatcherStarted=true;
-  app.once('will-quit',()=>{localEvents.stop();codexWatcherStarted=false;});
   win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
@@ -317,11 +307,6 @@ app.whenReady().then(() => {
    if(!['idle','smoking','sitting','speaking','drawing','firing','dual_firing','firing_dynamic','working'].includes(pose)||source!==undefined&&!['manual','auto','base','event'].includes(source)||version!==undefined&&!Number.isSafeInteger(version))return;
    if(phase==='rendered'||phase==='reused'){currentPose=pose;positionSpeech();}
    commandTrace.push({phase,pose,commandId,version,documentHidden,hidden,source,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();
-  });
-  ipcMain.on('pet:codex-event-result',(event,result)=>{
-   if(!isPet(event)||!result||typeof result!=='object'||!Number.isSafeInteger(result.id)||typeof result.name!=='string'||typeof result.accepted!=='boolean')return;
-   const entry=codexHistory.find(x=>x.id===result.id);
-   if(entry&&entry.name===result.name&&entry.state==='sent')entry.state=result.accepted?'accepted':'blocked';
   });
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
   ipcMain.on('speech:measure',(event,height,width)=>{
@@ -359,7 +344,7 @@ app.whenReady().then(() => {
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command==='setting:weights:reset'){
+    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
