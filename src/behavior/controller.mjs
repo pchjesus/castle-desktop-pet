@@ -174,7 +174,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   if(now()-(lastSystemEvent.get(name)??-Infinity)<20000)return false;
   lastSystemEvent.set(name,now());
   if(name==='powerAC'){
-   action('working','auto',dialogues.find(d=>d.id==='E-jobStart'));
+   action('working','auto',dialogues.find(d=>d.id==='PWR-AC-01'));
    return true;
   }
   return say(dialogues.find(d=>d.id===(name==='powerBattery'?'PWR-BAT-01':'O-10')))>0;
