@@ -43,7 +43,7 @@ test('B-14 menu preserves four top-level tabs and nests safe dialogue/status/hel
  assert(menu.includes('textContent=line.text'));assert(!menu.includes('innerHTML=line.text'));
  assert(main.includes("event.sender!==menuWindow.webContents"));assert(main.includes("ipcMain.handle('pet-menu:get-info'"));
  assert(preload.includes("ipcRenderer.invoke('pet-menu:get-info')"));
- assert(menu.includes('Codex'));assert(menu.includes('연결되지 않음'));
+ assert(!menu.includes('Codex'));assert(menu.includes('연결되지 않음'));
 });
 
 test('Sitting base choice exists beside Smoking and Idle',async()=>{
