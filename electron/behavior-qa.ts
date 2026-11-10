@@ -59,11 +59,22 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const settled=await win.webContents.executeJavaScript(`document.querySelector('.pet-stage:not([data-exiting])').dataset.pose`);
   if(after!==pose||settled!==pose)throw Error('Click changed held posture '+pose);clicks.push({pose,after,settled});
  }
- for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
+ for(const command of ['setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
- const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
- if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
- menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
+ menu.show();await menu.webContents.executeJavaScript(`(()=>{
+  document.querySelector('[data-tab="frequency"]').click();
+  for(const [key,value] of [['movementIntervalMin',8],['dialogueIntervalMin',2],['shotCooldownMin',15]]){
+   const input=document.querySelector('[data-minute-key="'+key+'"]');
+   input.value=String(value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+ })()`);
+ await pause(200);
+ if(menu.isDestroyed())throw Error('Minute sliders incorrectly closed the settings panel');
+ const savedIntervals=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>({movement:info.status.movementIntervalMin,dialogue:info.status.dialogueIntervalMin,shot:info.status.shotCooldownMin}))`);
+ if(savedIntervals.movement!==8||savedIntervals.dialogue!==2||savedIntervals.shot!==15)throw Error('Independent minute sliders did not persist '+JSON.stringify(savedIntervals));
+ const settings=await menu.webContents.executeJavaScript(`({movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
+ if(!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
+ menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits&&tab!=='frequency')throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="frequency"]').click();document.querySelector('[data-frequency-open="weights"]').click();const slider=document.querySelector('[data-weight-row="working"] input');slider.value='20';slider.dispatchEvent(new Event('input',{bubbles:true}));slider.dispatchEvent(new Event('change',{bubbles:true}));return true})()`);
  await pause(220);
  if(menu.isDestroyed())throw Error('Frequency slider incorrectly closed the settings panel');

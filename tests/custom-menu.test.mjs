@@ -67,7 +67,7 @@ test('Dark rectangular menu uses one honest outer shape, four corner handles and
  const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
  const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
- assert(menu.includes('background:rgba(10,12,16,.95)'));
+ assert(menu.includes('background:rgba(32,39,50,.97)'));
  assert(menu.includes('border-radius:0'));
  assert(menu.includes('backdrop-filter:none'));
  assert(!menu.includes('background:rgba(255,255,255,.085)'));
@@ -107,4 +107,22 @@ test('B16 central popup is large by default, movable and resizable with legacy 3
  assert(main.includes('legacyCompact'));
  assert(menu.includes('data-frequency-view="weights"'));
  assert.equal((menu.match(/<div class="menu-resize-corner" data-resize-corner="(?:nw|ne|sw|se)"/g)||[]).length,4);
+});
+
+test('minute sliders, contrast UI and deliberate Codex hook switch are wired to guarded IPC',async()=>{
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ for(const key of ['movementIntervalMin','dialogueIntervalMin','shotCooldownMin']){
+  assert(menu.includes('data-minute-key="'+key+'"'));assert(main.includes(key));
+ }
+ assert(menu.includes("window.castleMenu?.invoke('setting:interval:'+key+':'+slider.value)"));
+ assert(main.includes("command.startsWith('setting:interval:')"));
+ assert(main.includes('validInterval(value)'));
+ assert(menu.includes('id="codex-toggle"'));assert(menu.includes('class="connection-switch"'));
+ assert(menu.includes("window.castleMenu?.setCodexIntegration?.(enabled)"));
+ assert(main.includes("ipcMain.handle('pet-menu:codex-toggle'"));
+ assert(main.includes("event.sender!==menuWindow.webContents"));
+ assert(preload.includes("ipcRenderer.invoke('pet-menu:codex-toggle'"));
+ assert(!main.includes("setBackgroundMaterial('acrylic')"));
 });

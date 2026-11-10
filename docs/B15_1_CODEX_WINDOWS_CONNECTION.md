@@ -49,3 +49,23 @@ This removes only the Castle Desktop Pet `UserPromptSubmit` hook group, leaving 
 ## Release policy
 
 This feature remains on `feat/b15-1-codex-local-connection` until the user reviews the Windows result. Do not merge or deploy new functionality without separate approval. The current merged `main` is the baseline, not B-15.1.
+
+## B-15.3 Settings & integration UI (2026-11-10)
+- **빈도** has three independent **1–15 minute** sliders for autonomous
+  movement, autonomous dialogue and automatic firing cooldown. Existing
+  saved quiet/default/active presets remain valid until replaced; after
+  slider adjustment the selected minutes are fixed, rather than random.
+- Original per-action relative weights (0–40) remain independent, and
+  manually triggered firing bypasses the auto cooldown.
+- Changing the selected minute values does not interrupt a current
+  manually held action or a Codex event; affected schedules are rearmed.
+- The black square settings window remains rectangular, but its
+  background is now a brighter charcoal with clearer borders and
+  highlighted selected controls.
+- **더보기 → 현재 상태** provides a sliding Codex hook ON/OFF switch.
+  Switching ON explicitly installs only the trusted local hook in the
+  user's Codex config; OFF removes only the hook group owned by the pet.
+  The switch reflects the saved hook setting, not an unverified cloud
+  connection. A status message reports installation errors.
+- This build needs user-side testing of real Windows Codex hook
+  approval/reception; no main merge or Release without the user's review.

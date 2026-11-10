@@ -5,10 +5,12 @@ const report={passed:false,environment:'Chromium browser; native Windows is a se
 try{
  browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:560,height:610}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
- await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',codex:{bridgeReady:true,externalEvents:0,filePath:'C:/Users/QA/AppData/Roaming/castle-desktop-pet/codex-events.jsonl',events:[]}},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
+ await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),
+setCodexIntegration:async enabled=>(window.__hookEnabled=enabled,{success:true,configured:enabled}),
+getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',codex:{bridgeReady:true,hookConfigured:!!window.__hookEnabled,externalEvents:0,filePath:'C:/Users/QA/AppData/Roaming/castle-desktop-pet/codex-events.jsonl',events:[]}},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
  for(const tab of ['basic','frequency','poses','more']){
-  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&metrics.scroll<=metrics.height+1);if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
+  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
  }
  const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
  assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
@@ -24,6 +26,14 @@ try{
  report.checks.push('near-black square panel and four functional corner drag controls');
  assert((await page.locator('main').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=14);
  await page.locator('#tab-frequency').click();
+ assert.equal(await page.locator('.minute-slider').count(),3);
+ for(const [key,value] of [['movementIntervalMin','1'],['dialogueIntervalMin','15'],['shotCooldownMin','8']]){
+  const slider=page.locator('[data-minute-key="'+key+'"]');
+  await slider.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);
+  assert.equal(await page.evaluate(()=>window.__command),'setting:interval:'+key+':'+value);
+  assert.equal(await slider.inputValue(),value);
+ }
+ await page.screenshot({path:output+'/menu-time-sliders-browser.png'});
  await page.locator('#edit-action-weights').click();
  assert.equal(await page.locator('.action-weight-row').count(),9);
  const working=page.locator('[data-weight-row="working"] input[type="range"]');
@@ -46,13 +56,22 @@ try{
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
  await page.locator('[data-more-view="archive"] [data-more-back]').click();await page.locator('[data-more-open="status"]').click();
  assert((await page.locator('#status-list').innerText()).includes('로컬 파일 수신 대기'));
+ const connection=page.locator('#codex-toggle');
+ assert.equal(await connection.getAttribute('aria-checked'),'false');
+ await connection.click();
+ await page.waitForFunction(()=>window.__hookEnabled===true);
+ await page.waitForFunction(()=>document.querySelector('#codex-toggle').getAttribute('aria-checked')==='true');
+ await connection.click();
+ await page.waitForFunction(()=>window.__hookEnabled===false);
+ await page.waitForFunction(()=>document.querySelector('#codex-toggle').getAttribute('aria-checked')==='false');
+ await page.screenshot({path:output+'/menu-codex-switch-browser.png'});
  await page.locator('[data-codex-test="testPassed"]').click();
  assert.equal(await page.evaluate(()=>window.__codexTest),'testPassed');
  assert((await page.locator('#status-list').innerText()).includes('앉기'));
  await page.locator('[data-more-view="status"] [data-more-back]').click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');
  await page.locator('#tab-basic').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#tab-frequency').getAttribute('aria-selected'),'true');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__dismissed),true);
- report.checks.push('560px roomy glass menu: four tabs, 9 per-action sliders, reset, keyboard, sizing and dialogue readability');
+ report.checks.push('560px contrast menu: three 1–15 minute sliders, nine weights, working Codex switch, keyboard and readable archive');
  await page.setViewportSize({width:360,height:450});await page.goto(origin+'/?autonomy=false&dialogueEnabled=false');const stage='.pet-stage:not([data-exiting])';await page.waitForSelector(stage+' img');
  const opaque=async()=>page.locator(stage+' img').evaluate(im=>{const r=im.getBoundingClientRect(),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);const a=g.getImageData(0,0,c.width,c.height).data;let x=Math.floor(c.width*.5),y=Math.floor(c.height*.45);while(a[(y*c.width+x)*4+3]<200)y++;const z=Math.min(r.width/c.width,r.height/c.height);return{x:r.x+(r.width-c.width*z)/2+x*z,y:r.y+(r.height-c.height*z)/2+y*z}});
  for(const pose of ['sitting','working']){
