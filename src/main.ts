@@ -7,7 +7,7 @@ const root=document.querySelector<HTMLDivElement>('#app')!;
 const params=new URL(location.href).searchParams;
 let queryWeights;
 try{const value=JSON.parse(params.get('weights')||'null');if(value&&typeof value==='object'&&!Array.isArray(value))queryWeights=value;}catch{}
-const settings=normalizeSettings({base:params.get('base'),autonomy:params.get('autonomy')!=='false',autoFire:params.get('autoFire')!=='false',movementFrequency:params.get('movementFrequency'),dialogueEnabled:params.has('dialogueEnabled')?params.get('dialogueEnabled')!=='false':undefined,dialogueFrequency:params.get('dialogueFrequency'),actionWeights:queryWeights});
+const settings=normalizeSettings({base:params.get('base'),autonomy:params.get('autonomy')!=='false',autoFire:params.get('autoFire')!=='false',movementFrequency:params.get('movementFrequency'),dialogueEnabled:params.has('dialogueEnabled')?params.get('dialogueEnabled')!=='false':undefined,dialogueFrequency:params.get('dialogueFrequency'),dialogueStyle:params.get('dialogueStyle'),actionWeights:queryWeights});
 const livePet=mountPet(root,akila,()=>1,{managed:true,initialState:settings.base});
 const bubble=document.createElement('div');bubble.id='pet-speech';bubble.hidden=true;bubble.setAttribute('role','status');document.body.append(bubble);
 // Native speech has its own transparent bounds; the pet's saved bounds never grow.
