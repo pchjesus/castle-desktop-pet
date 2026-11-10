@@ -98,7 +98,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   // Movement never truncates a line from its independently running scheduler.
   clear(source==='auto');resetClicks();mode=source;
   const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:.35};
-  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
+  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):((source!=='auto'||value==='working')&&random()<(probability[value]||0))?line(value):undefined);
   if(!record&&source==='manual'&&value==='speaking')record=dialogues.find(d=>d.id==='C-02');
   const speech=say(record,source==='auto');
   const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+cooldownDelay();autoShot=false;}};
@@ -180,7 +180,25 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   // Smoking frame. The actual action starts from the existing pose.
   later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;
  }
+ // Local OS events only. No background agent, command execution or Codex hooks.
+ const windowsLines={
+  powerBattery:{id:'WIN-BATTERY',text:'충전기.. 그놈이 네게 신중함과 유연함을 더해줄 거다.'},
+  unlock:{id:'WIN-UNLOCK',text:'여러모로... 나쁘지 않았다. 신입.'}
+ };
+ const lastWindows=new Map();
+ function windowsNotification(name){
+  if(disposed||hidden||mode!=='base'||now()<speechUntil)return false;
+  if(!['powerAC','powerBattery','unlock'].includes(name))return false;
+  if(now()-(lastWindows.get(name)??-Infinity)<20000)return false;
+  lastWindows.set(name,now());
+  if(name==='powerAC'){
+   action('working','auto',dialogues.find(d=>d.id==='E-jobStart'));
+   return true;
+  }
+  say(windowsLines[name],true);
+  return true;
+ }
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
  base();
- return {manual,click,drag,dragEnd,configure,visibility,event,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
+ return {manual,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }
