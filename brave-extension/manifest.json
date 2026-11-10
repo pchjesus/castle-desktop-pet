@@ -1,0 +1,11 @@
+{
+ "manifest_version":3,
+ "name":"Castle Pet · Brave download notification",
+ "description":"Sends a minimal download-complete signal to your local Castle Pet only, when paired.",
+ "version":"0.1.0",
+ "permissions":["downloads","storage"],
+ "host_permissions":["http://127.0.0.1:47183/*"],
+ "background":{"service_worker":"service-worker.js"},
+ "options_page":"options.html",
+ "action":{"default_title":"Castle Pet 다운로드 연결"}
+}
