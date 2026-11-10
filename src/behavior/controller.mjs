@@ -1,4 +1,5 @@
 import {dialogues,codexEvents} from './dialogues.mjs';
+import {favoriteDialogueAllowed} from './favorites.mjs';
 import {defaults,normalizeSettings,cadence,frequencies,DEFAULT_ACTION_WEIGHTS} from './cadence.mjs';
 export {defaults,normalizeSettings} from './cadence.mjs';
 export const shots=new Set(['firing','dual_firing','firing_dynamic']);
@@ -69,7 +70,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function line(value,trigger='autonomous'){
   let eligible=dialogues.filter(d=>d.random&&d.triggers.includes(trigger)&&(trigger==='click'||d.poses.includes(value))&&now()-(used.get(d.id)??-Infinity)>=d.cooldownMs);
   if(!eligible.length)return;
-  const original=random()<.3;
+  const original=random()<(settings.dialogueStyle==='original'?.7:settings.dialogueStyle==='creative'?.1:.3);
   const group=eligible.filter(d=>d.origin.startsWith('original')&&d.origin!=='original creative'||d.origin==='user-supplied comic line');
   const creative=eligible.filter(d=>d.origin==='original creative');
   eligible=(original?group:creative).length?(original?group:creative):eligible;
@@ -129,6 +130,12 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   }else action(value,'manual');return true;
  }
  const retainedPose=()=>['sitting','working'].includes(pose)||mode==='manual'&&['idle','smoking'].includes(pose);
+ function favoriteDialogue(id){
+  if(disposed||hidden||!favoriteDialogueAllowed(id))return false;
+  const record=dialogues.find(item=>item.id===id);if(!record)return false;
+  clear();resetClicks();mode='manual';show('speaking');
+  const ms=say(record);holdManual(Math.max(3500,ms));return true;
+ }
  function click(){
   if(disposed||hidden||locked)return;
   if(warning){clear();mode='manual';warning=true;locked=true;later(base,say(dialogues.find(d=>d.id==='CLICK-06')));return;}
@@ -200,5 +207,5 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  }
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
  base();
- return {manual,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
+ return {manual,favoriteDialogue,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }
