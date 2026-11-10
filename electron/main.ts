@@ -15,6 +15,7 @@ import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
+import {dragPosition,sameSize} from './drag-geometry.mjs';
 import {placeMenu,menuSize,clampMenu,resizeMenuFromCorner,DEFAULT_MENU} from './menu-layout.mjs';
 import { DEFAULT_PET_WIDTH, PET_WIDTH_PRESETS, dimensionsFor, nextWidth, resizeAroundFeet, restoreWindowBounds } from './window-size.mjs';
 
@@ -282,6 +283,9 @@ app.whenReady().then(() => {
   const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
+  type DragStart={bounds:Electron.Rectangle;point:Electron.Point};
+  let drag:DragStart|null=null;
+  let correctingDragSize=false;
   const detachWindows=watchWindowsEvents(powerMonitor,{suspend,resume,emit:name=>{
    if(win&&!win.isDestroyed()&&!win.webContents.isLoading())win.webContents.send('pet:action',{kind:'windows-event',name});
   }});
@@ -290,6 +294,7 @@ app.whenReady().then(() => {
   const focusChromeRepair=createFocusChromeRepair(win,{
    platform:process.platform,
    workArea:bounds=>screen.getDisplayMatching(bounds).workArea,
+   isDragging:()=>drag!==null,
    onRepair:({reason})=>log('Windows focus chrome repair: '+reason),
    onError:error=>log('Windows focus chrome repair failed: '+String(error))
   });
@@ -330,18 +335,32 @@ app.whenReady().then(() => {
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
   win.on('move',()=>positionSpeech());
-  win.on('moved',()=>{if(!positionLocked)save();positionSpeech();}); win.on('resize',()=>{if(focusChromeRepair.isRepairing())return;save();positionSpeech();}); win.on('close',save);
+  win.on('moved',()=>{if(!drag&&!positionLocked)save();positionSpeech();});
+  win.on('resize',()=>{if(focusChromeRepair.isRepairing()||correctingDragSize)return;if(drag){restoreDragSize('native-resize');return;}save();positionSpeech();});
+  win.on('close',save);
   win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
   win.on('closed',()=>{speechText='';clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
   let ignoresPointer=false;
   let menuRequests=0;
   let hitChanges=0;
-  type DragStart={bounds:Electron.Rectangle;point:Electron.Point};
-  let drag:DragStart|null=null;
+  function restoreDragSize(reason:string){
+   if(!drag||correctingDragSize||win.isDestroyed())return false;
+   const current=win.getBounds(),original=drag.bounds;
+   if(sameSize(current,original))return false;
+   correctingDragSize=true;
+   try{
+    win.setBounds({...current,width:original.width,height:original.height});
+    log('Unintended pet drag resize corrected: '+JSON.stringify({reason,from:current,to:win.getBounds()}));
+    positionSpeech();
+   }catch(error){log('Drag size recovery failed: '+String(error));}
+   finally{correctingDragSize=false;}
+   return true;
+  }
   function endDrag(){
-    if(!drag)return;
-    drag=null;save();
+   if(!drag)return;
+   restoreDragSize('drag-end');
+   drag=null;save();
   }
   const isPet=(event:Electron.IpcMainEvent)=>!win.isDestroyed()&&event.sender===win.webContents;
   ipcMain.on('pet:action-result',(event,value)=>{
@@ -405,13 +424,24 @@ app.whenReady().then(() => {
   ipcMain.on('pet:drag-start',(event)=>{
     if(!isPet(event)||positionLocked)return;
     if(ignoresPointer){win.setIgnoreMouseEvents(false);ignoresPointer=false;}
+    focusChromeRepair.cancelPending();
     drag={bounds:win.getBounds(),point:screen.getCursorScreenPoint()};
   });
   ipcMain.on('pet:drag-move',(event)=>{
     if(!isPet(event)||!drag)return;
     const point=screen.getCursorScreenPoint();
-    const desired=fit({...drag.bounds,x:drag.bounds.x+point.x-drag.point.x,y:drag.bounds.y+point.y-drag.point.y});
-    win.setPosition(desired.x,desired.y);
+    const desired=dragPosition(drag.bounds,drag.point,point,screen.getAllDisplays().map(d=>d.workArea));
+    const actual=win.getBounds();
+    if(!sameSize(actual,drag.bounds)){
+     // Some Windows DPI transitions may resize a frameless window as it moves.
+     // Preserve the dimensions captured at drag start, not the DPI-adjusted ones.
+     correctingDragSize=true;
+     try{win.setBounds(desired);}finally{correctingDragSize=false;}
+     log('Unintended pet drag size corrected during move');
+    }else{
+     win.setPosition(desired.x,desired.y);
+     restoreDragSize('drag-move');
+    }
   });
   ipcMain.on('pet:drag-end',(event)=>{if(isPet(event))endDrag();});
   win.on('blur',endDrag);
@@ -422,6 +452,7 @@ app.whenReady().then(() => {
   });
   const chrome=nativeFrameless();log('frameless: '+JSON.stringify(chrome));
   const refit = () => { if (!win.isDestroyed()) {
+   if(drag){log('Display refit deferred while pet is being dragged');return;}
    const bounds=positionLocked&&positionAnchor?{...positionAnchor,width:win.getBounds().width,height:win.getBounds().height}:win.getBounds();
    win.setBounds(fit(bounds));if(!positionLocked)save();positionSpeech();
   } };
