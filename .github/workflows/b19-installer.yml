@@ -1,0 +1,126 @@
+name: B19 Windows friend installer
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'installer/**'
+      - '.github/workflows/b19-installer.yml'
+      - 'electron/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'package*.json'
+      - 'preview.html'
+  push:
+    branches: [main]
+    paths:
+      - 'installer/**'
+      - '.github/workflows/b19-installer.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  windows-installer:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run preview:export
+      - name: Verify approved exported HTML is unchanged
+        shell: pwsh
+        run: git diff --exit-code -- preview.html
+
+      - name: Prepare tested portable Electron payload
+        run: node scripts/package-windows-qa.mjs
+
+      - name: Install Inno Setup compiler
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress --yes --limit-output
+          $compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+          if (!(Test-Path $compiler)) { throw "Inno Setup 6 compiler missing" }
+
+      - name: Build one-file x64 Windows installer
+        shell: pwsh
+        run: |
+          $compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6/ISCC.exe'
+          & $compiler 'installer/castle-pet-b19.iss'
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed" }
+          if (!(Test-Path 'dist-release/CastlePet-B19-Setup-x64.exe')) { throw "Installer EXE missing" }
+
+      - name: Verify offline install and installed launcher execution
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'dist-release/CastlePet-B19-Setup-x64.exe').Path
+          $dest = Join-Path $env:RUNNER_TEMP 'CastlePetB19Install'
+          $proc = Start-Process -FilePath $exe -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$dest") -Wait -PassThru
+          if ($proc.ExitCode -ne 0) { throw "Silent install failed: $($proc.ExitCode)" }
+          foreach ($part in @('CastlePet.exe','runtime/electron.exe','runtime/resources/app/dist/index.html','runtime/resources/app/dist-electron/main.cjs','runtime/resources/app/castle-runtime.json')) {
+            if (!(Test-Path (Join-Path $dest $part))) { throw "Installed file missing: $part" }
+          }
+          $report = Join-Path $env:RUNNER_TEMP 'b19-installed-plain-launch.json'
+          $launcher = Start-Process -FilePath (Join-Path $dest 'CastlePet.exe') -ArgumentList @('--qa-plain-report',"`"$report`"") -PassThru
+          if (!$launcher.WaitForExit(60000)) { $launcher.Kill(); throw 'Installed launcher timed out' }
+          if (!(Test-Path $report)) { throw 'Installed launcher did not produce a report' }
+          $result = Get-Content $report -Raw | ConvertFrom-Json
+          if ($launcher.ExitCode -ne 0 -or !$result.passed) {
+            throw "Installed B19 transparency/launch QA failed: $($launcher.ExitCode) $(Get-Content $report -Raw)"
+          }
+          Write-Host "B19 silent install and real installed EXE normal-launch PASS"
+
+      - name: Create public release description and SHA256 checksum
+        shell: pwsh
+        run: |
+          $exe = 'dist-release/CastlePet-B19-Setup-x64.exe'
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  CastlePet-B19-Setup-x64.exe" | Set-Content 'dist-release/SHA256SUMS.txt' -Encoding ascii
+          @'
+          Castle Desktop Pet - B19 (Windows x64)
+
+          Approved default: Akila, brown mustang (B canonical outfit).
+          Features: position lock, saved pose/dialogue favorites, three dialogue styles,
+          autonomous timing sliders, Windows AC/battery and screen unlock responses.
+          Runs locally. No Codex, Brave extension, browser link or external server.
+
+          Download CastlePet-B19-Setup-x64.exe and double-click to install.
+          No ZIP extraction or Node.js is required. Per-user installation; no administrator privileges.
+          An optional desktop shortcut can be selected during installation.
+          This unsigned installer may show Microsoft Defender SmartScreen; check the
+          GitHub repository and published SHA256 before deciding whether to run it.
+          Windows may briefly show a title strip during focus changes on some PCs;
+          this intermittent UI issue is not fully resolved.
+          '@ | Set-Content 'dist-release/RELEASE_NOTES.md' -Encoding utf8
+          Write-Host "SHA256: $hash"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CastlePet-B19-Friend-Installer
+          path: |
+            dist-release/CastlePet-B19-Setup-x64.exe
+            dist-release/SHA256SUMS.txt
+            dist-release/RELEASE_NOTES.md
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release for friend download
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = 'v0.19.0'
+          $exe = 'dist-release/CastlePet-B19-Setup-x64.exe'
+          $sum = 'dist-release/SHA256SUMS.txt'
+          if (gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null) {
+            throw "Release $tag already exists; refusing to overwrite an immutable public installer."
+          }
+          gh release create $tag $exe $sum --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title 'Castle Desktop Pet B-19 - Akila' --notes-file 'dist-release/RELEASE_NOTES.md' --latest
+          if ($LASTEXITCODE -ne 0) { throw 'GitHub public Release creation failed' }
