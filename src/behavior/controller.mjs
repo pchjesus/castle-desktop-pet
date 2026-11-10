@@ -24,6 +24,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  let speechRevision=0;const scheduleRevision={movement:0,dialogue:0};
  let movementTimer,dialogueTimer,speechTimer,nextMovement=0,nextDialogue=0,speechUntil=0,lastAutoSpeech=-Infinity;
  const range=(a,b)=>a+random()*(b-a);
+ const cooldownDelay=()=>settings.shotCooldownMin?settings.shotCooldownMin*60000:range(180000,300000);
  const show=value=>{pose=value;render(value,{source:mode});};
  function cancel(id){if(id!==undefined){clearTimer(id);timers.delete(id);}}
  function later(fn,ms){
@@ -32,7 +33,8 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   timers.add(id);return id;
  }
  function schedule(kind,fn){
-  const delay=cadence(kind,kind==='movement'?settings.movementFrequency:settings.dialogueFrequency,random);
+  const minutes=kind==='movement'?settings.movementIntervalMin:settings.dialogueIntervalMin;
+  const delay=minutes?minutes*60000:cadence(kind,kind==='movement'?settings.movementFrequency:settings.dialogueFrequency,random);
   // Scheduler handles are deliberately outside action generation/timers.
   const revision=++scheduleRevision[kind];
   const due=now()+delay,id=setTimer(()=>{
@@ -49,7 +51,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function armDialogue(){if(!disposed&&!hidden&&settings.dialogueEnabled&&dialogueTimer===undefined)schedule('dialogue',autoDialogue);}
  function clearSpeech(){speechRevision++;cancel(speechTimer);speechTimer=undefined;speechUntil=0;speak('');}
  function clear(keepSpeech=false){
-  if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}
+  if(mode==='auto'&&autoShot){cooldown=now()+cooldownDelay();autoShot=false;}
   generation++;heldUntil=0;for(const id of timers)clearTimer(id);timers.clear();stopMovement();
   if(!keepSpeech)clearSpeech();
  }
@@ -87,7 +89,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  }
  function autoDialogue(){
   const compatible=mode==='base'||mode==='auto'&&['idle','smoking','sitting','speaking'].includes(pose);
-  if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=frequencies.dialogue[settings.dialogueFrequency][0])say(line(pose)||line('speaking'),true);
+  if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=(settings.dialogueIntervalMin?settings.dialogueIntervalMin*60000:frequencies.dialogue[settings.dialogueFrequency][0]))say(line(pose)||line('speaking'),true);
   // Busy/manual/event slots are discarded. Never queue a burst behind the user.
   armDialogue();
  }
@@ -95,11 +97,11 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function action(value,source,forced){
   // Movement never truncates a line from its independently running scheduler.
   clear(source==='auto');resetClicks();mode=source;
-  const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};
+  const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:.35};
   let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
   if(!record&&source==='manual'&&value==='speaking')record=dialogues.find(d=>d.id==='C-02');
   const speech=say(record,source==='auto');
-  const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+range(180000,300000);autoShot=false;}};
+  const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+cooldownDelay();autoShot=false;}};
   const start=()=>{
    autoShot=source==='auto'&&shots.has(value);show(value);
    if(value==='firing_dynamic')later(()=>{endShot();later(()=>base(true),850);},1500);
@@ -155,7 +157,14 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   const previous=settings,next=normalizeSettings(value);settings=next;
   // Weight tuning is purely a future random-selection preference. Do not
   // interrupt an active pose, spoken line or event to update a slider.
-  if(['base','autonomy','autoFire','movementFrequency','dialogueEnabled','dialogueFrequency'].every(k=>previous[k]===next[k]))return;
+  const controlKeys=['base','autonomy','autoFire','movementFrequency','dialogueEnabled','dialogueFrequency'];
+  if(controlKeys.every(k=>previous[k]===next[k])){
+   // A timing adjustment must not interrupt a manually selected pose,
+   // event animation or its speech. Rearm only the relevant scheduler.
+   if(previous.movementIntervalMin!==next.movementIntervalMin){stopMovement();armMovement();}
+   if(previous.dialogueIntervalMin!==next.dialogueIntervalMin){stopDialogue();armDialogue();}
+   return;
+  }
   stopDialogue();base();
  }
  function visibility(value,force=false){

@@ -5,5 +5,9 @@ export const frequencies:Record<FrequencyKind,Readonly<Record<FrequencyPreset,re
 export const defaults:BehaviorSettings;
 export const DEFAULT_ACTION_WEIGHTS:Readonly<Record<ActionWeightPose,number>>;
 export const ACTION_WEIGHT_LIMIT:number;
+export const INTERVAL_MIN:number;
+export const INTERVAL_MAX:number;
+export const DEFAULT_INTERVALS:Readonly<{movementIntervalMin:number;dialogueIntervalMin:number;shotCooldownMin:number}>;
+export function validInterval(value:unknown):boolean;
 export function normalizeSettings(value:unknown):BehaviorSettings;
 export function cadence(kind:FrequencyKind,preset:FrequencyPreset,random:()=>number):number;

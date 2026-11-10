@@ -6,8 +6,11 @@ export const frequencies=Object.freeze({
 export const defaults=Object.freeze({base:'smoking',autonomy:true,autoFire:true,movementFrequency:'default',dialogueEnabled:true,dialogueFrequency:'default'});
 // Relative selection weights, not a separate timer. A zero disables this action.
 // Keep old behavior when legacy settings have no actionWeights field.
-export const DEFAULT_ACTION_WEIGHTS=Object.freeze({idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:0});
+export const DEFAULT_ACTION_WEIGHTS=Object.freeze({idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:12});
 export const ACTION_WEIGHT_LIMIT=40;
+export const INTERVAL_MIN=1,INTERVAL_MAX=15;
+export const DEFAULT_INTERVALS=Object.freeze({movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4});
+export function validInterval(value){return Number.isInteger(value)&&value>=INTERVAL_MIN&&value<=INTERVAL_MAX;}
 
 const preset=value=>['quiet','default','active'].includes(value)?value:'default';
 export function normalizeSettings(value){
@@ -15,6 +18,11 @@ export function normalizeSettings(value){
  const result={base:['idle','smoking','sitting'].includes(value?.base)?value.base:'smoking',autonomy,autoFire:typeof value?.autoFire==='boolean'?value.autoFire:true,
   movementFrequency:preset(value?.movementFrequency),dialogueEnabled:typeof value?.dialogueEnabled==='boolean'?value.dialogueEnabled:autonomy,
   dialogueFrequency:preset(value?.dialogueFrequency)};
+ // Optional fixed-minute overrides. Legacy preset-only files keep their
+ // original randomized timing until the user adjusts the new sliders.
+ for(const key of Object.keys(DEFAULT_INTERVALS)){
+  if(validInterval(value?.[key]))result[key]=value[key];
+ }
  const candidate=value?.actionWeights;
  if(candidate&&typeof candidate==='object'&&!Array.isArray(candidate)){
   const actionWeights={...DEFAULT_ACTION_WEIGHTS};
