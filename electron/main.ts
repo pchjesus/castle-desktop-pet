@@ -1,6 +1,7 @@
 import {beforePlainShow,finishPlainLaunch} from './plain-launch-qa';
 import {compareClearRegions} from './transparent-gaps.mjs';
 import {nativeWindowAudit} from './native-window-audit';
+import {createFocusChromeRepair} from './focus-chrome-repair.mjs';
 import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
@@ -248,6 +249,15 @@ app.whenReady().then(() => {
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
   app.once('will-quit',()=>{powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);});
   win = new BrowserWindow({ ...restore(), show:false, transparent:true, frame:false, titleBarOverlay:false, autoHideMenuBar:true, thickFrame:false, backgroundColor:'#00000000', alwaysOnTop:true, resizable:false, hasShadow:false, webPreferences:{preload:join(__dirname,'preload.cjs'), contextIsolation:true, nodeIntegration:false, sandbox:true} });
+  const focusChromeRepair=createFocusChromeRepair(win,{
+   platform:process.platform,
+   workArea:bounds=>screen.getDisplayMatching(bounds).workArea,
+   onRepair:({reason})=>log('Windows focus chrome repair: '+reason),
+   onError:error=>log('Windows focus chrome repair failed: '+String(error))
+  });
+  win.on('focus',()=>focusChromeRepair.schedule('focus'));
+  win.on('blur',()=>focusChromeRepair.schedule('blur'));
+  win.on('closed',()=>focusChromeRepair.dispose());
   win.once('ready-to-show',async()=>{
    if(win.isDestroyed())return;
    const index=process.argv.indexOf('--qa-plain-report'),report=process.argv[index+1];
@@ -270,7 +280,7 @@ app.whenReady().then(() => {
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
   win.on('move',()=>positionSpeech());
-  win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{save();positionSpeech();}); win.on('close',save);
+  win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{if(focusChromeRepair.isRepairing())return;save();positionSpeech();}); win.on('close',save);
   win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
   win.on('closed',()=>{speechText='';clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
