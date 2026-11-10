@@ -19,6 +19,7 @@ assert.equal(await page.locator('#app .pet-stage:not([data-exiting])').getAttrib
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='firing_dynamic');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='idle',null,{timeout:5500});
+await page.waitForTimeout(6200); // Let the previous manual firing line finish before a low-priority OS event.
 await page.evaluate(()=>{window.__poseTrace=[];window.__manual({kind:'windows-event',name:'powerAC'});});
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='working');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
