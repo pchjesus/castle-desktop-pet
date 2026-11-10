@@ -36,6 +36,25 @@ let behaviorSettings=normalizeSettings(null);
 function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
+let positionLocked=false;
+let positionAnchor:Electron.Rectangle|null=null;
+type FavoriteType='pose'|'dialogue';
+const favoritePoses=new Set(['idle','smoking','sitting','working','speaking','drawing','firing','dual_firing','firing_dynamic']);
+const favoritesPath=()=>join(app.getPath('userData'),'favorites.json');
+function validFavorite(type:string,id:string){return type==='pose'?favoritePoses.has(id):type==='dialogue'&&dialogues.some(d=>d.id===id);}
+function loadFavorites():{pose:string[];dialogue:string[]}{
+ try{
+  const data=JSON.parse(readFileSync(favoritesPath(),'utf8'));
+  return {pose:Array.isArray(data?.pose)?[...new Set(data.pose.filter((id:unknown)=>typeof id==='string'&&validFavorite('pose',id)))].slice(0,20) as string[]:[],
+   dialogue:Array.isArray(data?.dialogue)?[...new Set(data.dialogue.filter((id:unknown)=>typeof id==='string'&&validFavorite('dialogue',id)))].slice(0,100) as string[]:[]};
+ }catch{return {pose:[],dialogue:[]};}
+}
+function changeFavorite(type:FavoriteType,id:string,selected:boolean){
+ if(!validFavorite(type,id))return;
+ const list=loadFavorites();const values=list[type].filter(item=>item!==id);
+ if(selected)values.push(id);
+ list[type]=values;try{writeFileSync(favoritesPath(),JSON.stringify(list));}catch(error){log('Favorites save failed: '+String(error));}
+}
 function fit(bounds: Electron.Rectangle) { return constrain(bounds, screen.getAllDisplays().map(d => d.workArea)); }
 function restore() {
   try {
@@ -45,7 +64,11 @@ function restore() {
   const a = screen.getPrimaryDisplay().workArea;
   return fit({ ...defaults, x: a.x + a.width - defaults.width, y: a.y + a.height - defaults.height });
 }
-function save() { try { writeFileSync(path(), JSON.stringify({settingsVersion:2,...win.getBounds()})); } catch (error) { log('Unable to save window position: '+String(error)); } }
+function save() { try {
+ const bounds=win.getBounds();
+ const saved=positionLocked&&positionAnchor?{...bounds,x:positionAnchor.x,y:positionAnchor.y}:bounds;
+ writeFileSync(path(),JSON.stringify({settingsVersion:2,...saved,positionLocked}));
+ } catch (error) { log('Unable to save window position: '+String(error)); } }
 function resizePet(width: number) {
  if (!win || win.isDestroyed()) return;
  try { win.setBounds(fit(resizeAroundFeet(win.getBounds(),width))); save(); }
@@ -109,7 +132,7 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
+ return {favorites:loadFavorites(),status:{positionLocked,dialogueStyle:behaviorSettings.dialogueStyle,pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
  dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
@@ -168,6 +191,23 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command==='setting:positionLock:true'||command==='setting:positionLock:false'){
+  positionLocked=command.endsWith(':true');
+  positionAnchor=positionLocked?win.getBounds():null;
+  save();return;
+ }
+ if(command.startsWith('favorite:')){
+  const parts=command.split(':');
+  if(parts.length!==4||!['pose','dialogue'].includes(parts[2])||!validFavorite(parts[2],parts[3]))return;
+  const [,action,type,id]=parts;
+  if(action==='add'||action==='remove'){changeFavorite(type as FavoriteType,id,action==='add');return;}
+  if(action==='play'){
+   if(!loadFavorites()[type as FavoriteType].includes(id))return;
+   if(type==='pose')sendManualPose(id);
+   else win.webContents.send('pet:action',{kind:'favorite-dialogue',id});
+  }
+  return;
+ }
  if(command.startsWith('setting:interval:')){
   const parts=command.split(':');
   if(parts.length!==4)return;
@@ -192,7 +232,7 @@ function dispatchPetMenuCommand(command:string) {
   try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Action weights reset failed: '+String(error));}
   win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;
  }
- if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'||value==='sitting'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire'||key==='dialogueEnabled')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else if((key==='movementFrequency'||key==='dialogueFrequency')&&['quiet','default','active'].includes(value))behaviorSettings[key]=value as 'quiet'|'default'|'active';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
+ if(command.startsWith('setting:')){const [,key,value]=command.split(':');if(key==='base'&&(value==='idle'||value==='smoking'||value==='sitting'))behaviorSettings.base=value;else if((key==='autonomy'||key==='autoFire'||key==='dialogueEnabled')&&(value==='true'||value==='false'))behaviorSettings[key]=value==='true';else if((key==='movementFrequency'||key==='dialogueFrequency')&&['quiet','default','active'].includes(value))behaviorSettings[key]=value as 'quiet'|'default'|'active';else if(key==='dialogueStyle'&&['reserved','balanced','original'].includes(value))behaviorSettings.dialogueStyle=value as 'reserved'|'balanced'|'original';else return;try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Behavior settings save failed: '+String(error));}win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;}
  if(command==='quit'){app.quit();return;}
  if(command==='diagnostics'){openDiagnostics();return;}
  if(command==='diagnostics:dual_firing'){openDiagnosticsAt('dual_firing');return;}
@@ -235,6 +275,9 @@ app.on('second-instance',()=>{if(win&&!win.isDestroyed()){win.show();dialog.show
 app.whenReady().then(() => {
   if(!singleInstance)return;
   if(!validPortableLaunch){dialog.showErrorBox('캐슬 펫 실행 방법','ZIP 전체를 먼저 압축 풀기 한 뒤, 최상위 CastlePet.exe를 실행하세요.');app.quit();return;}
+  try{const last=JSON.parse(readFileSync(path(),'utf8'));positionLocked=last?.positionLocked===true;
+   if(positionLocked)positionAnchor=restoreWindowBounds(last);
+  }catch{positionLocked=false;positionAnchor=null;}
 
   const suspend=()=>{updateSpeech('');if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:suspend');};
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
@@ -287,7 +330,7 @@ app.whenReady().then(() => {
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
   win.on('move',()=>positionSpeech());
-  win.on('moved',()=>{save();positionSpeech();}); win.on('resize',()=>{if(focusChromeRepair.isRepairing())return;save();positionSpeech();}); win.on('close',save);
+  win.on('moved',()=>{if(!positionLocked)save();positionSpeech();}); win.on('resize',()=>{if(focusChromeRepair.isRepairing())return;save();positionSpeech();}); win.on('close',save);
   win.on('hide',suspend);win.on('minimize',suspend);win.on('show',resume);win.on('restore',resume);
   win.on('closed',()=>{speechText='';clearTimeout(speechHide);if(speechWindow&&!speechWindow.isDestroyed())speechWindow.close();closePetMenu();});
   // DOM contextmenu is alpha-gated in the renderer; never open on clear pixels.
@@ -344,7 +387,7 @@ app.whenReady().then(() => {
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'){
+    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
@@ -360,7 +403,7 @@ app.whenReady().then(() => {
     win.setIgnoreMouseEvents(ignore,ignore?{forward:true}:{});
   });
   ipcMain.on('pet:drag-start',(event)=>{
-    if(!isPet(event))return;
+    if(!isPet(event)||positionLocked)return;
     if(ignoresPointer){win.setIgnoreMouseEvents(false);ignoresPointer=false;}
     drag={bounds:win.getBounds(),point:screen.getCursorScreenPoint()};
   });
@@ -378,7 +421,10 @@ app.whenReady().then(() => {
     else if(input.key==='='||input.key==='+'||input.key==='Add'){event.preventDefault();changeSizeBy(1);}
   });
   const chrome=nativeFrameless();log('frameless: '+JSON.stringify(chrome));
-  const refit = () => { if (!win.isDestroyed()) { win.setBounds(fit(win.getBounds())); save(); positionSpeech(); } };
+  const refit = () => { if (!win.isDestroyed()) {
+   const bounds=positionLocked&&positionAnchor?{...positionAnchor,width:win.getBounds().width,height:win.getBounds().height}:win.getBounds();
+   win.setBounds(fit(bounds));if(!positionLocked)save();positionSpeech();
+  } };
   if (process.argv.includes('--qa-smoke')) {
     const reportIndex=process.argv.indexOf('--qa-report');const reportFile=reportIndex>=0 ? process.argv[reportIndex+1] : join(app.getPath('userData'),'qa-smoke.json');
     let qaStage='initializing';
@@ -546,6 +592,6 @@ app.whenReady().then(() => {
     });
     setTimeout(()=>{writeFileSync(reportFile,JSON.stringify({passed:false,qaStage,error:'Windows QA stage timed out'}));app.exit(2);},150000).unref();
   }
-  screen.on('display-removed', refit); screen.on('display-metrics-changed', refit);
+  screen.on('display-removed', refit); screen.on('display-added',refit); screen.on('display-metrics-changed', refit);
 });
 app.on('window-all-closed', () => app.quit());
