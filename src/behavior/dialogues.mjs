@@ -485,7 +485,7 @@ export const dialogues = [
     "random": false
   },
   {
-    "id": "E-autonomous",
+    "id": "E-jobStart",
     "text": "남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.",
     "origin": "original creative",
     "approval": "confirmed",
@@ -493,14 +493,14 @@ export const dialogues = [
       "working"
     ],
     "triggers": [
-      "jobStart"
+      "autonomous"
     ],
     "rarity": "normal",
     "cooldownMs": 120000,
     "random": true
   },
   {
-    "id": "E-autonomous",
+    "id": "E-testPassed",
     "text": "코딩 실력은 인정하지. 감탄했다, 오픈AI.",
     "origin": "original creative",
     "approval": "confirmed",
@@ -508,7 +508,7 @@ export const dialogues = [
       "speaking"
     ],
     "triggers": [
-      "testPassed"
+      "autonomous"
     ],
     "rarity": "normal",
     "cooldownMs": 120000,
