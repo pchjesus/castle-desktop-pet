@@ -325,7 +325,6 @@ app.whenReady().then(() => {
   const resume=()=>{if(win&&!win.isDestroyed())win.webContents.send('pet:action','system:resume');};
   powerMonitor.on('suspend',suspend);powerMonitor.on('resume',resume);
   const detachSystem=watchWindowsEvents(powerMonitor,{suspend,resume,emit:deliverExternal});
-  if(!isSmoke)void updateBraveBridge();
   app.once('will-quit',()=>{
    powerMonitor.off('suspend',suspend);powerMonitor.off('resume',resume);
    detachSystem();if(braveBridge)void braveBridge.stop();
@@ -370,6 +369,8 @@ app.whenReady().then(() => {
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   log('launch '+JSON.stringify({portable:hasPortableMarker,validated:validPortableLaunch,executable:process.execPath,entry:__filename,resources:process.resourcesPath}));
   readBehavior();
+  // Load persisted opt-in before starting the local Brave receiver.
+  if(!isSmoke)void updateBraveBridge();
   const filePath=join(app.getPath('userData'),'codex-events.jsonl');
   const localEvents=watchCodexEvents(filePath,name=>emitCodexEvent(name,'file'));
   codexWatcherStarted=true;
