@@ -67,6 +67,7 @@ export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dra
  root.addEventListener('pointerdown',ev=>{
   if(ev.button!==0||!opaqueAt(ev.clientX,ev.clientY))return;
   origin={x:ev.clientX,y:ev.clientY};pointerId=ev.pointerId;
+  window.pet?.setPointerHeld?.(true);
   allowInput(true);
   root.setPointerCapture(ev.pointerId);
 
@@ -87,6 +88,7 @@ export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dra
   if(last!==null&&root.hasPointerCapture(last))root.releasePointerCapture(last);
   if(wasDragging){window.pet?.dragEnd();callbacks.dragEnd?.();}
   else if(ev?.type==='pointerup')callbacks.click?.();
+  window.pet?.setPointerHeld?.(false);
   lastInteractive=undefined;refresh();
  }
  root.addEventListener('pointerup',finish);

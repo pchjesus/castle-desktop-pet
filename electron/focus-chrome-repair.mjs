@@ -2,12 +2,12 @@
 // after focus loss (upstream electron/electron #39959, #46882).
 // Do not re-create, hide/show or focus the pet; preserve hit-test, sprite,
 // overlay speech, geometry and always-on-top state throughout the repair.
-export function createFocusChromeRepair(window,{platform=process.platform,workArea=()=>null,delayMs=18,setTimer=setTimeout,clearTimer=clearTimeout,onRepair=()=>{},onError=()=>{}}={}){
+export function createFocusChromeRepair(window,{platform=process.platform,workArea=()=>null,delayMs=18,setTimer=setTimeout,clearTimer=clearTimeout,onRepair=()=>{},onError=()=>{},isDragging=()=>false}={}){
  let timer=null,repairing=false,disposed=false;
  let attempts=0,successes=0,lastReason=null,lastError=null;
  const allowed=platform==='win32';
  function usable(){
-  return allowed&&!disposed&&!window.isDestroyed()&&window.isVisible()&&!window.isMinimized();
+  return allowed&&!disposed&&!isDragging()&&!window.isDestroyed()&&window.isVisible()&&!window.isMinimized();
  }
  function perform(reason){
   if(!usable()||repairing)return false;
@@ -38,12 +38,13 @@ export function createFocusChromeRepair(window,{platform=process.platform,workAr
    repairing=false;
   }
  }
+ function cancelPending(){if(timer!==null){clearTimer(timer);timer=null;return true;}return false;}
  function schedule(reason){
   if(!usable())return false;
   if(timer!==null)clearTimer(timer);
   timer=setTimer(()=>{timer=null;perform(reason);},delayMs);
   return true;
  }
- function dispose(){disposed=true;if(timer!==null){clearTimer(timer);timer=null;}}
- return {schedule,perform,dispose,isRepairing:()=>repairing,stats:()=>({attempts,successes,lastReason,lastError,allowed})};
+ function dispose(){disposed=true;cancelPending();}
+ return {schedule,perform,cancelPending,dispose,isRepairing:()=>repairing,stats:()=>({attempts,successes,lastReason,lastError,allowed})};
 }
