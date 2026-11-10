@@ -74,6 +74,40 @@ jobs:
           if (!$result.passed -or !$result.petLoaded -or !$result.bReviewLoaded -or !$result.resizeChecked -or !$result.nativeFrameless.passed -or !$result.manualPoseChecked -or !$result.approvedPoseChecked.idle -or !$result.approvedPoseChecked.smoking -or !$result.approvedPoseChecked.sitting -or !$result.approvedPoseChecked.dual_firing -or !$result.approvedPoseChecked.speaking -or !$result.approvedPoseChecked.firing_dynamic -or $result.menuRequests -lt 1 -or $result.hitChanges -lt 1 -or !$result.mouseQa.success -or !$result.menuChrome.passed -or !$result.menuQA.hasSizing -or !$result.menuQA.hasPose -or !$result.menuQA.hasBlocked -or !$result.resizedFromMenu -or !$result.repeatChecked -or !$result.cancelledToIdle) { throw 'QA readiness failed' }
           Write-Host "::notice::Native window roles: $($result.windowAudit.native | ConvertTo-Json -Compress)"
           Write-Host "::notice::B13.2 native QA passed: $($result.behavior132.commands.Count) menu pose commands, 4 smoke sizes × 2 motion settings; original Reduced Motion=$($result.behavior132.originalReducedMotion)."
+      - name: B15.1 packaged Codex hook install and uninstall smoke
+        shell: pwsh
+        run: |
+          $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
+          $setup = Join-Path $qaRoot 'scripts/setup-codex-integration.mjs'
+          $oldCodex = $env:CODEX_HOME
+          $oldAppData = $env:APPDATA
+          try {
+            $env:CODEX_HOME = Join-Path $env:RUNNER_TEMP 'castle-codex-config-smoke'
+            $env:APPDATA = Join-Path $env:RUNNER_TEMP 'castle-codex-data-smoke'
+            New-Item -ItemType Directory -Path $env:CODEX_HOME,$env:APPDATA -Force | Out-Null
+            $config = Join-Path $env:CODEX_HOME 'hooks.json'
+            $original = @{hooks=@{SessionStart=@(@{hooks=@(@{type='command';command='echo unrelated';statusMessage='Existing hook'})})}}
+            $original | ConvertTo-Json -Depth 12 | Set-Content -Encoding utf8 $config
+            node $setup install
+            if ($LASTEXITCODE -ne 0) { throw 'Opt-in hook installer failed' }
+            $installed = Get-Content $config -Raw | ConvertFrom-Json
+            if (@($installed.hooks.SessionStart).Count -ne 1 -or @($installed.hooks.UserPromptSubmit).Count -ne 1) { throw 'Installer overwrote unrelated Codex hooks' }
+            $hook = Join-Path $env:APPDATA 'castle-desktop-pet/integration/codex-hook.mjs'
+            if (!(Test-Path $hook)) { throw 'Installed hook script missing' }
+            '{"hook_event_name":"UserPromptSubmit","prompt":"Never log my prompt"}' | node $hook
+            if ($LASTEXITCODE -ne 0) { throw 'Live hook process failed' }
+            $eventFile = Join-Path $env:APPDATA 'castle-desktop-pet/codex-events.jsonl'
+            $events = @(Get-Content $eventFile)
+            if ($events.Count -ne 1 -or $events[0] -notmatch '"event":"jobStart"' -or $events[0] -match 'Never log') { throw 'Local event missing or privacy leak detected' }
+            node $setup uninstall
+            if ($LASTEXITCODE -ne 0) { throw 'Opt-in hook uninstall failed' }
+            $remaining = Get-Content $config -Raw | ConvertFrom-Json
+            if (@($remaining.hooks.SessionStart).Count -ne 1 -or $remaining.hooks.PSObject.Properties.Name -contains 'UserPromptSubmit') { throw 'Uninstall altered unrelated hooks' }
+            Write-Host '::notice::Opt-in Codex hook installer, live local event, privacy and uninstall PASS.'
+          } finally {
+            $env:CODEX_HOME = $oldCodex
+            $env:APPDATA = $oldAppData
+          }
       - name: Verify normal launch path and incomplete ZIP extraction rejection
         shell: pwsh
         run: |
