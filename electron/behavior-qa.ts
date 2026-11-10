@@ -122,6 +122,39 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
    }
   }
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
- return {passed:true,commands,settings:{intervals:saved,sliderLayout},smoke,clicks,reducedMotion:true,originalReducedMotion};
+ // B19: exercise real menu IPC + persistence without changing the user's QA defaults.
+ const favoritesBefore=await menu.webContents.executeJavaScript('window.castleMenu.getInfo().then(v=>v.favorites)');
+ const b19menu=openMenu()!;
+ if(b19menu.webContents.isLoading())await new Promise<void>(resolve=>b19menu.webContents.once('did-finish-load',()=>resolve()));
+ b19menu.show();
+ const b19state=await b19menu.webContents.executeJavaScript(`(async()=>{
+   document.querySelector('[data-tab="more"]').click();
+   document.querySelector('[data-more-open="personalize"]').click();
+   document.querySelector('#position-lock-toggle').click();
+   document.querySelector('[data-style="original"]').click();
+   await new Promise(resolve=>setTimeout(resolve,120));
+   return window.castleMenu.getInfo();
+ })()`);
+ if(!b19state.status.positionLocked||b19state.status.dialogueStyle!=='original')
+  throw Error('B19 Windows settings IPC failed: '+JSON.stringify(b19state.status));
+ await b19menu.webContents.executeJavaScript(`(async()=>{
+   document.querySelector('#position-lock-toggle').click();
+   document.querySelector('[data-style="balanced"]').click();
+   document.querySelector('[data-tab="poses"]').click();
+   document.querySelector('[data-favorite-type="pose"][data-favorite-id="working"]').click();
+   await new Promise(resolve=>setTimeout(resolve,120));
+ })()`);
+ const b19favorite=await b19menu.webContents.executeJavaScript('window.castleMenu.getInfo().then(v=>v.favorites.pose)');
+ if(!b19favorite.includes('working'))throw Error('B19 native favorite did not persist');
+ await b19menu.webContents.executeJavaScript(`(async()=>{
+   document.querySelector('[data-favorite-type="pose"][data-favorite-id="working"]').click();
+   await new Promise(resolve=>setTimeout(resolve,120));
+ })()`);
+ const b19restored=await b19menu.webContents.executeJavaScript('window.castleMenu.getInfo()');
+ if(b19restored.status.positionLocked||b19restored.status.dialogueStyle!=='balanced'||b19restored.favorites.pose.includes('working'))
+  throw Error('B19 native settings restore failed: '+JSON.stringify(b19restored));
+ if(favoritesBefore.pose.includes('working'))b19menu.webContents.executeJavaScript("window.castleMenu.invoke('favorite:add:pose:working')").catch(()=>{});
+ writeFileSync(join(uxEvidence,'menu-b19-personalization.png'),(await b19menu.webContents.capturePage()).toPNG());
+ return {passed:true,commands,settings:{intervals:saved,sliderLayout,b19:true},smoke,clicks,reducedMotion:true,originalReducedMotion};
 
 }
