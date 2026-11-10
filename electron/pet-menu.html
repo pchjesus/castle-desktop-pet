@@ -29,11 +29,6 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 .more-view .stack{flex-shrink:0}
 .status-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:3px}
 .status-scroll .status-list{font-size:10px;grid-template-columns:72px 1fr}
-.codex-tests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
-.codex-tests button{font-size:10px;min-height:32px;padding:4px 1px}
-#codex-logs{font-size:10px;display:grid;gap:3px;color:#c8d1de}
-#codex-logs p{margin:0;font-size:10px}
-#codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
 
 
 /* Deliberately dark, readable, rectangular native panel. No Acrylic trickery. */
@@ -47,7 +42,7 @@ nav button[aria-selected=true]{background:#43546c;color:#fff;border-color:#a9b7c
 button,select,#dialogue-search{color:#edf1f7;background:#292f3d;border:1px solid #535f71;border-radius:4px;text-shadow:none}
 button:hover,button:focus-visible,select:focus-visible{background:#45556c;outline:1px solid #b9c6d9}
 button[aria-pressed=true]{background:#405d7b;border-color:#b3c9db}
-h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:#cbd4de}
+h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,.status-list dt{color:#cbd4de}
 .archive-item{background:#242b38;border-color:#495566;border-radius:4px}
 .archive-item strong,.archive-item p,.status-list{color:#ecf0f5}
 .archive-status{color:#d2deec}
@@ -95,8 +90,6 @@ footer button{min-height:30px}
 .archive-item p{font-size:12px}
 #archive-results{gap:9px}
 .status-scroll .status-list{font-size:13px;grid-template-columns:95px minmax(0,1fr);gap:11px}
-.codex-tests button{font-size:12px;min-height:46px}
-#codex-logs,#codex-logs p,#codex-result{font-size:12px}
 .more-help{overflow:auto;scrollbar-width:thin}
 .more-help p{margin:0 0 15px}
 .frequency-view[hidden]{display:none}
@@ -189,7 +182,7 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 <div class="more-view" data-more-view="archive" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
 <input id="dialogue-search" type="search" placeholder="대사 또는 ID 검색" aria-label="대사 검색">
-<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option><option value="codex">일반 대사</option></select>
+<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option></select>
 <select id="dialogue-pose" aria-label="동작 필터"><option value="all">모든 동작</option><option value="idle">서 있기</option><option value="smoking">흡연</option><option value="sitting">앉기</option><option value="working">작업</option><option value="speaking">말하기</option><option value="drawing">총 꺼내기</option><option value="firing">한 발 사격</option><option value="dual_firing">양손 사격</option><option value="firing_dynamic">허리 사격</option></select></div>
 <div id="archive-results" aria-live="polite">대사 데이터를 불러오는 중이에요.</div>
 </div>
@@ -283,7 +276,7 @@ function showFrequencyView(name){
  document.querySelector('#panel-frequency').scrollTop=0;
 }
 
-const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
+const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
 let archive=[],infoLoaded=false;
 function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
