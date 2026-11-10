@@ -42,7 +42,7 @@ export function createBraveDownloadServer({token,onDownload,host='127.0.0.1',por
   req.on('end',()=>{
    if(failed)return;
    let value;try{value=JSON.parse(data);}catch{respond(res,400,{ok:false});return;}
-   if(value?.event!=='downloadComplete'||!Number.isSafeInteger(value?.id)||value.id<0){respond(res,400,{ok:false});return;}
+   if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).sort().join(',')!=='event,id'||value.event!=='downloadComplete'||!Number.isSafeInteger(value.id)||value.id<0){respond(res,400,{ok:false});return;}
    if(!seen.has(value.id)){
     seen.add(value.id);if(seen.size>250)seen.delete(seen.values().next().value);
     onDownload('downloadComplete');

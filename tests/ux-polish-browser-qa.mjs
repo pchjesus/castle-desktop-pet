@@ -5,12 +5,12 @@ const report={passed:false,environment:'Chromium browser; native Windows is a se
 try{
  browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:560,height:610}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
- await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),
+ await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={copyBravePairToken:async()=>(window.__braveCopied=true,{success:true}),invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),
 setCodexIntegration:async enabled=>(window.__hookEnabled=enabled,{success:true,configured:enabled}),
 getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',codex:{bridgeReady:true,hookConfigured:!!window.__hookEnabled,externalEvents:0,filePath:'C:/Users/QA/AppData/Roaming/castle-desktop-pet/codex-events.jsonl',events:[]}},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
  for(const tab of ['basic','frequency','poses','more']){
-  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
+  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),5);
  }
  const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
  assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
@@ -68,7 +68,16 @@ getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogue
  await page.locator('[data-codex-test="testPassed"]').click();
  assert.equal(await page.evaluate(()=>window.__codexTest),'testPassed');
  assert((await page.locator('#status-list').innerText()).includes('앉기'));
- await page.locator('[data-more-view="status"] [data-more-back]').click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
+ await page.locator('[data-more-view="status"] [data-more-back]').click();
+ await page.locator('[data-more-open="connections"]').click();
+ assert.equal(await page.locator('[data-external-key]').count(),4);
+ await page.locator('[data-external-key="braveDownload"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'setting:external:braveDownload:true');
+ await page.locator('#brave-copy-token').click();
+ await page.waitForFunction(()=>window.__braveCopied===true);
+ await page.screenshot({path:output+'/menu-external-integrations-browser.png'});
+ await page.locator('[data-more-view="connections"] [data-more-back]').click();
+ await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');
  await page.locator('#tab-basic').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#tab-frequency').getAttribute('aria-selected'),'true');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>window.__dismissed),true);
  report.checks.push('560px contrast menu: three 1–15 minute sliders, nine weights, working Codex switch, keyboard and readable archive');

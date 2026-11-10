@@ -38,7 +38,7 @@ test('B-14 menu preserves four top-level tabs and nests safe dialogue/status/hel
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
  const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
  for(const tab of ['basic','frequency','poses','more'])assert(menu.includes('id="tab-'+tab+'"'));
- for(const view of ['home','archive','status','help','diagnostics'])assert(menu.includes('data-more-view="'+view+'"'));
+ for(const view of ['home','archive','status','connections','help','diagnostics'])assert(menu.includes('data-more-view="'+view+'"'));
  for(const control of ['dialogue-search','dialogue-origin','dialogue-pose','archive-results','status-list'])assert(menu.includes('id="'+control+'"'));
  assert(menu.includes('textContent=line.text'));assert(!menu.includes('innerHTML=line.text'));
  assert(main.includes("event.sender!==menuWindow.webContents"));assert(main.includes("ipcMain.handle('pet-menu:get-info'"));
@@ -125,4 +125,19 @@ test('minute sliders, contrast UI and deliberate Codex hook switch are wired to 
  assert(main.includes("event.sender!==menuWindow.webContents"));
  assert(preload.includes("ipcRenderer.invoke('pet-menu:codex-toggle'"));
  assert(!main.includes("setBackgroundMaterial('acrylic')"));
+});
+
+test('B17 power events and Brave downloader are explicitly toggled; only menu may copy pairing token',async()=>{
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ const packageScript=await readFile(new URL('../scripts/package-windows-qa.mjs',import.meta.url),'utf8');
+ for(const name of ['braveDownload','powerAC','powerBattery','unlock'])assert(menu.includes('data-external-key="'+name+'"'));
+ assert(main.includes("watchWindowsEvents(powerMonitor"));
+ assert(main.includes("command.startsWith('setting:external:')"));
+ assert(main.includes('event.sender!==menuWindow.webContents'));
+ assert(main.includes("ipcMain.handle('pet-menu:brave-copy-token'"));
+ assert(preload.includes("ipcRenderer.invoke('pet-menu:brave-copy-token'"));
+ assert(packageScript.includes("cp('brave-extension'"));
+ assert(menu.includes('Brave 다운로드 완료'));
 });

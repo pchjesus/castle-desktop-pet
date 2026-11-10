@@ -63,7 +63,7 @@ test('only an authenticated browser extension can report a completed download, o
   assert.equal((await post({event:'downloadComplete',id:1},{'X-Castle-Token':'wrong'})).status,401);
   assert.equal((await post({event:'downloadComplete',id:1},{Origin:'https://example.com','X-Castle-Token':token})).status,403);
   assert.equal((await post({event:'other',id:1},{'X-Castle-Token':token})).status,400);
-  assert.equal((await post({event:'downloadComplete',id:1,filename:'private.pdf'},{'X-Castle-Token':token})).status,200);
+  assert.equal((await post({event:'downloadComplete',id:1,filename:'private.pdf'},{'X-Castle-Token':token})).status,400);
   assert.equal((await post({event:'downloadComplete',id:1},{'X-Castle-Token':token})).status,200);
   assert.equal((await post({event:'downloadComplete',id:2},{'X-Castle-Token':token})).status,200);
   assert.deepEqual(seen,['downloadComplete','downloadComplete']);
