@@ -172,7 +172,7 @@ test('fixed movement/dialogue intervals schedule exactly with no pose interrupti
  f.b.configure({...f.b.snapshot().settings,movementIntervalMin:1,dialogueIntervalMin:15});
  assert.equal(f.poses.length,before);assert.equal(f.poses.at(-1),'sitting');
  f.tick(19000);assert.equal(f.poses.at(-1),'smoking');
- assert.equal(f.b.snapshot().nextMovement-f.now(),60000);
+ assert.equal(f.b.snapshot().nextMovement-f.now(),59000); // Rearmed when adjusted, 1s before the manual pose expired
  const due=f.b.snapshot().nextDialogue;
  assert(due>f.now());assert.equal(due-f.now(),15*60000-19000);
  f.b.dispose();
