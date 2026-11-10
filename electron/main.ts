@@ -489,6 +489,13 @@ app.whenReady().then(() => {
         // Native Windows regression: a DPI-like resize must not survive while
         // a pointer drag is active. No source images or display settings change.
         qaStage='drag dimensions and focus repair';
+        // The actual sandboxed preload bridge must be able to inhibit the
+        // repair from the first opaque mouse press, before drag threshold.
+        await win.webContents.executeJavaScript("window.pet.setPointerHeld(true)");
+        await new Promise(resolve=>setTimeout(resolve,50));
+        const pointerSuppressed=focusChromeRepair.perform('qa-pointer-held')===false;
+        await win.webContents.executeJavaScript("window.pet.setPointerHeld(false)");
+        await new Promise(resolve=>setTimeout(resolve,50));
         const dragAnchor=win.getBounds();
         drag={bounds:dragAnchor,point:screen.getCursorScreenPoint()};
         focusChromeRepair.cancelPending();
@@ -498,7 +505,7 @@ app.whenReady().then(() => {
         const dragAfter=win.getBounds();
         const keptDragSize=sameSize(dragAnchor,dragAfter);
         endDrag();
-        const dragSizeInvariant={passed:repairSuppressed&&keptDragSize,repairSuppressed,keptDragSize,
+        const dragSizeInvariant={passed:pointerSuppressed&&repairSuppressed&&keptDragSize,pointerSuppressed,repairSuppressed,keptDragSize,
          expected:{width:dragAnchor.width,height:dragAnchor.height},
          actual:{width:dragAfter.width,height:dragAfter.height}};
         if(!dragSizeInvariant.passed)throw Error('B19 Windows drag/DPI size protection failed: '+JSON.stringify(dragSizeInvariant));
