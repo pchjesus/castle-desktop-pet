@@ -135,14 +135,14 @@ export const dialogues = [
     "origin": "user-supplied comic line",
     "approval": "confirmed",
     "poses": [
-      "speaking"
+      "speaking", "smoking", "sitting"
     ],
     "triggers": [
-      "deploymentComplete"
+      "autonomous"
     ],
     "rarity": "normal",
     "cooldownMs": 120000,
-    "random": false
+    "random": true
   },
   {
     "id": "O-11",
@@ -487,32 +487,34 @@ export const dialogues = [
   {
     "id": "E-jobStart",
     "text": "남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.",
-    "origin": "Codex event",
+    "origin": "original creative",
     "approval": "confirmed",
-    "poses": [
-      "working"
-    ],
-    "triggers": [
-      "jobStart"
-    ],
-    "rarity": "event",
-    "cooldownMs": 0,
+    "poses": ["working"],
+    "triggers": ["power-ac"],
+    "rarity": "normal",
+    "cooldownMs": 120000,
     "random": false
   },
   {
     "id": "E-testPassed",
     "text": "코딩 실력은 인정하지. 감탄했다, 오픈AI.",
-    "origin": "Codex event",
+    "origin": "original creative",
     "approval": "confirmed",
-    "poses": [
-      "speaking"
-    ],
-    "triggers": [
-      "testPassed"
-    ],
-    "rarity": "event",
-    "cooldownMs": 0,
+    "poses": ["speaking","working","idle","smoking","sitting"],
+    "triggers": ["autonomous"],
+    "rarity": "normal",
+    "cooldownMs": 120000,
+    "random": true
+  },
+  {
+    "id": "PWR-BAT-01",
+    "text": "충전기.. 그놈이 네게 신중함과 유연함을 더해줄 거다.",
+    "origin": "original creative",
+    "approval": "confirmed",
+    "poses": ["smoking","idle","sitting","working"],
+    "triggers": ["power-battery"],
+    "rarity": "normal",
+    "cooldownMs": 20000,
     "random": false
   }
 ];
-export const codexEvents={jobStart:{dialogue:"E-jobStart",sequence:["smoking","working"]},testPassed:{dialogue:"E-testPassed",sequence:["speaking"]},deploymentComplete:{dialogue:"O-10",sequence:["smoking","speaking"]}};
