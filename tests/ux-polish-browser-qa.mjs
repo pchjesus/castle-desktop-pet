@@ -81,7 +81,7 @@ try{
  await page.locator('[data-style="original"]').click();
  assert.equal(await page.evaluate(()=>window.__command),'setting:dialogueStyle:original');
  assert.equal(await page.locator('[data-style="original"]').getAttribute('aria-pressed'),'true');
- await page.locator('[data-more-back]').first().click();
+ await page.locator('[data-more-view="personalize"] [data-more-back]').click();
  await page.locator('[data-more-open="archive"]').click();
  await page.waitForFunction(()=>document.querySelector('#archive-count')?.textContent?.includes('3'));
  assert.equal(await page.locator('.archive-item').count(),3);
@@ -89,7 +89,7 @@ try{
  await page.locator('.archive-item [data-favorite-type="dialogue"]').first().click();
  assert((await page.evaluate(()=>window.__command)).startsWith('favorite:add:dialogue:'));
  const bookmarked=(await page.evaluate(()=>window.__command)).split(':').at(-1);
- await page.locator('[data-more-back]').first().click();
+ await page.locator('[data-more-view="archive"] [data-more-back]').click();
  await page.locator('[data-more-open="favorites"]').click();
  assert.equal(await page.locator('#favorites-results .favorite-entry').count(),1);
  await page.locator('#favorites-results [data-favorite-play]').click();
@@ -97,7 +97,7 @@ try{
  await page.locator('#favorites-results [data-favorite-type="dialogue"]').click();
  assert.equal(await page.locator('#favorites-results .favorite-entry').count(),0);
  report.checks.push('B19 position lock, dialogue-style selection and local favorite replay');
- await page.locator('[data-more-back]').first().click();
+ await page.locator('[data-more-view="favorites"] [data-more-back]').click();
  await page.locator('#dialogue-pose').selectOption('sitting');assert.equal(await page.locator('.archive-item').count(),1);
  assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
