@@ -182,7 +182,8 @@ footer button{min-height:30px}
 <p>기본/빈도: 평소 자세와 움직임·대사 간격을 설정해요. 빈도 탭의 ‘행동별 등장 빈도’에서 각 동작의 자동 선택 비중을 0~40으로 조절할 수 있어요. 0이면 자동 실행하지 않지만 수동 실행은 가능해요.</p><p>이 값은 시간 간격이 아니라 상대적인 등장 확률이에요. 자동 사격이 꺼져 있거나 쿨다운 중이면 사격 동작은 추첨에서 제외돼요.</p>
 <p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
 <p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
-<p>외부 Codex 훅 또는 검증 스크립트에서 로컬 이벤트 파일에 기록하면 펫이 감지해요. API 호출이나 추가 AI 비용은 없어요. 자세한 연결 방법은 저장소의 B-15 가이드에서 확인할 수 있어요.</p></div>
+<p>로컬 Codex가 작업을 시작할 때 자동 반응하게 하려면 검수 패키지의 'Codex_연동_방법.txt'를 참고해 전역 훅을 선택적으로 설치하세요. 설치 후에도 Codex /hooks 승인 및 Windows 실사용 확인이 필요해요.</p>
+<p>클라우드에서 실행되는 Codex는 Windows 로컬 파일에 접근하지 못할 수 있어요. 설치 여부와 실제 이벤트 수신은 다르며, 테스트/배포 성공은 추측하지 않아요. 추가 AI API 호출은 없어요.</p></div>
 </div>
 <div class="more-view" data-more-view="diagnostics" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
@@ -270,6 +271,7 @@ function renderArchive(){
 function renderStatus(status){
  const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex',status.codex?.externalEvents>0?'외부 이벤트 수신됨 (Codex 확인 전)':status.codex?.bridgeReady?'로컬 파일 수신 대기':'연결되지 않음']];
  const codex=status.codex||{};
+ rows.push(['전역 Codex 훅',codex.hookConfigured?'설정됨 · Codex 실행 승인 별도':'미설치 또는 미확인']);
  rows.push(['마지막 이벤트',codex.events?.[0]?.name||'없음']);
  rows.push(['수신 파일',codex.filePath||'확인 중']);
  const box=document.querySelector('#status-list');box.replaceChildren();

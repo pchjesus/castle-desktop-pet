@@ -11,6 +11,7 @@ import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT} from '../src/behavior/cadenc
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {codexEventNames,watchCodexEvents} from '../src/behavior/codex-bridge.mjs';
+import {inspectCodexIntegration} from '../src/behavior/codex-hook-install.mjs';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -36,7 +37,13 @@ let behaviorSettings=normalizeSettings(null);
 const codexAllowed=new Set<string>(codexEventNames);
 const codexHistory:{id:number;name:string;origin:'test'|'file';state:'sent'|'accepted'|'blocked';at:number}[]=[];
 let codexSequence=0,externalEvents=0,codexWatcherStarted=false;
-function codexSnapshot(){return {bridgeReady:codexWatcherStarted,externalEvents,events:codexHistory.map(x=>({...x})),filePath:join(app.getPath('userData'),'codex-events.jsonl')};}
+function codexSnapshot(){
+ const hook=inspectCodexIntegration({home:app.getPath('home')});
+ return {bridgeReady:codexWatcherStarted,externalEvents,
+  hookConfigured:hook.configured,hookScriptPresent:hook.scriptPresent,
+  events:codexHistory.map(x=>({...x})),
+  filePath:join(app.getPath('userData'),'codex-events.jsonl')};
+}
 function emitCodexEvent(name:string,origin:'test'|'file'){
  if(!codexAllowed.has(name)||!win||win.isDestroyed()||win.webContents.isLoading())return {sent:false,reason:'pet not ready'};
  const id=++codexSequence;

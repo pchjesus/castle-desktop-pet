@@ -52,7 +52,7 @@ jobs:
           $qaSource = Join-Path $PWD 'dist-qa/CastlePetQA'
           $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
           Move-Item -LiteralPath $qaSource -Destination $qaRoot
-          foreach ($name in @('CastlePet.exe','runtime/electron.exe','runtime/resources/app/dist/index.html','runtime/resources/app/dist-electron/main.cjs','runtime/resources/app/dist-electron/pet-menu.html','runtime/resources/app/dist-electron/menu-preload.cjs','runtime/resources/app/dist-electron/pet-speech.html','runtime/resources/app/dist-electron/speech-preload.cjs','runtime/resources/app/preview.html','runtime/resources/app/preview-assets')) {
+          foreach ($name in @('CastlePet.exe','runtime/electron.exe','runtime/resources/app/dist/index.html','runtime/resources/app/dist-electron/main.cjs','runtime/resources/app/dist-electron/pet-menu.html','runtime/resources/app/dist-electron/menu-preload.cjs','runtime/resources/app/dist-electron/pet-speech.html','runtime/resources/app/dist-electron/speech-preload.cjs','runtime/resources/app/preview.html','runtime/resources/app/preview-assets','scripts/setup-codex-integration.mjs','scripts/codex-hook.mjs','src/behavior/codex-hook-install.mjs','Codex_연동_방법.txt')) {
             if (!(Test-Path (Join-Path $qaRoot $name))) { throw "Missing package file: $name" }
           }
           $qaReport = Join-Path $PWD 'windows-qa-report.json'

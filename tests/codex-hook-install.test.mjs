@@ -61,3 +61,11 @@ test('status is non-mutating and paths match the local file receiver',()=>{
   assert(f.paths.script.includes(join('castle-desktop-pet','integration','codex-hook.mjs')));
  }finally{f.cleanup();}
 });
+
+test('Windows QA package includes opt-in global hook installer without installing it automatically',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const file=readFileSync(new URL('../scripts/package-windows-qa.mjs',import.meta.url),'utf8');
+ assert(file.includes("join(dest,'scripts','setup-codex-integration.mjs')")||file.includes("for(const name of ['setup-codex-integration.mjs','codex-hook.mjs'])"));
+ assert(file.includes("Codex_연동_방법.txt"));
+ assert(!file.includes("configureCodexIntegration('install'"));
+});
