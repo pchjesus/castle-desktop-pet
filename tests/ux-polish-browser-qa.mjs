@@ -98,6 +98,7 @@ try{
  assert.equal(await page.locator('#favorites-results .favorite-entry').count(),0);
  report.checks.push('B19 position lock, dialogue-style selection and local favorite replay');
  await page.locator('[data-more-view="favorites"] [data-more-back]').click();
+ await page.locator('[data-more-open="archive"]').click();
  await page.locator('#dialogue-pose').selectOption('sitting');assert.equal(await page.locator('.archive-item').count(),1);
  assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
