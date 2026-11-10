@@ -32,7 +32,20 @@ function openDiagnostics(show=true) {
  return diagnostics;
 }
 let behaviorSettings=normalizeSettings(null);
-function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
+function readBehavior(){
+ const file=join(app.getPath('userData'),'behavior.json');
+ const stored=loadSettings(file),next={...stored};
+ const movement={quiet:8,default:3,active:2};
+ const dialogue={quiet:10,default:5,active:2};
+ if(!validInterval(next.movementIntervalMin))next.movementIntervalMin=movement[next.movementFrequency]??3;
+ if(!validInterval(next.dialogueIntervalMin))next.dialogueIntervalMin=dialogue[next.dialogueFrequency]??5;
+ if(!validInterval(next.shotCooldownMin))next.shotCooldownMin=4;
+ behaviorSettings=normalizeSettings(next);
+ if(JSON.stringify(stored)!==JSON.stringify(behaviorSettings)){
+  try{saveSettings(file,behaviorSettings);}catch(error){log('Interval migration save failed: '+String(error));}
+ }
+ return behaviorSettings;
+}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
 function fit(bounds: Electron.Rectangle) { return constrain(bounds, screen.getAllDisplays().map(d => d.workArea)); }
