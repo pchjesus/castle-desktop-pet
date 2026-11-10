@@ -25,6 +25,23 @@ try{
  assert((await page.locator('main').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=14);
  await page.locator('#tab-frequency').click();
  assert.equal(await page.locator('.minute-slider').count(),3);
+ // Count alone misses visually hidden sliders: verify track geometry and alignment.
+ const minuteLayout=await page.evaluate(()=>{
+  const p=document.querySelector('#panel-frequency').getBoundingClientRect();
+  const rows=[...document.querySelectorAll('.minute-control')].map(row=>{
+   const input=row.querySelector('input[type="range"]'),r=input.getBoundingClientRect(),label=row.querySelector('.minute-heading').getBoundingClientRect(),output=row.querySelector('output').getBoundingClientRect(),style=getComputedStyle(input);
+   return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:style.display,visibility:style.visibility,appearance:style.appearance,labelLeft:label.left,outputRight:output.right};
+  });
+  return {panel:{top:p.top,bottom:p.bottom},rows};
+ });
+ assert.equal(minuteLayout.rows.length,3);
+ for(const row of minuteLayout.rows){
+  assert(row.width>=180&&row.height>=20&&row.display!=='none'&&row.visibility!=='hidden'&&row.appearance==='none','minute slider track missing: '+JSON.stringify(row));
+  assert(row.top>=minuteLayout.panel.top&&row.bottom<=minuteLayout.panel.bottom+1,'minute slider outside default viewport: '+JSON.stringify(minuteLayout));
+ }
+ assert(Math.max(...minuteLayout.rows.map(r=>r.labelLeft))-Math.min(...minuteLayout.rows.map(r=>r.labelLeft))<2,'minute labels not aligned');
+ assert(Math.max(...minuteLayout.rows.map(r=>r.outputRight))-Math.min(...minuteLayout.rows.map(r=>r.outputRight))<2,'minute values not aligned');
+ report.checks.push('all three minute sliders visible, styled and aligned in default menu');
  for(const [key,value] of [['movementIntervalMin','1'],['dialogueIntervalMin','15'],['shotCooldownMin','8']]){
   const slider=page.locator('[data-minute-key="'+key+'"]');
   await slider.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);
@@ -42,6 +59,18 @@ try{
  assert.equal(await page.evaluate(()=>window.__command),'setting:weights:reset');
  await page.locator('[data-frequency-back]').click();
  assert(await page.locator('#edit-action-weights').isVisible());
+ await page.setViewportSize({width:360,height:450});
+ await page.locator('#tab-frequency').click();
+ const compact=await page.evaluate(()=>{
+  const panel=document.querySelector('#panel-frequency');
+  return {overflow:panel.scrollWidth-panel.clientWidth,count:panel.querySelectorAll('.minute-slider').length};
+ });
+ assert.equal(compact.count,3);
+ assert(compact.overflow<=2,'compact frequency tab horizontally overflows: '+JSON.stringify(compact));
+ for(const slider of await page.locator('.minute-slider').all()){await slider.scrollIntoViewIfNeeded();assert(await slider.isVisible());}
+ await page.screenshot({path:output+'/menu-frequency-compact-browser.png'});
+ await page.setViewportSize({width:560,height:610});
+ report.checks.push('compact menu scrolls with all three sliders accessible');
  await page.locator('#tab-more').click();
  await page.setViewportSize({width:850,height:790});
  await page.locator('#tab-more').click();await page.locator('[data-more-open="archive"]').click();
