@@ -515,3 +515,6 @@ export const dialogues = [
     "random": true
   }
 ];
+
+// Legacy controller contract retained for unit compatibility; no runtime bridge invokes it.
+export const codexEvents={jobStart:{dialogue:'E-jobStart',sequence:['smoking','working']},testPassed:{dialogue:'E-testPassed',sequence:['speaking']},deploymentComplete:{dialogue:'O-10',sequence:['smoking','speaking']}};
