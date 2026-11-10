@@ -480,6 +480,22 @@ app.whenReady().then(() => {
           approvedPoseChecked[pose]=await win.webContents.executeJavaScript(`new Promise(resolve=>{let n=0;const timer=setInterval(()=>{const im=document.querySelector('#app .pet-stage:not([data-exiting]) img');if(window.__lastPetState===${JSON.stringify(pose)}&&im?.complete&&im.naturalWidth===${width}&&im.currentSrc.includes(${JSON.stringify(pose+'-')})){clearInterval(timer);resolve(true);}else if(++n>100){clearInterval(timer);resolve(false);}},100);})`);
         }
         if(Object.values(approvedPoseChecked).some(value=>!value))throw Error('Approved pose QA failed: '+JSON.stringify(approvedPoseChecked));
+        // Native Windows regression: a DPI-like resize must not survive while
+        // a pointer drag is active. No source images or display settings change.
+        qaStage='drag dimensions and focus repair';
+        const dragAnchor=win.getBounds();
+        drag={bounds:dragAnchor,point:screen.getCursorScreenPoint()};
+        focusChromeRepair.cancelPending();
+        const repairSuppressed=focusChromeRepair.perform('qa-drag')===false;
+        win.setBounds({...dragAnchor,width:dragAnchor.width+60,height:dragAnchor.height+75});
+        await new Promise(resolve=>setTimeout(resolve,150));
+        const dragAfter=win.getBounds();
+        const keptDragSize=sameSize(dragAnchor,dragAfter);
+        endDrag();
+        const dragSizeInvariant={passed:repairSuppressed&&keptDragSize,repairSuppressed,keptDragSize,
+         expected:{width:dragAnchor.width,height:dragAnchor.height},
+         actual:{width:dragAfter.width,height:dragAfter.height}};
+        if(!dragSizeInvariant.passed)throw Error('B19 Windows drag/DPI size protection failed: '+JSON.stringify(dragSizeInvariant));
         qaStage='dynamic timing';
         // Actual packaged renderer timing (independent of deterministic unit clocks).
         await win.webContents.executeJavaScript(`window.__hotfixTimeline=[];document.querySelector('#app').addEventListener('pet-state',e=>window.__hotfixTimeline.push({pose:e.detail,at:performance.now()}));true;`);
@@ -617,7 +633,7 @@ app.whenReady().then(() => {
         finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
         const windowAudit=nativeWindowAudit([{role:'pet',window:win},...(diagnostics?[{role:'diagnostics',window:diagnostics}]:[]),...(speechWindow?[{role:'speech',window:speechWindow}]:[])]);
         writeFileSync(reportFile,JSON.stringify({passed:true,windowAudit,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dynamicTiming,compositing,speechEdges,clearRegions,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dragSizeInvariant,dynamicTiming,compositing,speechEdges,clearRegions,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,commandSequence,recentCommandTrace:commandTrace.slice(-16),error:String(error)}));app.exit(1); }
     });
