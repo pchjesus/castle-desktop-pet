@@ -130,7 +130,7 @@ nav{border-bottom:1px solid #4b5b6c;padding-bottom:11px}
 nav button{background:#354251;border:1px solid #62768e;color:#dbe4ef;font-weight:650}
 nav button:hover,nav button:focus-visible{background:#4d647d;border-color:#b8cee5}
 nav button[aria-selected=true]{background:#667f9d;color:#fff;border:1px solid #c5d8ed;box-shadow:inset 0 0 0 1px #8ba6c3}
-button:not(.menu-resize-corner):not(button:not(.menu-resize-corner):not(button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!important}
+button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!important}
 .minute-controls{display:grid;gap:12px}
 .minute-control{display:flex;flex-direction:column;gap:5px;padding:13px 15px 11px;border:1px solid #677e98;background:#303d4d;border-radius:8px}
 .minute-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -146,7 +146,36 @@ button:not(.menu-resize-corner):not(button:not(.menu-resize-corner):not(button[a
 .more-links button{background:#42556d}
 .status-list dt{color:#a9c2da}
 .status-list dd{color:#eef5fc}
-@media (prefers-reduced-motion:reduce){</style></head><body><main>
+
+/* B-18: visible and aligned minute sliders across desktop and compact menus. */
+#panel-frequency{scrollbar-gutter:stable}
+#panel-frequency .frequency-view[data-frequency-view="home"]{height:auto;min-height:0;gap:9px}
+.minute-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
+.minute-control{display:grid;grid-template-rows:auto 24px auto;gap:3px;min-width:0;padding:8px 12px;border-radius:6px}
+.minute-heading{display:grid;grid-template-columns:minmax(0,1fr) 68px;align-items:center;gap:8px;min-width:0}
+.minute-heading strong{font-size:13px;line-height:1.25;min-width:0;white-space:normal}
+.minute-heading output{justify-self:end;text-align:right;font-size:14px;line-height:1.3;font-variant-numeric:tabular-nums}
+.minute-slider{display:block;width:100%;min-width:0;height:24px;margin:0;padding:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
+.minute-slider::-webkit-slider-runnable-track{height:8px;border:1px solid #a2b7d1;border-radius:5px;background:linear-gradient(to right,#a3c8f2 0%,#a3c8f2 var(--progress,0%),#5b728e var(--progress,0%),#5b728e 100%)}
+.minute-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin-top:-6px;border:2px solid #365575;border-radius:50%;background:#e8f2ff;box-shadow:0 0 0 1px #c8dcf3}
+.minute-slider:focus-visible{outline:2px solid #e1efff;outline-offset:2px}
+.minute-scale{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;color:#c5d6e9}
+.minute-scale span{font-size:11px;line-height:1.2;white-space:nowrap}
+.frequency-entry{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:12px;padding:9px 12px;min-width:0}
+.frequency-entry strong{font-size:13px;line-height:1.3}
+.frequency-entry p{margin:3px 0 0;font-size:11px;line-height:1.4}
+.frequency-entry button{width:100%;min-width:0}
+#panel-frequency .frequency-view[data-frequency-view="home"] .frequency-note{font-size:11px;line-height:1.35}
+@media(max-width:395px),(max-height:410px){
+ .minute-control{padding:7px 9px}
+ .minute-heading{grid-template-columns:minmax(0,1fr) 54px;gap:5px}
+ .minute-heading strong{font-size:12px}
+ .minute-heading output{font-size:12px}
+ .minute-scale span{font-size:10px}
+ .frequency-entry{grid-template-columns:minmax(0,1fr) 84px;gap:7px;padding:8px}
+ .frequency-entry button{min-height:32px;font-size:11px}
+}
+</style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
 <section id="panel-basic" role="tabpanel" aria-labelledby="tab-basic" data-panel="basic">
@@ -162,7 +191,7 @@ button:not(.menu-resize-corner):not(button:not(.menu-resize-corner):not(button[a
 <label class="minute-control" for="cooldown-minutes"><span class="minute-heading"><strong>자동 사격 후 쿨다운</strong><output id="cooldown-minutes-output" for="cooldown-minutes">4분</output></span><input id="cooldown-minutes" class="minute-slider" data-minute-key="shotCooldownMin" type="range" min="1" max="15" step="1" value="4"><span class="minute-scale"><span>1분 · 짧게</span><span>15분 · 길게</span></span></label>
 </div>
 <div class="frequency-entry"><div><strong>행동별 등장 빈도</strong><p>앉기, 작업하기, 사격 등을 개별 설정</p></div><button id="edit-action-weights" data-frequency-open="weights">조절하기</button></div>
-<p class="frequency-note">슬라이더를 조절하면 선택한 분 간격으로 저장돼요. 이전 설정의 랜덤 간격은 변경 전까지 유지돼요. 사격 쿨다운은 자동 사격에만 적용돼요. 행동별 등장 비중은 별도로 조절할 수 있어요.</p>
+<p class="frequency-note">변경하면 자동 저장돼요. 기존 랜덤 간격은 첫 조절 전까지 유지되며, 사격 쿨다운은 자동 사격에만 적용돼요.</p>
 </div>
 <div class="frequency-view" data-frequency-view="weights" hidden>
 <div class="more-head"><button class="back" data-frequency-back>‹ 뒤로</button><strong>행동별 등장 빈도</strong><small>자동 행동</small></div>
@@ -221,6 +250,7 @@ function updateMinutesUI(slider){
  const output=document.querySelector('#'+slider.id+'-output');
  output.textContent=slider.value+'분';
  slider.style.setProperty('--progress',(((Number(slider.value)-1)/14)*100)+'%');
+ slider.setAttribute('aria-valuetext',slider.value+'분');
 }
 for(const slider of document.querySelectorAll('[data-minute-key]')){
  const key=slider.dataset.minuteKey;
