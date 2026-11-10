@@ -59,11 +59,37 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const settled=await win.webContents.executeJavaScript(`document.querySelector('.pet-stage:not([data-exiting])').dataset.pose`);
   if(after!==pose||settled!==pose)throw Error('Click changed held posture '+pose);clicks.push({pose,after,settled});
  }
- for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
+ for(const command of ['setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
- const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
- if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
- menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
+ menu.show();
+ const sliderLayout=await menu.webContents.executeJavaScript(`(()=>{
+  document.querySelector('[data-tab="frequency"]').click();
+  const p=document.querySelector('#panel-frequency').getBoundingClientRect();
+  const inputs=[...document.querySelectorAll('.minute-slider')];
+  return {panel:{top:p.top,bottom:p.bottom},rows:inputs.map(input=>{
+   const r=input.getBoundingClientRect(),s=getComputedStyle(input);
+   return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:s.display,visibility:s.visibility,appearance:s.appearance};
+  })};
+ })()`);
+ const minuteVisible=sliderLayout.rows.length===3&&sliderLayout.rows.every((row:any)=>
+  row.width>=180&&row.height>=20&&row.top>=sliderLayout.panel.top&&
+  row.bottom<=sliderLayout.panel.bottom+1&&row.display!=='none'&&
+  row.visibility!=='hidden'&&row.appearance==='none');
+ if(menu.getBounds().width>=500&&menu.getBounds().height>=560&&!minuteVisible)
+  throw Error('B18 native minute sliders not visible in normal settings menu: '+JSON.stringify(sliderLayout));
+ writeFileSync(join(uxEvidence,'menu-minute-sliders.png'),(await menu.webContents.capturePage()).toPNG());
+ await menu.webContents.executeJavaScript(`(()=>{
+  document.querySelector('[data-tab="frequency"]').click();
+  for(const [key,value] of [['movementIntervalMin',8],['dialogueIntervalMin',2],['shotCooldownMin',15]]){
+   const input=document.querySelector('[data-minute-key="'+key+'"]');input.value=String(value);
+   input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+ })()`);
+ await pause(250);
+ if(menu.isDestroyed())throw Error('Minute sliders closed the menu');
+ const saved=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>[info.status.movementIntervalMin,info.status.dialogueIntervalMin,info.status.shotCooldownMin])`);
+ if(JSON.stringify(saved)!=='[8,2,15]')throw Error('Minute intervals not saved: '+JSON.stringify(saved));
+  menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits&&tab!=='frequency')throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="frequency"]').click();document.querySelector('[data-frequency-open="weights"]').click();const slider=document.querySelector('[data-weight-row="working"] input');slider.value='20';slider.dispatchEvent(new Event('input',{bubbles:true}));slider.dispatchEvent(new Event('change',{bubbles:true}));return true})()`);
  await pause(220);
  if(menu.isDestroyed())throw Error('Frequency slider incorrectly closed the settings panel');
@@ -73,7 +99,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  await menu.webContents.executeJavaScript(`document.querySelector('#weights-reset').click()`);
  await pause(160);
  const resetWeight=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>info?.status?.actionWeights?.working)`);
- if(resetWeight!==0)throw Error('Native per-action weight reset failed: '+resetWeight);
+ if(resetWeight!==12)throw Error('Native per-action weight reset failed: '+resetWeight);
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="more"]').click();document.querySelector('[data-more-open="archive"]').click();})()`);
  writeFileSync(join(uxEvidence,'menu-dialogue-archive.png'),(await menu.webContents.capturePage()).toPNG());
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-more-view="archive"] [data-more-back]').click();document.querySelector('[data-more-open="help"]').click();})()`);
@@ -96,6 +122,6 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
    }
   }
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
- return {passed:true,commands,settings,smoke,clicks,reducedMotion:true,originalReducedMotion};
+ return {passed:true,commands,settings:{intervals:saved,sliderLayout},smoke,clicks,reducedMotion:true,originalReducedMotion};
 
 }

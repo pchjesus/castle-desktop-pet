@@ -28,12 +28,7 @@ footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px
 .more-help{overflow:auto;font-size:11px;padding-right:3px}.more-help p{margin:0 0 8px;font-size:11px}
 .more-view .stack{flex-shrink:0}
 .status-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:3px}
-.status-scroll .status-list{font-size:10px;grid-template-columns:72px 1fr}
-.codex-tests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
-.codex-tests button{font-size:10px;min-height:32px;padding:4px 1px}
-#codex-logs{font-size:10px;display:grid;gap:3px;color:#c8d1de}
-#codex-logs p{margin:0;font-size:10px}
-#codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
+
 
 
 /* Deliberately dark, readable, rectangular native panel. No Acrylic trickery. */
@@ -47,8 +42,7 @@ nav button[aria-selected=true]{background:#43546c;color:#fff;border-color:#a9b7c
 button,select,#dialogue-search{color:#edf1f7;background:#292f3d;border:1px solid #535f71;border-radius:4px;text-shadow:none}
 button:hover,button:focus-visible,select:focus-visible{background:#45556c;outline:1px solid #b9c6d9}
 button[aria-pressed=true]{background:#405d7b;border-color:#b3c9db}
-h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:#cbd4de}
-.archive-item{background:#242b38;border-color:#495566;border-radius:4px}
+h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,.archive-item{background:#242b38;border-color:#495566;border-radius:4px}
 .archive-item strong,.archive-item p,.status-list{color:#ecf0f5}
 .archive-status{color:#d2deec}
 footer{border-color:#495363}
@@ -95,13 +89,13 @@ footer button{min-height:30px}
 .archive-item p{font-size:12px}
 #archive-results{gap:9px}
 .status-scroll .status-list{font-size:13px;grid-template-columns:95px minmax(0,1fr);gap:11px}
-.codex-tests button{font-size:12px;min-height:46px}
-#codex-logs,#codex-logs p,#codex-result{font-size:12px}
 .more-help{overflow:auto;scrollbar-width:thin}
 .more-help p{margin:0 0 15px}
 .frequency-view[hidden]{display:none}
 .frequency-view:not([hidden]){display:flex;flex-direction:column;gap:11px;height:100%;min-height:0}
 .frequency-view h2{flex-shrink:0}
+#panel-frequency .frequency-view[data-frequency-view="home"]{height:auto;min-height:100%;}
+#panel-frequency .frequency-view[data-frequency-view="home"] .minute-controls,#panel-frequency .frequency-view[data-frequency-view="home"] .frequency-entry{flex-shrink:0}
 .frequency-note{font-size:12px;line-height:1.5;margin:0;color:rgba(255,255,255,.89)}
 .frequency-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:15px;border:1px solid rgba(255,255,255,.33);background:rgba(255,255,255,.08)}
 .frequency-entry strong{font-size:14px}.frequency-entry p{margin:5px 0 0;font-size:12px}
@@ -128,6 +122,59 @@ footer button{min-height:30px}
  p{font-size:11px}.frequency-entry{padding:8px}.frequency-entry button{width:85px}
  .frequency-view:not([hidden]){gap:6px}
 }
+
+/* Approved square outer window with softer charcoal contrast and distinct controls */
+main{background:rgba(32,39,50,.97);border:1px solid #8899ad}
+header{border-bottom:1px solid #536277;padding-bottom:8px}
+nav{border-bottom:1px solid #4b5b6c;padding-bottom:11px}
+nav button{background:#354251;border:1px solid #62768e;color:#dbe4ef;font-weight:650}
+nav button:hover,nav button:focus-visible{background:#4d647d;border-color:#b8cee5}
+nav button[aria-selected=true]{background:#667f9d;color:#fff;border:1px solid #c5d8ed;box-shadow:inset 0 0 0 1px #8ba6c3}
+button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!important}
+.minute-controls{display:grid;gap:12px}
+.minute-control{display:flex;flex-direction:column;gap:5px;padding:13px 15px 11px;border:1px solid #677e98;background:#303d4d;border-radius:8px}
+.minute-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.minute-heading strong{font-size:14px;color:#f2f6fc}
+.minute-heading output{font-size:15px;font-weight:750;color:#e1efff}
+.minute-slider{width:100%;height:28px;cursor:pointer;accent-color:#91bce9}
+.minute-slider:focus-visible{outline:2px solid #c4ddfa;outline-offset:3px}
+.minute-scale{display:flex;justify-content:space-between;color:#b7c8db;font-size:11px}
+.minute-scale span{font-size:11px}
+.frequency-entry{background:#334559;border:1px solid #68829c;border-radius:8px}
+.action-weight-row{background:#344356;border:1px solid #657e98;border-radius:8px}
+.archive-item{background:#344255;border-color:#72859b}
+.more-links button{background:#42556d}
+.status-list dt{color:#a9c2da}
+.status-list dd{color:#eef5fc}
+
+/* B-18: visible and aligned minute sliders across desktop and compact menus. */
+#panel-frequency{scrollbar-gutter:stable}
+#panel-frequency .frequency-view[data-frequency-view="home"]{height:auto;min-height:0;gap:9px}
+.minute-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
+.minute-control{display:grid;grid-template-rows:auto 24px auto;gap:3px;min-width:0;padding:8px 12px;border-radius:6px}
+.minute-heading{display:grid;grid-template-columns:minmax(0,1fr) 68px;align-items:center;gap:8px;min-width:0}
+.minute-heading strong{font-size:13px;line-height:1.25;min-width:0;white-space:normal}
+.minute-heading output{justify-self:end;text-align:right;font-size:14px;line-height:1.3;font-variant-numeric:tabular-nums}
+.minute-slider{display:block;width:100%;min-width:0;height:24px;margin:0;padding:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer}
+.minute-slider::-webkit-slider-runnable-track{height:8px;border:1px solid #a2b7d1;border-radius:5px;background:linear-gradient(to right,#a3c8f2 0%,#a3c8f2 var(--progress,0%),#5b728e var(--progress,0%),#5b728e 100%)}
+.minute-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin-top:-6px;border:2px solid #365575;border-radius:50%;background:#e8f2ff;box-shadow:0 0 0 1px #c8dcf3}
+.minute-slider:focus-visible{outline:2px solid #e1efff;outline-offset:2px}
+.minute-scale{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;color:#c5d6e9}
+.minute-scale span{font-size:11px;line-height:1.2;white-space:nowrap}
+.frequency-entry{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:12px;padding:9px 12px;min-width:0}
+.frequency-entry strong{font-size:13px;line-height:1.3}
+.frequency-entry p{margin:3px 0 0;font-size:11px;line-height:1.4}
+.frequency-entry button{width:100%;min-width:0}
+#panel-frequency .frequency-view[data-frequency-view="home"] .frequency-note{font-size:11px;line-height:1.35}
+@media(max-width:395px),(max-height:410px){
+ .minute-control{padding:7px 9px}
+ .minute-heading{grid-template-columns:minmax(0,1fr) 54px;gap:5px}
+ .minute-heading strong{font-size:12px}
+ .minute-heading output{font-size:12px}
+ .minute-scale span{font-size:10px}
+ .frequency-entry{grid-template-columns:minmax(0,1fr) 84px;gap:7px;padding:8px}
+ .frequency-entry button{min-height:32px;font-size:11px}
+}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -138,10 +185,13 @@ footer button{min-height:30px}
 </section>
 <section id="panel-frequency" role="tabpanel" aria-labelledby="tab-frequency" data-panel="frequency" hidden>
 <div class="frequency-view" data-frequency-view="home">
-<h2>자동 움직임 간격</h2><div class="grid"><button data-action="setting:movementFrequency:quiet">조용히<small>5~10분</small></button><button data-action="setting:movementFrequency:default">보통<small>2~3분</small></button><button data-action="setting:movementFrequency:active">활발히<small>1~2분</small></button></div>
-<h2>자동 대사 간격</h2><div class="grid"><button data-action="setting:dialogueFrequency:quiet">조용히<small>8~12분</small></button><button data-action="setting:dialogueFrequency:default">보통<small>4~6분</small></button><button data-action="setting:dialogueFrequency:active">활발히<small>2~3분</small></button></div>
+<div class="minute-controls">
+<label class="minute-control" for="movement-minutes"><span class="minute-heading"><strong>자동 행동 간격</strong><output id="movement-minutes-output" for="movement-minutes">3분</output></span><input id="movement-minutes" class="minute-slider" data-minute-key="movementIntervalMin" type="range" min="1" max="15" step="1" value="3"><span class="minute-scale"><span>1분 · 자주</span><span>15분 · 드물게</span></span></label>
+<label class="minute-control" for="dialogue-minutes"><span class="minute-heading"><strong>자동 대사 간격</strong><output id="dialogue-minutes-output" for="dialogue-minutes">5분</output></span><input id="dialogue-minutes" class="minute-slider" data-minute-key="dialogueIntervalMin" type="range" min="1" max="15" step="1" value="5"><span class="minute-scale"><span>1분 · 자주</span><span>15분 · 드물게</span></span></label>
+<label class="minute-control" for="cooldown-minutes"><span class="minute-heading"><strong>자동 사격 후 쿨다운</strong><output id="cooldown-minutes-output" for="cooldown-minutes">4분</output></span><input id="cooldown-minutes" class="minute-slider" data-minute-key="shotCooldownMin" type="range" min="1" max="15" step="1" value="4"><span class="minute-scale"><span>1분 · 짧게</span><span>15분 · 길게</span></span></label>
+</div>
 <div class="frequency-entry"><div><strong>행동별 등장 빈도</strong><p>앉기, 작업하기, 사격 등을 개별 설정</p></div><button id="edit-action-weights" data-frequency-open="weights">조절하기</button></div>
-<p class="frequency-note">전체 간격과 각 행동의 선택 확률은 별도로 설정돼요.</p>
+<p class="frequency-note">변경하면 자동 저장돼요. 기존 랜덤 간격은 첫 조절 전까지 유지되며, 사격 쿨다운은 자동 사격에만 적용돼요.</p>
 </div>
 <div class="frequency-view" data-frequency-view="weights" hidden>
 <div class="more-head"><button class="back" data-frequency-back>‹ 뒤로</button><strong>행동별 등장 빈도</strong><small>자동 행동</small></div>
@@ -160,18 +210,14 @@ footer button{min-height:30px}
 <div class="more-view" data-more-view="archive" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
 <input id="dialogue-search" type="search" placeholder="대사 또는 ID 검색" aria-label="대사 검색">
-<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option><option value="codex">Codex 이벤트</option></select>
+<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option></select>
 <select id="dialogue-pose" aria-label="동작 필터"><option value="all">모든 동작</option><option value="idle">서 있기</option><option value="smoking">흡연</option><option value="sitting">앉기</option><option value="working">작업</option><option value="speaking">말하기</option><option value="drawing">총 꺼내기</option><option value="firing">한 발 사격</option><option value="dual_firing">양손 사격</option><option value="firing_dynamic">허리 사격</option></select></div>
 <div id="archive-results" aria-live="polite">대사 데이터를 불러오는 중이에요.</div>
 </div>
 <div class="more-view" data-more-view="status" hidden>
-<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>상태 · Codex 테스트</strong></div>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>현재 상태</strong></div>
 <div class="status-scroll">
-<dl class="status-list" id="status-list"><dt>Codex</dt><dd>연결되지 않음</dd></dl>
-<h2>이벤트 시험</h2>
-<div class="codex-tests"><button data-codex-test="jobStart">작업 시작</button><button data-codex-test="testPassed">테스트 통과</button><button data-codex-test="deploymentComplete">배포 완료</button></div>
-<p id="codex-result" role="status" aria-live="polite">테스트는 실제 Codex 연결을 의미하지 않아요.</p>
-<h2>최근 이벤트</h2><div id="codex-logs">아직 수신한 이벤트가 없어요.</div>
+<dl class="status-list" id="status-list"><dt>펫</dt><dd>확인 중</dd></dl>
 </div>
 </div>
 <div class="more-view" data-more-view="help" hidden>
@@ -179,10 +225,11 @@ footer button{min-height:30px}
 <div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
 <p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
 <p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
-<p>기본/빈도: 평소 자세와 움직임·대사 간격을 설정해요. 빈도 탭의 ‘행동별 등장 빈도’에서 각 동작의 자동 선택 비중을 0~40으로 조절할 수 있어요. 0이면 자동 실행하지 않지만 수동 실행은 가능해요.</p><p>이 값은 시간 간격이 아니라 상대적인 등장 확률이에요. 자동 사격이 꺼져 있거나 쿨다운 중이면 사격 동작은 추첨에서 제외돼요.</p>
+<p>기본/빈도: 평소 자세와 자동 행동·대사 간격, 자동 사격 쿨다운을 각각 1~15분으로 설정해요. 기존 랜덤 범위는 슬라이더 조절 후 지정 분 간격으로 바뀌어요.</p><p>‘행동별 등장 빈도’의 비중은 별개로 0~40까지 조절할 수 있어요. 0이면 자동에서만 제외하고 수동 동작은 유지돼요.</p>
 <p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
-<p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
-<p>외부 Codex 훅 또는 검증 스크립트에서 로컬 이벤트 파일에 기록하면 펫이 감지해요. API 호출이나 추가 AI 비용은 없어요. 자세한 연결 방법은 저장소의 B-15 가이드에서 확인할 수 있어요.</p></div>
+
+
+</div>
 </div>
 <div class="more-view" data-more-view="diagnostics" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
@@ -197,14 +244,35 @@ footer button{min-height:30px}
 <div class="menu-resize-corner" data-resize-corner="se" role="button" tabindex="0" aria-label="se 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
 </main><script>
 const params=new URL(location.href).searchParams;
+const intervalDefaults={movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4};
+const intervalPresets={movement:{quiet:8,default:3,active:2},dialogue:{quiet:10,default:5,active:2}};
+function updateMinutesUI(slider){
+ const output=document.querySelector('#'+slider.id+'-output');
+ output.textContent=slider.value+'분';
+ slider.style.setProperty('--progress',(((Number(slider.value)-1)/14)*100)+'%');
+ slider.setAttribute('aria-valuetext',slider.value+'분');
+}
+for(const slider of document.querySelectorAll('[data-minute-key]')){
+ const key=slider.dataset.minuteKey;
+ const fallback=key==='movementIntervalMin'?intervalPresets.movement[params.get('movementFrequency')||'default']:key==='dialogueIntervalMin'?intervalPresets.dialogue[params.get('dialogueFrequency')||'default']:4;
+ const selected=Number(params.get(key))||fallback||intervalDefaults[key];
+ slider.value=String(Math.max(1,Math.min(15,selected)));
+ updateMinutesUI(slider);
+ slider.addEventListener('input',()=>updateMinutesUI(slider));
+ slider.addEventListener('change',()=>{
+  window.castleMenu?.invoke('setting:interval:'+key+':'+slider.value);
+  const note=document.querySelector('.frequency-note');
+  note.textContent='선택한 간격 '+slider.value+'분으로 저장했어요. 현재 실행 중인 동작은 끊지 않아요.';
+ });
+}
 for(const [id,key,label] of [['autonomy-setting','autonomy','움직임'],['dialogue-setting','dialogueEnabled','대사'],['fire-setting','autoFire','사격']]){const button=document.getElementById(id);const enabled=params.get(key)!=='false';button.textContent=label+' '+(enabled?'켜짐':'꺼짐');button.dataset.action='setting:'+key+':'+String(!enabled);button.setAttribute('aria-pressed',String(enabled));}
-for(const key of ['movementFrequency','dialogueFrequency'])for(const button of document.querySelectorAll('[data-action^="setting:'+key+':"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:'+key+':'+(params.get(key)||'default')));
+
 for(const button of document.querySelectorAll('[data-action^="setting:base:"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:base:'+(params.get('base')||'smoking')));
 document.querySelector('#pet-size').value=params.get('size')||'180';
 
 const poseNames={idle:'서 있기',smoking:'흡연',sitting:'앉기',working:'작업',speaking:'말하기',drawing:'총 꺼내기',firing:'한 발 사격',dual_firing:'양손 사격',firing_dynamic:'허리 사격'};
 
-const weightDefaults={idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:0};
+const weightDefaults={idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:12};
 const weightOrder=['idle','smoking','sitting','working','speaking','drawing','firing','dual_firing','firing_dynamic'];
 let weightValues={...weightDefaults},weightBase=params.get('base')||'smoking',weightFire=params.get('autoFire')!=='false';
 try{
@@ -247,11 +315,11 @@ function showFrequencyView(name){
  document.querySelector('#panel-frequency').scrollTop=0;
 }
 
-const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
-const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
+const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','retired event':'기존 대사'};
+const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','repeatedError-candidate':'반복 오류 후보'};
 let archive=[],infoLoaded=false;
 function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
-function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative',codex:'Codex event'}[kind]===line.origin);}
+function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative'}[kind]===line.origin);}
 function renderArchive(){
  const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
  const category=document.querySelector('#dialogue-origin').value,pose=document.querySelector('#dialogue-pose').value;
@@ -268,19 +336,12 @@ function renderArchive(){
  }
 }
 function renderStatus(status){
- const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex',status.codex?.externalEvents>0?'외부 이벤트 수신됨 (Codex 확인 전)':status.codex?.bridgeReady?'로컬 파일 수신 대기':'연결되지 않음']];
- const codex=status.codex||{};
- rows.push(['마지막 이벤트',codex.events?.[0]?.name||'없음']);
- rows.push(['수신 파일',codex.filePath||'확인 중']);
- const box=document.querySelector('#status-list');box.replaceChildren();
+ const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 간격',status.movementIntervalMin?status.movementIntervalMin+'분':'기존 범위'],['대사 간격',status.dialogueIntervalMin?status.dialogueIntervalMin+'분':'기존 범위'],['사격 쿨다운',status.shotCooldownMin?status.shotCooldownMin+'분':'기존 3~5분']];
+ 
+ 
+    const box=document.querySelector('#status-list');box.replaceChildren();
  for(const [key,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;box.append(dt,dd);}
- const list=document.querySelector('#codex-logs');list.replaceChildren();
- if(!codex.events?.length){list.textContent='아직 수신한 이벤트가 없어요.';return;}
- for(const entry of codex.events.slice(0,3)){
-  const p=document.createElement('p');const time=new Date(entry.at);
-  p.textContent=(entry.origin==='test'?'[시험] ':'[외부] ')+entry.name+' · '+(entry.state==='accepted'?'실행':entry.state==='blocked'?'보류/거부':'전달 중')+' · '+(Number.isNaN(time.getTime())?'시간 확인 불가':time.toLocaleTimeString('ko-KR'));
-  list.append(p);
- }
+
 }
 function refreshStatus(){return Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{if(info?.status)renderStatus(info.status);}).catch(()=>{});}
 
@@ -299,24 +360,6 @@ if(event.target.closest('[data-weights-reset]')){
  document.querySelector('#weights-feedback').textContent='기본 행동 비중으로 되돌렸어요.';return;
 }
 const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
-const test=event.target.closest('[data-codex-test]');if(test){
- const name=test.dataset.codexTest;
- const label=document.querySelector('#codex-result');label.textContent='이벤트 전달 중…';
- Promise.resolve(window.castleMenu?.testEvent?.(name)).then(result=>{
-  if(!result?.sent){label.textContent='전송 실패: 펫 상태를 확인해 주세요.';return;}
-  label.textContent='수신 확인 중…';
-  setTimeout(async()=>{
-   try{
-    const info=await window.castleMenu?.getInfo?.(),records=info?.status?.codex?.events||[];
-    if(info?.status)renderStatus(info.status);
-    const latest=records.find(row=>row.id===result.id);
-    label.textContent=latest?.state==='blocked'?'현재 실행 중인 동작 때문에 거부됐어요. 끝난 뒤 다시 눌러 주세요.':
-     latest?.state==='accepted'?'아킬라가 이벤트를 실행했어요.':'이벤트를 전달했어요. 동작과 최근 기록을 확인해 주세요.';
-   }catch{label.textContent='이벤트를 보냈어요. 최근 기록을 확인해 주세요.';}
-  },450);
- }).catch(()=>{label.textContent='시험 이벤트 전송에 실패했어요.';});
- return;
-}
 const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
 document.querySelector('#pet-size').addEventListener('change',event=>window.castleMenu?.invoke('size:'+event.target.value));
 document.querySelector('#close-menu').addEventListener('click',()=>window.castleMenu?.dismiss());

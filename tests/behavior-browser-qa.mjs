@@ -8,7 +8,7 @@ await page.evaluate(()=>window.__manual('speaking'));await page.waitForFunction(
 await page.evaluate(()=>window.__manual('speaking'));await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting]) img')?.currentSrc.includes('speaking-'));await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting]) img')?.currentSrc.includes('/idle.png'),null,{timeout:20000});report.checks.push('natural speech completion restores configured Idle');
 await page.evaluate(()=>{window.__manual('settings:'+JSON.stringify({base:'smoking',autonomy:false,autoFire:false}));window.__manual('firing_dynamic')});assert.equal(await page.locator('#pet-speech').getAttribute('data-dialogue'),'O-01');await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting]) img')?.currentSrc.includes('/smoking.png'));const dynamicAt=Date.now();await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting]) img')?.currentSrc.includes('/firing_dynamic.png'),null,{timeout:2000});assert(Date.now()-dynamicAt>=800&&Date.now()-dynamicAt<=1200);await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting]) img')?.currentSrc.includes('/smoking.png'),null,{timeout:5000});report.checks.push('manual Dynamic bypasses auto-fire OFF, O01 precedes shot, returns Smoking');
 // Switching from Sitting to Dynamic must preserve Sitting during the 1s
-// lead-in; Codex jobStart must not render an unrelated Smoking frame either.
+// lead-in; standalone Windows events do not insert an unrelated Smoking frame.
 await page.evaluate(()=>{window.__manual('settings:'+JSON.stringify({base:'idle',autonomy:false,autoFire:false,dialogueEnabled:false}));});
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='idle');
 await page.evaluate(()=>{window.__poseTrace=[];document.querySelector('#app').addEventListener('pet-render',e=>{if(e.detail.phase==='requested')window.__poseTrace.push(e.detail.pose);});window.__manual('sitting');});
@@ -19,11 +19,10 @@ assert.equal(await page.locator('#app .pet-stage:not([data-exiting])').getAttrib
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='firing_dynamic');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='idle',null,{timeout:5500});
-await page.evaluate(()=>{window.__poseTrace=[];window.__manual({kind:'codex-event',id:1,name:'jobStart'});});
-await page.waitForTimeout(500);
-assert.equal(await page.locator('#app .pet-stage:not([data-exiting])').getAttribute('data-pose'),'idle');
+await page.waitForTimeout(6200); // Let the previous manual firing line finish before a low-priority OS event.
+await page.evaluate(()=>{window.__poseTrace=[];window.__manual({kind:'windows-event',name:'powerAC'});});
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='working');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
-report.checks.push('Manual Dynamic and Codex event hold the prior pose until direct action, with no inserted Smoking');
+report.checks.push('Manual Dynamic and AC power event avoid forced Smoking between actions');
 await page.goto(`http://127.0.0.1:${port}/electron/pet-menu.html?base=idle&autonomy=false&autoFire=true`);assert.equal(await page.locator('#autonomy-setting').innerText(),'움직임 꺼짐');await page.click('#fire-setting');assert.equal(await page.evaluate(()=>window.__command),'setting:autoFire:false');await page.screenshot({path:'artifacts/b13/menu.png'});report.checks.push('menu settings reflect persisted query and dispatch explicit changes');assert.deepEqual(report.errors,[]);report.passed=true;
 }catch(error){report.errors.push(String(error));process.exitCode=1;}finally{await browser?.close();await server.close();await writeFile('artifacts/b13/report.json',JSON.stringify(report,null,2));console.log(report);}

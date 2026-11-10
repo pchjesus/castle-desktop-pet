@@ -24,6 +24,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  let speechRevision=0;const scheduleRevision={movement:0,dialogue:0};
  let movementTimer,dialogueTimer,speechTimer,nextMovement=0,nextDialogue=0,speechUntil=0,lastAutoSpeech=-Infinity;
  const range=(a,b)=>a+random()*(b-a);
+ const cooldownDelay=()=>settings.shotCooldownMin?settings.shotCooldownMin*60000:range(180000,300000);
  const show=value=>{pose=value;render(value,{source:mode});};
  function cancel(id){if(id!==undefined){clearTimer(id);timers.delete(id);}}
  function later(fn,ms){
@@ -32,7 +33,8 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   timers.add(id);return id;
  }
  function schedule(kind,fn){
-  const delay=cadence(kind,kind==='movement'?settings.movementFrequency:settings.dialogueFrequency,random);
+  const minutes=kind==='movement'?settings.movementIntervalMin:settings.dialogueIntervalMin;
+  const delay=minutes?minutes*60000:cadence(kind,kind==='movement'?settings.movementFrequency:settings.dialogueFrequency,random);
   // Scheduler handles are deliberately outside action generation/timers.
   const revision=++scheduleRevision[kind];
   const due=now()+delay,id=setTimer(()=>{
@@ -49,7 +51,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function armDialogue(){if(!disposed&&!hidden&&settings.dialogueEnabled&&dialogueTimer===undefined)schedule('dialogue',autoDialogue);}
  function clearSpeech(){speechRevision++;cancel(speechTimer);speechTimer=undefined;speechUntil=0;speak('');}
  function clear(keepSpeech=false){
-  if(mode==='auto'&&autoShot){cooldown=now()+range(180000,300000);autoShot=false;}
+  if(mode==='auto'&&autoShot){cooldown=now()+cooldownDelay();autoShot=false;}
   generation++;heldUntil=0;for(const id of timers)clearTimer(id);timers.clear();stopMovement();
   if(!keepSpeech)clearSpeech();
  }
@@ -87,7 +89,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  }
  function autoDialogue(){
   const compatible=mode==='base'||mode==='auto'&&['idle','smoking','sitting','speaking'].includes(pose);
-  if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=frequencies.dialogue[settings.dialogueFrequency][0])say(line(pose)||line('speaking'),true);
+  if(compatible&&now()>=speechUntil&&now()-lastAutoSpeech>=(settings.dialogueIntervalMin?settings.dialogueIntervalMin*60000:frequencies.dialogue[settings.dialogueFrequency][0]))say(line(pose)||line('speaking'),true);
   // Busy/manual/event slots are discarded. Never queue a burst behind the user.
   armDialogue();
  }
@@ -95,11 +97,11 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  function action(value,source,forced){
   // Movement never truncates a line from its independently running scheduler.
   clear(source==='auto');resetClicks();mode=source;
-  const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:0};
-  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):source!=='auto'&&random()<(probability[value]||0)?line(value):undefined);
+  const probability={idle:.25,smoking:.35,sitting:.25,speaking:1,drawing:.5,firing:.3,dual_firing:.2,working:.35};
+  let record=forced||(value==='firing_dynamic'?(source!=='auto'||settings.dialogueEnabled?dialogues.find(d=>d.id==='O-01'):undefined):value==='sitting'||value==='drawing'?poseEntryLine(value,source):((source!=='auto'||value==='working')&&random()<(probability[value]||0))?line(value):undefined);
   if(!record&&source==='manual'&&value==='speaking')record=dialogues.find(d=>d.id==='C-02');
   const speech=say(record,source==='auto');
-  const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+range(180000,300000);autoShot=false;}};
+  const endShot=()=>{if(source==='auto'&&shots.has(value)){cooldown=now()+cooldownDelay();autoShot=false;}};
   const start=()=>{
    autoShot=source==='auto'&&shots.has(value);show(value);
    if(value==='firing_dynamic')later(()=>{endShot();later(()=>base(true),850);},1500);
@@ -155,7 +157,14 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   const previous=settings,next=normalizeSettings(value);settings=next;
   // Weight tuning is purely a future random-selection preference. Do not
   // interrupt an active pose, spoken line or event to update a slider.
-  if(['base','autonomy','autoFire','movementFrequency','dialogueEnabled','dialogueFrequency'].every(k=>previous[k]===next[k]))return;
+  const controlKeys=['base','autonomy','autoFire','movementFrequency','dialogueEnabled','dialogueFrequency'];
+  if(controlKeys.every(k=>previous[k]===next[k])){
+   // A timing adjustment must not interrupt a manually selected pose,
+   // event animation or its speech. Rearm only the relevant scheduler.
+   if(previous.movementIntervalMin!==next.movementIntervalMin){stopMovement();armMovement();}
+   if(previous.dialogueIntervalMin!==next.dialogueIntervalMin){stopDialogue();armDialogue();}
+   return;
+  }
   stopDialogue();base();
  }
  function visibility(value,force=false){
@@ -171,7 +180,25 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   // Smoking frame. The actual action starts from the existing pose.
   later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;
  }
+ // Local OS events only. No background agent, command execution or Codex hooks.
+ const windowsLines={
+  powerBattery:{id:'WIN-BATTERY',text:'충전기.. 그놈이 네게 신중함과 유연함을 더해줄 거다.'},
+  unlock:{id:'WIN-UNLOCK',text:'여러모로... 나쁘지 않았다. 신입.'}
+ };
+ const lastWindows=new Map();
+ function windowsNotification(name){
+  if(disposed||hidden||mode!=='base'||now()<speechUntil)return false;
+  if(!['powerAC','powerBattery','unlock'].includes(name))return false;
+  if(now()-(lastWindows.get(name)??-Infinity)<20000)return false;
+  lastWindows.set(name,now());
+  if(name==='powerAC'){
+   action('working','auto',dialogues.find(d=>d.id==='E-jobStart'));
+   return true;
+  }
+  say(windowsLines[name],true);
+  return true;
+ }
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
  base();
- return {manual,click,drag,dragEnd,configure,visibility,event,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
+ return {manual,click,drag,dragEnd,configure,visibility,event,windowsNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }

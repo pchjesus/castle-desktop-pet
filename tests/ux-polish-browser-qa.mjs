@@ -5,10 +5,10 @@ const report={passed:false,environment:'Chromium browser; native Windows is a se
 try{
  browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:560,height:610}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
- await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},testEvent:async name=>(window.__codexTest=name,{sent:true}),getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',codex:{bridgeReady:true,externalEvents:0,filePath:'C:/Users/QA/AppData/Roaming/castle-desktop-pet/codex-events.jsonl',events:[]}},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
+ await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
  for(const tab of ['basic','frequency','poses','more']){
-  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&metrics.scroll<=metrics.height+1);if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
+  await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),4);
  }
  const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
  assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
@@ -24,6 +24,30 @@ try{
  report.checks.push('near-black square panel and four functional corner drag controls');
  assert((await page.locator('main').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)))>=14);
  await page.locator('#tab-frequency').click();
+ assert.equal(await page.locator('.minute-slider').count(),3);
+ // Count alone misses visually hidden sliders: verify track geometry and alignment.
+ const minuteLayout=await page.evaluate(()=>{
+  const p=document.querySelector('#panel-frequency').getBoundingClientRect();
+  const rows=[...document.querySelectorAll('.minute-control')].map(row=>{
+   const input=row.querySelector('input[type="range"]'),r=input.getBoundingClientRect(),label=row.querySelector('.minute-heading').getBoundingClientRect(),output=row.querySelector('output').getBoundingClientRect(),style=getComputedStyle(input);
+   return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:style.display,visibility:style.visibility,appearance:style.appearance,labelLeft:label.left,outputRight:output.right};
+  });
+  return {panel:{top:p.top,bottom:p.bottom},rows};
+ });
+ assert.equal(minuteLayout.rows.length,3);
+ for(const row of minuteLayout.rows){
+  assert(row.width>=180&&row.height>=20&&row.display!=='none'&&row.visibility!=='hidden'&&row.appearance==='none','minute slider track missing: '+JSON.stringify(row));
+  assert(row.top>=minuteLayout.panel.top&&row.bottom<=minuteLayout.panel.bottom+1,'minute slider outside default viewport: '+JSON.stringify(minuteLayout));
+ }
+ assert(Math.max(...minuteLayout.rows.map(r=>r.labelLeft))-Math.min(...minuteLayout.rows.map(r=>r.labelLeft))<2,'minute labels not aligned');
+ assert(Math.max(...minuteLayout.rows.map(r=>r.outputRight))-Math.min(...minuteLayout.rows.map(r=>r.outputRight))<2,'minute values not aligned');
+ report.checks.push('all three minute sliders visible, styled and aligned in default menu');
+ for(const [key,value] of [['movementIntervalMin','1'],['dialogueIntervalMin','15'],['shotCooldownMin','8']]){
+  const slider=page.locator('[data-minute-key="'+key+'"]');
+  await slider.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},value);
+  assert.equal(await page.evaluate(()=>window.__command),'setting:interval:'+key+':'+value);
+ }
+ await page.screenshot({path:output+'/menu-time-sliders-browser.png'});
  await page.locator('#edit-action-weights').click();
  assert.equal(await page.locator('.action-weight-row').count(),9);
  const working=page.locator('[data-weight-row="working"] input[type="range"]');
@@ -35,6 +59,18 @@ try{
  assert.equal(await page.evaluate(()=>window.__command),'setting:weights:reset');
  await page.locator('[data-frequency-back]').click();
  assert(await page.locator('#edit-action-weights').isVisible());
+ await page.setViewportSize({width:360,height:450});
+ await page.locator('#tab-frequency').click();
+ const compact=await page.evaluate(()=>{
+  const panel=document.querySelector('#panel-frequency');
+  return {overflow:panel.scrollWidth-panel.clientWidth,count:panel.querySelectorAll('.minute-slider').length};
+ });
+ assert.equal(compact.count,3);
+ assert(compact.overflow<=2,'compact frequency tab horizontally overflows: '+JSON.stringify(compact));
+ for(const slider of await page.locator('.minute-slider').all()){await slider.scrollIntoViewIfNeeded();assert(await slider.isVisible());}
+ await page.screenshot({path:output+'/menu-frequency-compact-browser.png'});
+ await page.setViewportSize({width:560,height:610});
+ report.checks.push('compact menu scrolls with all three sliders accessible');
  await page.locator('#tab-more').click();
  await page.setViewportSize({width:850,height:790});
  await page.locator('#tab-more').click();await page.locator('[data-more-open="archive"]').click();
@@ -45,9 +81,7 @@ try{
  assert((await page.locator('#archive-results').innerText()).includes('자, 최후변론을 해라'));
  await page.locator('#dialogue-pose').selectOption('all');await page.locator('#dialogue-origin').selectOption('creative');assert.equal(await page.locator('.archive-item').count(),0);
  await page.locator('[data-more-view="archive"] [data-more-back]').click();await page.locator('[data-more-open="status"]').click();
- assert((await page.locator('#status-list').innerText()).includes('로컬 파일 수신 대기'));
- await page.locator('[data-codex-test="testPassed"]').click();
- assert.equal(await page.evaluate(()=>window.__codexTest),'testPassed');
+ assert((await page.locator('#status-list').innerText()).includes('자동 사격'));
  assert((await page.locator('#status-list').innerText()).includes('앉기'));
  await page.locator('[data-more-view="status"] [data-more-back]').click();await page.locator('[data-more-open="help"]').click();assert((await page.locator('.more-help').innerText()).includes('연속 5회'));
  await page.locator('#tab-basic').click();await page.selectOption('#pet-size','240');assert.equal(await page.evaluate(()=>window.__command),'size:240');

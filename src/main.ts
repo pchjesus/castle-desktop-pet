@@ -32,9 +32,8 @@ const effectivelyHidden=()=>suspended||(!nativeWindow&&document.hidden);
 function updateVisibility(){const hidden=effectivelyHidden();root.dispatchEvent(new CustomEvent('pet-visibility',{detail:hidden}));behavior.visibility(hidden);}
 function manual(pose:PetState,id=0){manualId=id;trace({phase:'received',pose,commandId:id,documentHidden:document.hidden,suspended});manualCallActive=true;let accepted;try{accepted=behavior.manual(pose);}finally{manualCallActive=false;}trace({phase:accepted?'accepted':'blocked',pose,commandId:id,hidden:behavior.snapshot().hidden});}
 const unsubscribe=window.pet?.onAction((state)=>{
- if(typeof state==='object'&&state?.kind==='codex-event'&&Number.isSafeInteger(state.id)&&['jobStart','testPassed','deploymentComplete'].includes(state.name)){
-  const accepted=behavior.event(state.name);
-  window.pet?.reportCodexResult?.({id:state.id,name:state.name,accepted});return;
+ if(typeof state==='object'&&state?.kind==='windows-event'){
+  behavior.windowsNotification?.(state.name);return;
  }
  if(typeof state==='object'&&state?.kind==='manual'&&Number.isSafeInteger(state.id)&&permitted.has(state.pose as PetState)){manual(state.pose as PetState,state.id);return;}
  if(typeof state!=='string')return;

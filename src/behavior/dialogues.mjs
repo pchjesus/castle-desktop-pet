@@ -138,11 +138,11 @@ export const dialogues = [
       "speaking"
     ],
     "triggers": [
-      "deploymentComplete"
+      "autonomous"
     ],
     "rarity": "normal",
     "cooldownMs": 120000,
-    "random": false
+    "random": true
   },
   {
     "id": "O-11",
@@ -487,32 +487,34 @@ export const dialogues = [
   {
     "id": "E-jobStart",
     "text": "남이 망가뜨리게 둘 바에야.. 먼저 작업부터, 처리한다.",
-    "origin": "Codex event",
+    "origin": "original creative",
     "approval": "confirmed",
     "poses": [
       "working"
     ],
     "triggers": [
-      "jobStart"
+      "autonomous"
     ],
-    "rarity": "event",
-    "cooldownMs": 0,
-    "random": false
+    "rarity": "normal",
+    "cooldownMs": 120000,
+    "random": true
   },
   {
     "id": "E-testPassed",
     "text": "코딩 실력은 인정하지. 감탄했다, 오픈AI.",
-    "origin": "Codex event",
+    "origin": "original creative",
     "approval": "confirmed",
     "poses": [
       "speaking"
     ],
     "triggers": [
-      "testPassed"
+      "autonomous"
     ],
-    "rarity": "event",
-    "cooldownMs": 0,
-    "random": false
+    "rarity": "normal",
+    "cooldownMs": 120000,
+    "random": true
   }
 ];
-export const codexEvents={jobStart:{dialogue:"E-jobStart",sequence:["smoking","working"]},testPassed:{dialogue:"E-testPassed",sequence:["speaking"]},deploymentComplete:{dialogue:"O-10",sequence:["smoking","speaking"]}};
+
+// Legacy controller contract retained for unit compatibility; no runtime bridge invokes it.
+export const codexEvents={jobStart:{dialogue:'E-jobStart',sequence:['smoking','working']},testPassed:{dialogue:'E-testPassed',sequence:['speaking']},deploymentComplete:{dialogue:'O-10',sequence:['smoking','speaking']}};
