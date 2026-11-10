@@ -1,0 +1,32 @@
+{
+  "environment": "Chromium browser + simulated desktop; NOT Windows",
+  "passed": true,
+  "checks": [
+    "12 browser compositions: 120/180/240/360px × light/dark/checker; long speech fits outside whole pet; pointer-events none",
+    "approved image and live HTML/body have clear alpha",
+    "all nine approved runtime poses load",
+    "approved seven Speaking frames retain their order",
+    "real browser Dynamic timeline and independent visible speech",
+    "manual interruption removes stale transitions/timers",
+    "Reduced Motion keeps approved still and dialogue; no crossfade/recoil"
+  ],
+  "errors": [],
+  "timing": {
+    "startDelayMs": 1001,
+    "returnAfterShotMs": 850.7000000001863
+  },
+  "captures": [
+    "120-light.png",
+    "120-dark.png",
+    "120-checker.png",
+    "180-light.png",
+    "180-dark.png",
+    "180-checker.png",
+    "240-light.png",
+    "240-dark.png",
+    "240-checker.png",
+    "360-light.png",
+    "360-dark.png",
+    "360-checker.png"
+  ]
+}

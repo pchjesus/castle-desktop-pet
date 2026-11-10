@@ -1,13 +1,14 @@
 import {extractAlpha,hitTestAlpha,type AlphaMask} from './alpha-hit-test.mjs';
 // No CSS -webkit-app-region:drag: Electron treats drag regions as non-client
 // surfaces which swallow mouse clicks, context menus and cause Windows chrome.
-export function installPetMouse(root:HTMLElement) {
+export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dragStart?:()=>void;dragEnd?:()=>void}={}) {
  let lastPoint: {x:number;y:number}|null=null;
  let lastInteractive: boolean|undefined;
  let dragging=false;
  let pointerId:number|null=null;
+ let origin:{x:number;y:number}|null=null;
  const masks=new Map<string,AlphaMask>();
- function currentImg(){return root.querySelector<HTMLImageElement>('.pet-stage img');}
+ function currentImg(){return root.querySelector<HTMLImageElement>('.pet-stage:not([data-exiting]) img');}
  function maskFor(img:HTMLImageElement):AlphaMask|null {
   if(!img.complete||img.naturalWidth<=0||img.naturalHeight<=0) return null;
   const key=img.currentSrc||img.src;
@@ -65,22 +66,27 @@ export function installPetMouse(root:HTMLElement) {
  });
  root.addEventListener('pointerdown',ev=>{
   if(ev.button!==0||!opaqueAt(ev.clientX,ev.clientY))return;
-  dragging=true;pointerId=ev.pointerId;
+  origin={x:ev.clientX,y:ev.clientY};pointerId=ev.pointerId;
   allowInput(true);
   root.setPointerCapture(ev.pointerId);
-  window.pet?.dragStart();
+
   ev.preventDefault();
  });
  root.addEventListener('pointermove',ev=>{
-  if(dragging&&pointerId===ev.pointerId){window.pet?.dragMove();ev.preventDefault();}
+  if(ev.pointerId!==pointerId||!origin)return;
+  if(!dragging&&Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)>=6){
+   dragging=true;callbacks.dragStart?.();window.pet?.dragStart();
+  }
+  if(dragging){window.pet?.dragMove();ev.preventDefault();}
  });
  function finish(ev?:PointerEvent) {
-  if(!dragging)return;
+  if(pointerId===null)return;
   if(ev&&pointerId!==ev.pointerId)return;
   const last=pointerId;
-  dragging=false;pointerId=null;
+  const wasDragging=dragging;dragging=false;pointerId=null;origin=null;
   if(last!==null&&root.hasPointerCapture(last))root.releasePointerCapture(last);
-  window.pet?.dragEnd();
+  if(wasDragging){window.pet?.dragEnd();callbacks.dragEnd?.();}
+  else if(ev?.type==='pointerup')callbacks.click?.();
   lastInteractive=undefined;refresh();
  }
  root.addEventListener('pointerup',finish);

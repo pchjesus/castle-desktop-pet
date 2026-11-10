@@ -1,0 +1,17 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-9QzGiyDpBmIBZSSvJMDB9vRHo38NoLjcG9P5FJ1qRag='">
+<title>Castle Pet Speech</title><style>
+html,body{margin:0;background:transparent!important;overflow:hidden;color-scheme:normal;pointer-events:none;user-select:none}
+body{padding:4px 4px 18px;box-sizing:border-box}
+#speech{position:relative;display:block;width:max-content;box-sizing:border-box;max-width:228px;padding:8px 11px;border:1px solid #c4baaa;border-radius:14px;background:#f7f4ecf5;color:#252930;font:13px/1.55 system-ui,'Malgun Gothic',sans-serif;overflow-wrap:anywhere;white-space:pre-wrap;opacity:0;transition:opacity 140ms ease;filter:drop-shadow(0 1px 1px #0003)}
+#speech::after{content:'';position:absolute;bottom:-12px;left:var(--tail-x,calc(100% - 28px));width:19px;height:13px;background:#f7f4ec;clip-path:polygon(0 0,100% 100%,68% 0)}
+body[data-placement="upper-right"] #speech::after,body[data-placement="right"] #speech::after{scale:-1 1}
+#speech.visible{opacity:1}
+@media(prefers-reduced-motion:reduce){#speech{transition:none}}
+</style></head><body><div id="speech" role="status" aria-live="polite"></div><script>
+const speech=document.querySelector('#speech');let active=false;
+const measure=()=>window.castleSpeech?.measure(Math.ceil(speech.getBoundingClientRect().height+22),Math.ceil(speech.getBoundingClientRect().width+8));
+window.castleSpeech?.onText(text=>{active=!!text;if(text)speech.textContent=text;speech.classList.remove('visible');if(active&&!window.castleSpeech?.onPlacement)speech.classList.add('visible');measure();});
+window.castleSpeech?.onPlacement?.(layout=>{document.body.dataset.placement=layout.placement;speech.style.setProperty('--tail-x',layout.tailX+'px');if(active&&!speech.classList.contains('visible'))speech.classList.add('visible');if(!active&&speech.classList.contains('visible'))speech.classList.remove('visible');});
+new ResizeObserver(measure).observe(speech);
+</script></body></html>

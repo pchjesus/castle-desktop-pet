@@ -1,43 +1,349 @@
-<!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
-<title>아킬라 메뉴</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:#e7e9ef;font:13px/1.3 system-ui,'Malgun Gothic',sans-serif}
-main{height:100%;padding:12px 12px 9px;background:#22262eeF;border:1px solid #515966;border-radius:12px;overflow-y:auto;box-shadow:0 8px 24px #0005}
-h1{font-size:15px;margin:0 0 7px;font-weight:650}h2{font-size:11px;margin:12px 0 5px;font-weight:550;color:#9faab8}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.grid.poses{grid-template-columns:repeat(2,minmax(0,1fr))}
-button{display:block;border:1px solid #535b66;background:#333a45;color:#f0f2f4;border-radius:7px;min-height:31px;width:100%;padding:5px 4px;cursor:pointer;text-align:center;font:inherit}
-button:hover,button:focus-visible{outline:1px solid #a4c4ff;background:#454f5d}
-button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}button.wide{text-align:left;padding:7px 9px;margin-top:5px}
-button.danger{color:#f1b2b2}small{color:#adb4c0;font-size:10px}.foot{border-top:1px solid #49525d;margin-top:11px;padding-top:7px}
+<title>아킬라 메뉴</title><style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent;color:#e7e9ef;font:12px/1.35 system-ui,'Malgun Gothic',sans-serif}
+main{height:100%;padding:10px;background:transparent;border:1px solid #515966;border-radius:12px;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:9px}
+header,footer,.row{display:flex;align-items:center;gap:7px}header strong{font-size:14px;flex:1}header button{width:25px;min-height:23px;background:transparent;border:0}
+nav,.grid{display:grid;gap:5px;grid-template-columns:repeat(3,minmax(0,1fr))}nav{grid-template-columns:repeat(4,minmax(0,1fr))}nav button{min-height:29px;background:transparent;border-color:transparent;color:#aeb7c5}nav button[aria-selected=true]{background:#394353;color:white;border-color:#626f83}
+section{min-height:0;overflow-y:auto}section[hidden]{display:none}h2{font-size:11px;margin:1px 0 4px;color:#b8c2d0;font-weight:500}h2:not(:first-child){margin-top:8px}p{margin:7px 0 0;color:#a6b0c0;font-size:11px}
+button,select{font:inherit;color:#eff2f7;border:1px solid #535e70;background:#303949;border-radius:7px;cursor:pointer;min-height:30px;padding:5px}button{width:100%}button:hover,button:focus-visible,select:focus-visible{outline:1px solid #a6c5ef;background:#45536a}button[aria-pressed=true]{background:#315b7d;border-color:#72b2e4}small{display:block;font-size:10px;color:#afbbc9;margin-top:2px}.two{grid-template-columns:repeat(2,minmax(0,1fr))}.toggles button{min-height:39px}.poses button{min-height:43px}.stack{display:grid;gap:6px}.row label{white-space:nowrap;color:#b8c2d0}.row select{min-width:0;flex:1}.row button{width:32px;font-size:17px}
+footer{border-top:1px solid #424d60;padding-top:6px;color:#9ca7b7;font-size:10px}footer span{flex:1}footer button{width:auto;min-height:24px;background:transparent;border:0;color:#edb0b0;padding:2px 8px}
+
+.more-links button{min-height:46px}
+.more-view[hidden]{display:none}
+.more-view:not([hidden]){display:flex;flex-direction:column;gap:6px;height:100%;min-height:0}
+.more-view h2{margin:2px 0 3px}.more-head{display:flex;align-items:center;gap:6px;flex-shrink:0}.more-head strong{flex:1;font-size:12px}.more-head .back{width:45px;min-height:26px}
+.more-intro{font-size:10px;margin:0;color:#acb7c7}
+#dialogue-search{width:100%;min-height:28px;background:#303949;border:1px solid #535e70;border-radius:6px;color:white;padding:4px}
+.archive-filters{display:flex;gap:5px}.archive-filters select{width:50%;min-width:0;min-height:27px}
+#archive-count{font-size:10px;color:#adb9c9}
+#archive-results{overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:5px}
+.archive-item{border:1px solid #454f5e;border-radius:7px;padding:6px;background:#282f3a;flex-shrink:0;overflow-wrap:anywhere}
+.archive-item strong{display:block;font-size:11px;color:#f2f4f9;font-weight:500}
+.archive-item small{font-size:10px;color:#afbccc}
+.archive-item p{margin:4px 0 0;font-size:10px;color:#d2d9e3}
+.archive-status{font-size:10px;color:#d7b98d}
+.status-list{display:grid;grid-template-columns:76px 1fr;gap:7px 5px;align-content:start;margin:2px 0;color:#dce3ed;font-size:11px}
+.status-list dt{color:#aab5c5}.status-list dd{margin:0;overflow-wrap:anywhere}
+.more-help{overflow:auto;font-size:11px;padding-right:3px}.more-help p{margin:0 0 8px;font-size:11px}
+.more-view .stack{flex-shrink:0}
+.status-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:3px}
+.status-scroll .status-list{font-size:10px;grid-template-columns:72px 1fr}
+.codex-tests{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.codex-tests button{font-size:10px;min-height:32px;padding:4px 1px}
+#codex-logs{font-size:10px;display:grid;gap:3px;color:#c8d1de}
+#codex-logs p{margin:0;font-size:10px}
+#codex-result{margin:4px 0;font-size:10px;color:#bbd2ed;min-height:13px}
+
+
+/* Deliberately dark, readable, rectangular native panel. No Acrylic trickery. */
+html,body{color:#e8ecf2;text-shadow:none}
+main{position:relative;border-radius:0;background:rgba(10,12,16,.95);border:1px solid rgba(139,150,165,.5);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+header{cursor:move;user-select:none;touch-action:none}
+header strong{font-weight:650;letter-spacing:.01em}
+header button{cursor:pointer;background:#292d38!important;border-radius:4px}
+nav button{border:1px solid #424a57;background:#242a35;color:#d7dfe9;border-radius:4px}
+nav button[aria-selected=true]{background:#43546c;color:#fff;border-color:#a9b7cb}
+button,select,#dialogue-search{color:#edf1f7;background:#292f3d;border:1px solid #535f71;border-radius:4px;text-shadow:none}
+button:hover,button:focus-visible,select:focus-visible{background:#45556c;outline:1px solid #b9c6d9}
+button[aria-pressed=true]{background:#405d7b;border-color:#b3c9db}
+h2,p,small,footer,footer span,.more-intro,.archive-item small,#archive-count,#codex-result,#codex-logs,.status-list dt{color:#cbd4de}
+.archive-item{background:#242b38;border-color:#495566;border-radius:4px}
+.archive-item strong,.archive-item p,.status-list{color:#ecf0f5}
+.archive-status{color:#d2deec}
+footer{border-color:#495363}
+footer button{color:#e6b9bc}
+/* Four accessible drag corners, no fake rounded-window mask. */
+.menu-resize-corner{position:absolute;z-index:6;width:26px;height:26px;padding:0;border:0;background:transparent;touch-action:none;user-select:none}
+.menu-resize-corner:hover,.menu-resize-corner:focus-visible{background:#465265;outline:1px solid #c1cee0}
+.menu-resize-corner[data-resize-corner="nw"]{top:0;left:0;cursor:nwse-resize}
+.menu-resize-corner[data-resize-corner="ne"]{top:0;right:0;cursor:nesw-resize}
+.menu-resize-corner[data-resize-corner="sw"]{bottom:0;left:0;cursor:nesw-resize}
+.menu-resize-corner[data-resize-corner="se"]{bottom:0;right:0;cursor:nwse-resize}
+.menu-resize-corner::after{content:'';position:absolute;width:9px;height:9px;border-color:#c8d2e0;border-style:solid}
+.menu-resize-corner[data-resize-corner="nw"]::after{top:6px;left:6px;border-width:2px 0 0 2px}
+.menu-resize-corner[data-resize-corner="ne"]::after{top:6px;right:6px;border-width:2px 2px 0 0}
+.menu-resize-corner[data-resize-corner="sw"]::after{bottom:6px;left:6px;border-width:0 0 2px 2px}
+.menu-resize-corner[data-resize-corner="se"]::after{bottom:6px;right:6px;border-width:0 2px 2px 0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Readable, resizable center-panel layout. Transparent glass is retained. */
+html,body{font-size:14px;line-height:1.52}
+main{padding:21px;gap:14px}
+header{min-height:40px}header strong{font-size:19px;letter-spacing:.02em}
+header button{width:31px;min-height:31px;font-size:18px}
+nav{gap:9px}nav button{min-height:43px;font-size:14px;font-weight:600}
+section{padding:3px 2px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.4) transparent}
+h2{font-size:13px;margin:4px 0 9px;font-weight:650}
+h2:not(:first-child){margin-top:18px}
+p,.more-help p{font-size:13px;line-height:1.55}
+button,select,#dialogue-search{font-size:13px;min-height:38px;padding:8px 10px}
+.grid{gap:10px}
+small,.more-intro{font-size:11px}
+.toggles button{min-height:48px}.poses button{min-height:58px}
+.row button{width:39px}.row select{height:42px}
+footer{padding-top:11px;font-size:12px;gap:10px}
+footer button{min-height:30px}
+.more-links button{min-height:75px;font-size:15px}
+.more-head{min-height:40px}.more-head strong{font-size:16px}.more-head .back{width:66px;min-height:36px}
+.more-view:not([hidden]){gap:11px}
+#dialogue-search{min-height:42px}
+.archive-filters select{min-height:40px}
+.archive-item{padding:13px 14px;border-radius:13px}
+.archive-item strong{font-size:14px;line-height:1.48}
+.archive-item small{font-size:11px}
+.archive-item p{font-size:12px}
+#archive-results{gap:9px}
+.status-scroll .status-list{font-size:13px;grid-template-columns:95px minmax(0,1fr);gap:11px}
+.codex-tests button{font-size:12px;min-height:46px}
+#codex-logs,#codex-logs p,#codex-result{font-size:12px}
+.more-help{overflow:auto;scrollbar-width:thin}
+.more-help p{margin:0 0 15px}
+.frequency-view[hidden]{display:none}
+.frequency-view:not([hidden]){display:flex;flex-direction:column;gap:11px;height:100%;min-height:0}
+.frequency-view h2{flex-shrink:0}
+.frequency-note{font-size:12px;line-height:1.5;margin:0;color:rgba(255,255,255,.89)}
+.frequency-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-radius:15px;border:1px solid rgba(255,255,255,.33);background:rgba(255,255,255,.08)}
+.frequency-entry strong{font-size:14px}.frequency-entry p{margin:5px 0 0;font-size:12px}
+.frequency-entry button{width:120px;flex-shrink:0}
+.action-weights-list{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;display:grid;align-content:start;gap:10px;padding:1px 5px 2px 0}
+.action-weight-row{display:flex;flex-direction:column;gap:7px;padding:13px 15px;border:1px solid rgba(255,255,255,.29);border-radius:13px;background:rgba(0,0,0,.12)}
+.weight-label{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.weight-label strong{font-size:14px}
+.weight-value{font-size:12px;color:#fff;white-space:nowrap}
+.action-weight-row input[type=range]{width:100%;accent-color:#fff;cursor:pointer;min-height:24px}
+.weight-foot{color:rgba(255,255,255,.82);font-size:11px}
+.frequency-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:9px;flex-shrink:0}
+.frequency-actions button{width:auto}
+#weights-feedback{font-size:11px;color:rgba(255,255,255,.86)}
+@media (max-width:395px),(max-height:410px){
+ main{padding:10px;gap:8px}
+ header{min-height:23px}header strong{font-size:14px}header button{min-height:24px}
+ nav{gap:5px}nav button{min-height:30px;font-size:12px}
+ h2{font-size:11px;margin:1px 0 4px}h2:not(:first-child){margin-top:8px}
+ button,select,#dialogue-search{min-height:30px;font-size:12px;padding:5px}
+ .grid{gap:5px}
+ .toggles button{min-height:39px}.poses button{min-height:43px}
+ footer{padding-top:5px;font-size:10px}.more-links button{min-height:46px}
+ p{font-size:11px}.frequency-entry{padding:8px}.frequency-entry button{width:85px}
+ .frequency-view:not([hidden]){gap:6px}
+}
 </style></head><body><main>
-<h1>아킬라 · 설정</h1>
-<h2>크기 조정</h2>
-<div class="grid">
-<button data-action="size:120">120</button><button data-action="size:140">140</button><button data-action="size:160">160</button>
-<button data-action="size:180">180</button><button data-action="size:200">200</button><button data-action="size:240">240</button>
-<button data-action="size:280">280</button><button data-action="size:320">320</button><button data-action="size:360">360</button>
+<header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
+<nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
+<section id="panel-basic" role="tabpanel" aria-labelledby="tab-basic" data-panel="basic">
+<h2>평소 자세</h2><div class="grid"><button data-action="setting:base:smoking">흡연</button><button data-action="setting:base:idle">서 있기</button><button data-action="setting:base:sitting">앉기</button></div>
+<h2>자동으로 할 일</h2><div class="grid toggles"><button id="autonomy-setting">움직임</button><button id="dialogue-setting">대사</button><button id="fire-setting">사격</button></div>
+<h2>펫 크기</h2><div class="row"><button data-action="size:smaller" aria-label="펫 작게">−</button><select id="pet-size" aria-label="펫 크기"><option value="120" data-action="size:120">120 px</option><option value="140" data-action="size:140">140 px</option><option value="160" data-action="size:160">160 px</option><option value="180" data-action="size:180">180 px · 기본</option><option value="200" data-action="size:200">200 px</option><option value="240" data-action="size:240">240 px</option><option value="280" data-action="size:280">280 px</option><option value="320" data-action="size:320">320 px</option><option value="360" data-action="size:360">360 px</option></select><button data-action="size:larger" aria-label="펫 크게">+</button></div>
+</section>
+<section id="panel-frequency" role="tabpanel" aria-labelledby="tab-frequency" data-panel="frequency" hidden>
+<div class="frequency-view" data-frequency-view="home">
+<h2>자동 움직임 간격</h2><div class="grid"><button data-action="setting:movementFrequency:quiet">조용히<small>5~10분</small></button><button data-action="setting:movementFrequency:default">보통<small>2~3분</small></button><button data-action="setting:movementFrequency:active">활발히<small>1~2분</small></button></div>
+<h2>자동 대사 간격</h2><div class="grid"><button data-action="setting:dialogueFrequency:quiet">조용히<small>8~12분</small></button><button data-action="setting:dialogueFrequency:default">보통<small>4~6분</small></button><button data-action="setting:dialogueFrequency:active">활발히<small>2~3분</small></button></div>
+<div class="frequency-entry"><div><strong>행동별 등장 빈도</strong><p>앉기, 작업하기, 사격 등을 개별 설정</p></div><button id="edit-action-weights" data-frequency-open="weights">조절하기</button></div>
+<p class="frequency-note">전체 간격과 각 행동의 선택 확률은 별도로 설정돼요.</p>
 </div>
-<h2>포즈 미리보기 · 실제 펫</h2>
-<div class="grid poses">
-<button data-action="pose:idle">Idle · 대기</button><button data-action="pose:smoking">Smoking · 흡연</button>
-<button data-action="pose:drawing">Drawing · 꺼내기</button><button data-action="pose:firing">Firing · 사격</button>
-<button data-action="pose:working">Working · 작업</button><button data-action="pose:sitting">Sitting · 앉기</button>
+<div class="frequency-view" data-frequency-view="weights" hidden>
+<div class="more-head"><button class="back" data-frequency-back>‹ 뒤로</button><strong>행동별 등장 빈도</strong><small>자동 행동</small></div>
+<p class="frequency-note">막대는 상대적인 선택 비중이에요. <strong>0</strong>이면 해당 자동 행동을 사용하지 않아요. 기본 자세, 사격 설정, 쿨다운에 따라 실제 확률은 달라져요.</p>
+<div id="action-weights-list" class="action-weights-list" aria-label="행동별 자동 선택 비중"></div>
+<div class="frequency-actions"><button id="weights-reset" data-weights-reset>처음 설정으로 되돌리기</button><span id="weights-feedback" role="status" aria-live="polite">조절을 마치면 자동 저장돼요.</span></div>
 </div>
-<h2>추가 포즈 · 이미지 검수 전용</h2>
-<button class="wide" data-action="diagnostics:dual_firing">Dual Firing · 배경 보정 필요</button>
-<button class="wide" data-action="diagnostics:firing_dynamic">Firing Dynamic · 원본/후보 보기</button>
-<button class="wide" data-action="diagnostics:speaking_reference">Speaking · 얼굴 7컷 보기</button>
-<button class="wide" data-action="diagnostics">전체 이미지·비율 검수</button>
-<div class="foot"><button class="wide danger" data-action="quit">종료</button><small>공식 B형 원본은 변경되지 않았음</small></div>
+</section>
+<section id="panel-poses" role="tabpanel" aria-labelledby="tab-poses" data-panel="poses" hidden>
+<h2>지금 실행할 동작</h2><div class="grid poses"><button data-action="pose:idle">서 있기</button><button data-action="pose:smoking">흡연</button><button data-action="pose:sitting">앉기</button><button data-action="pose:working">작업하기</button><button data-action="pose:speaking">말하기</button><button data-action="pose:drawing">총 꺼내기</button><button data-action="pose:firing">한 발 사격</button><button data-action="pose:dual_firing">양손 사격</button><button data-action="pose:firing_dynamic">허리 사격</button></div><p>수동 동작은 잠시 유지한 뒤 평소 자세로 돌아와요.</p>
+</section>
+<section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
+<div class="more-view" data-more-view="home">
+<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+</div>
+<div class="more-view" data-more-view="archive" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
+<input id="dialogue-search" type="search" placeholder="대사 또는 ID 검색" aria-label="대사 검색">
+<div class="archive-filters"><select id="dialogue-origin" aria-label="대사 분류"><option value="all">모든 분류</option><option value="supplied">사용자 제공</option><option value="adapted">원작 각색</option><option value="unverified">원작 검증 전</option><option value="creative">창작</option><option value="codex">Codex 이벤트</option></select>
+<select id="dialogue-pose" aria-label="동작 필터"><option value="all">모든 동작</option><option value="idle">서 있기</option><option value="smoking">흡연</option><option value="sitting">앉기</option><option value="working">작업</option><option value="speaking">말하기</option><option value="drawing">총 꺼내기</option><option value="firing">한 발 사격</option><option value="dual_firing">양손 사격</option><option value="firing_dynamic">허리 사격</option></select></div>
+<div id="archive-results" aria-live="polite">대사 데이터를 불러오는 중이에요.</div>
+</div>
+<div class="more-view" data-more-view="status" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>상태 · Codex 테스트</strong></div>
+<div class="status-scroll">
+<dl class="status-list" id="status-list"><dt>Codex</dt><dd>연결되지 않음</dd></dl>
+<h2>이벤트 시험</h2>
+<div class="codex-tests"><button data-codex-test="jobStart">작업 시작</button><button data-codex-test="testPassed">테스트 통과</button><button data-codex-test="deploymentComplete">배포 완료</button></div>
+<p id="codex-result" role="status" aria-live="polite">테스트는 실제 Codex 연결을 의미하지 않아요.</p>
+<h2>최근 이벤트</h2><div id="codex-logs">아직 수신한 이벤트가 없어요.</div>
+</div>
+</div>
+<div class="more-view" data-more-view="help" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>도움말</strong></div>
+<div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
+<p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
+<p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
+<p>기본/빈도: 평소 자세와 움직임·대사 간격을 설정해요. 빈도 탭의 ‘행동별 등장 빈도’에서 각 동작의 자동 선택 비중을 0~40으로 조절할 수 있어요. 0이면 자동 실행하지 않지만 수동 실행은 가능해요.</p><p>이 값은 시간 간격이 아니라 상대적인 등장 확률이에요. 자동 사격이 꺼져 있거나 쿨다운 중이면 사격 동작은 추첨에서 제외돼요.</p>
+<p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
+<p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
+<p>외부 Codex 훅 또는 검증 스크립트에서 로컬 이벤트 파일에 기록하면 펫이 감지해요. API 호출이나 추가 AI 비용은 없어요. 자세한 연결 방법은 저장소의 B-15 가이드에서 확인할 수 있어요.</p></div>
+</div>
+<div class="more-view" data-more-view="diagnostics" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
+<div class="stack"><button data-action="diagnostics">전체 이미지·비율 보기</button><button data-action="diagnostics:dual_firing">양손 사격 원본 비교</button><button data-action="diagnostics:firing_dynamic">허리 사격 원본 비교</button><button data-action="diagnostics:speaking_reference">대화 표정 7컷 보기</button></div>
+<p class="more-intro">검수 도구는 별도 창으로 열려요.</p>
+</div>
+</section>
+<footer><span>설정은 자동 저장돼요</span><button data-action="quit">펫 종료</button></footer>
+<div class="menu-resize-corner" data-resize-corner="nw" role="button" tabindex="0" aria-label="nw 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="ne" role="button" tabindex="0" aria-label="ne 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="sw" role="button" tabindex="0" aria-label="sw 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
+<div class="menu-resize-corner" data-resize-corner="se" role="button" tabindex="0" aria-label="se 모서리에서 크기 조절" title="이 모서리를 끌어 크기 조절"></div>
 </main><script>
-const active=new URL(location.href).searchParams.get('size');
-for(const b of document.querySelectorAll('button[data-action^="size:"]'))b.setAttribute('aria-pressed',String(b.dataset.action==='size:'+active));
-document.addEventListener('click',event=>{
- const button=event.target.closest('button[data-action]');
- if(button)window.castleMenu?.invoke(button.dataset.action);
+const params=new URL(location.href).searchParams;
+for(const [id,key,label] of [['autonomy-setting','autonomy','움직임'],['dialogue-setting','dialogueEnabled','대사'],['fire-setting','autoFire','사격']]){const button=document.getElementById(id);const enabled=params.get(key)!=='false';button.textContent=label+' '+(enabled?'켜짐':'꺼짐');button.dataset.action='setting:'+key+':'+String(!enabled);button.setAttribute('aria-pressed',String(enabled));}
+for(const key of ['movementFrequency','dialogueFrequency'])for(const button of document.querySelectorAll('[data-action^="setting:'+key+':"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:'+key+':'+(params.get(key)||'default')));
+for(const button of document.querySelectorAll('[data-action^="setting:base:"]'))button.setAttribute('aria-pressed',String(button.dataset.action==='setting:base:'+(params.get('base')||'smoking')));
+document.querySelector('#pet-size').value=params.get('size')||'180';
+
+const poseNames={idle:'서 있기',smoking:'흡연',sitting:'앉기',working:'작업',speaking:'말하기',drawing:'총 꺼내기',firing:'한 발 사격',dual_firing:'양손 사격',firing_dynamic:'허리 사격'};
+
+const weightDefaults={idle:10,smoking:10,sitting:18,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:0};
+const weightOrder=['idle','smoking','sitting','working','speaking','drawing','firing','dual_firing','firing_dynamic'];
+let weightValues={...weightDefaults},weightBase=params.get('base')||'smoking',weightFire=params.get('autoFire')!=='false';
+try{
+ const saved=JSON.parse(params.get('weights')||'null');
+ if(saved&&typeof saved==='object'&&!Array.isArray(saved)){
+  for(const name of weightOrder)if(Number.isInteger(saved[name])&&saved[name]>=0&&saved[name]<=40)weightValues[name]=saved[name];
+ }
+}catch{}
+function weightPercent(pose){
+ const active=weightOrder.filter(name=>name!==weightBase&&weightValues[name]>0&&(!['firing','dual_firing','firing_dynamic'].includes(name)||weightFire));
+ const total=active.reduce((sum,name)=>sum+weightValues[name],0);
+ return total&&active.includes(pose)?Math.round(weightValues[pose]/total*100):0;
+}
+function updateWeightLabels(){
+ for(const row of document.querySelectorAll('[data-weight-row]')){
+  const name=row.dataset.weightRow,value=weightValues[name],output=row.querySelector('.weight-value'),note=row.querySelector('.weight-foot');
+  output.textContent=value===0?'사용 안 함':value+' · 약 '+weightPercent(name)+'%';
+  note.textContent=name===weightBase?'현재 기본 자세 · 자동 선택에서 제외':(['firing','dual_firing','firing_dynamic'].includes(name)&&!weightFire?'자동 사격 꺼짐 · 선택에서 제외':value===0?'자동 행동에서 제외':'전체 움직임 간격 안에서 추첨');
+ }
+}
+function buildWeightRows(){
+ const list=document.querySelector('#action-weights-list');list.replaceChildren();
+ for(const name of weightOrder){
+  const row=document.createElement('label');row.className='action-weight-row';row.dataset.weightRow=name;
+  const head=document.createElement('span');head.className='weight-label';
+  const title=document.createElement('strong');title.textContent=poseNames[name];
+  const output=document.createElement('span');output.className='weight-value';
+  head.append(title,output);
+  const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='40';slider.step='1';slider.value=String(weightValues[name]);slider.setAttribute('aria-label',poseNames[name]+' 자동 행동 비중');
+  slider.addEventListener('input',()=>{weightValues[name]=Number(slider.value);updateWeightLabels();});
+  slider.addEventListener('change',()=>{weightValues[name]=Number(slider.value);window.castleMenu?.invoke('setting:weight:'+name+':'+slider.value);document.querySelector('#weights-feedback').textContent=poseNames[name]+' 빈도를 저장했어요.';updateWeightLabels();});
+  const note=document.createElement('span');note.className='weight-foot';
+  row.append(head,slider,note);list.append(row);
+ }
+ updateWeightLabels();
+}
+function showFrequencyView(name){
+ for(const view of document.querySelectorAll('[data-frequency-view]'))view.hidden=view.dataset.frequencyView!==name;
+ if(name==='weights'){buildWeightRows();document.querySelector('#action-weights-list').scrollTop=0;}
+ document.querySelector('#panel-frequency').scrollTop=0;
+}
+
+const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
+const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
+let archive=[],infoLoaded=false;
+function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
+function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative',codex:'Codex event'}[kind]===line.origin);}
+function renderArchive(){
+ const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
+ const category=document.querySelector('#dialogue-origin').value,pose=document.querySelector('#dialogue-pose').value;
+ const selected=archive.filter(line=>lineMatchesOrigin(line,category)&&(pose==='all'||line.poses.includes(pose))&&(line.text.toLocaleLowerCase('ko').includes(q)||line.id.toLocaleLowerCase('ko').includes(q)));
+ document.querySelector('#archive-count').textContent=infoLoaded?selected.length+' / '+archive.length:'준비 중';
+ const list=document.querySelector('#archive-results');list.replaceChildren();
+ if(!selected.length){list.textContent=infoLoaded?'해당 조건의 대사가 없어요.':'대사 데이터를 확인할 수 없어요.';return;}
+ for(const line of selected){
+  const card=document.createElement('article');card.className='archive-item';
+  const title=document.createElement('strong');title.textContent=line.text;
+  const provenance=document.createElement('small');provenance.className='archive-status';provenance.textContent=line.id+' · '+(origins[line.origin]||'출처 미확인')+' · '+(line.approval==='confirmed'?'앱 사용 승인':'후보');
+  const context=document.createElement('p');context.textContent='동작: '+(line.poses.length?line.poses.map(v=>poseNames[v]||v).join(', '):'일반 클릭/공통')+' · '+line.triggers.map(v=>triggerNames[v]||v).join(', ');
+  card.append(title,provenance,context);list.append(card);
+ }
+}
+function renderStatus(status){
+ const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.movementFrequency]||'보통')],['대사 빈도',({quiet:'조용히',default:'보통',active:'활발히'}[status.dialogueFrequency]||'보통')],['Codex',status.codex?.externalEvents>0?'외부 이벤트 수신됨 (Codex 확인 전)':status.codex?.bridgeReady?'로컬 파일 수신 대기':'연결되지 않음']];
+ const codex=status.codex||{};
+ rows.push(['마지막 이벤트',codex.events?.[0]?.name||'없음']);
+ rows.push(['수신 파일',codex.filePath||'확인 중']);
+ const box=document.querySelector('#status-list');box.replaceChildren();
+ for(const [key,value] of rows){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;box.append(dt,dd);}
+ const list=document.querySelector('#codex-logs');list.replaceChildren();
+ if(!codex.events?.length){list.textContent='아직 수신한 이벤트가 없어요.';return;}
+ for(const entry of codex.events.slice(0,3)){
+  const p=document.createElement('p');const time=new Date(entry.at);
+  p.textContent=(entry.origin==='test'?'[시험] ':'[외부] ')+entry.name+' · '+(entry.state==='accepted'?'실행':entry.state==='blocked'?'보류/거부':'전달 중')+' · '+(Number.isNaN(time.getTime())?'시간 확인 불가':time.toLocaleTimeString('ko-KR'));
+  list.append(p);
+ }
+}
+function refreshStatus(){return Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{if(info?.status)renderStatus(info.status);}).catch(()=>{});}
+
+for(const input of ['dialogue-search','dialogue-origin','dialogue-pose'])input&&document.getElementById(input).addEventListener(input==='dialogue-search'?'input':'change',renderArchive);
+Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
+ if(!info||!Array.isArray(info.dialogues))return;
+ archive=info.dialogues.filter(line=>typeof line?.id==='string'&&typeof line?.text==='string'&&Array.isArray(line.poses)&&Array.isArray(line.triggers));
+ infoLoaded=true;renderArchive();
+ if(info.status)renderStatus(info.status);
+}).catch(()=>{});
+function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
+document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
+if(event.target.closest('[data-frequency-back]')){showFrequencyView('home');return;}
+if(event.target.closest('[data-weights-reset]')){
+ weightValues={...weightDefaults};buildWeightRows();window.castleMenu?.invoke('setting:weights:reset');
+ document.querySelector('#weights-feedback').textContent='기본 행동 비중으로 되돌렸어요.';return;
+}
+const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
+const test=event.target.closest('[data-codex-test]');if(test){
+ const name=test.dataset.codexTest;
+ const label=document.querySelector('#codex-result');label.textContent='이벤트 전달 중…';
+ Promise.resolve(window.castleMenu?.testEvent?.(name)).then(result=>{
+  if(!result?.sent){label.textContent='전송 실패: 펫 상태를 확인해 주세요.';return;}
+  label.textContent='수신 확인 중…';
+  setTimeout(async()=>{
+   try{
+    const info=await window.castleMenu?.getInfo?.(),records=info?.status?.codex?.events||[];
+    if(info?.status)renderStatus(info.status);
+    const latest=records.find(row=>row.id===result.id);
+    label.textContent=latest?.state==='blocked'?'현재 실행 중인 동작 때문에 거부됐어요. 끝난 뒤 다시 눌러 주세요.':
+     latest?.state==='accepted'?'아킬라가 이벤트를 실행했어요.':'이벤트를 전달했어요. 동작과 최근 기록을 확인해 주세요.';
+   }catch{label.textContent='이벤트를 보냈어요. 최근 기록을 확인해 주세요.';}
+  },450);
+ }).catch(()=>{label.textContent='시험 이벤트 전송에 실패했어요.';});
+ return;
+}
+const button=event.target.closest('button[data-action]');if(button)window.castleMenu?.invoke(button.dataset.action);});
+document.querySelector('#pet-size').addEventListener('change',event=>window.castleMenu?.invoke('size:'+event.target.value));
+document.querySelector('#close-menu').addEventListener('click',()=>window.castleMenu?.dismiss());
+window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();if(event.target.matches('[data-tab]')&&['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const tabs=Array.from(document.querySelectorAll('[data-tab]'));const i=tabs.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(i+(event.key==='ArrowRight'?1:tabs.length-1))%tabs.length;selectTab(tabs[next].dataset.tab);tabs[next].focus();}});
+
+let menuGesture=null;
+const headerHandle=document.querySelector('#menu-drag-handle');
+function beginMenuGesture(event,kind,element){
+ if(event.button!==0||(kind==='move'&&event.target.closest('button,[data-resize-corner]')))return;
+ event.stopPropagation();
+ menuGesture={kind,pointerId:event.pointerId,element};
+ element.setPointerCapture?.(event.pointerId);
+ window.castleMenu?.windowControl?.(kind+':start');event.preventDefault();
+}
+headerHandle.addEventListener('pointerdown',event=>beginMenuGesture(event,'move',headerHandle));
+for(const handle of document.querySelectorAll('[data-resize-corner]'))
+ handle.addEventListener('pointerdown',event=>beginMenuGesture(event,'resize:'+handle.dataset.resizeCorner,handle));
+document.addEventListener('pointermove',event=>{
+ if(menuGesture&&event.pointerId===menuGesture.pointerId)window.castleMenu?.windowControl?.(menuGesture.kind+':update');
 });
-window.addEventListener('keydown',event=>{if(event.key==='Escape')window.castleMenu?.dismiss();});
-document.addEventListener('contextmenu',event=>event.preventDefault());
+function finishMenuGesture(event){
+ if(!menuGesture||event.pointerId!==menuGesture.pointerId)return;
+ const {kind,element,pointerId}=menuGesture;menuGesture=null;
+ if(element.hasPointerCapture?.(pointerId))element.releasePointerCapture(pointerId);
+ window.castleMenu?.windowControl?.(kind+':end');
+}
+document.addEventListener('pointerup',finishMenuGesture);
+document.addEventListener('pointercancel',finishMenuGesture);
+document.addEventListener('contextmenu',event=>event.preventDefault());selectTab('basic');
 </script></body></html>

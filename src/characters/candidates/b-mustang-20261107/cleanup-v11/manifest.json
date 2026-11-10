@@ -1,0 +1,99 @@
+{
+  "status": "partially-approved-runtime",
+  "method": "Reference-conditioned local edits; Speaking and Firing Dynamic explicitly user-approved in B-12.",
+  "assets": {
+    "dual_firing": {
+      "sha256": "30c9737f8f2e38aec6086ea1cd8554de068b19762daacf8c3bc2fc248ae4b631",
+      "width": 1024,
+      "height": 1536,
+      "approved": false,
+      "b10_sha256": "df893b08f18838938ffc9eef2c42c9fa055d4774530b2302209da6c3bb448a42",
+      "warning": "미승인 재정제 시안: 팔·몸통·다리 사이 배경 혼입과 검은 의상·머리·총·손가락·섬광·그림자 보존을 실제 알파 합성에서 집중 검수. 정제 완료 판정 전."
+    },
+    "firing_dynamic": {
+      "sha256": "53b524f61d29983937216ee86926b43b5ab1ef4af2bc8eb465b233b7d0e56025",
+      "width": 1004,
+      "height": 1567,
+      "approved": true,
+      "b10_sha256": "59b8fa8467daa9a47d6d5f2e2b9b2acb033ed6b7b96efbfc984a80d3463d8390",
+      "warning": "사용자 승인 · B-12 런타임 적용."
+    },
+    "speaking-01": {
+      "sha256": "df862f54f768d2c02a7950a1ed28d40ea21ab3cc0d37cd1e889c9de654957fa5",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "cf5bfd28b79df0624350dc1a91d910b78810c61fbe425675b63354ba885c5c2b",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 141912,
+      "neck_sample_alpha_under24": 9,
+      "body_pixel_match": false
+    },
+    "speaking-02": {
+      "sha256": "5030c68ac4605c552aa1c7b54abbd031a949c2b7e9d8d610d6414a446e9b5b03",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "38dba6335552fe9d038f123b71a6452a2215dd28ef9e00c9e91695849dd3efe8",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 154985,
+      "neck_sample_alpha_under24": 0,
+      "body_pixel_match": false
+    },
+    "speaking-03": {
+      "sha256": "4cde673ad30c6ae11ba977202f5f3869ac6ead69c431d24febe74e9cbe5a04a4",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "0032e4553fe9bcf0252d5aac465da49fe99b3b2acb40bbf63875e2c6e8ea1dd6",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 170447,
+      "neck_sample_alpha_under24": 1,
+      "body_pixel_match": false
+    },
+    "speaking-04": {
+      "sha256": "a8019d93e2e569661ade43c2b4fefed84bb08deeb2c2cb96ac58fce4aa3dcd65",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "ed9c273336a3ebeea9a717332391f111fd5a75183ae357e127bd94fd795e37bc",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 144523,
+      "neck_sample_alpha_under24": 2,
+      "body_pixel_match": false
+    },
+    "speaking-05": {
+      "sha256": "2088e9176c49876cb6ce1075f38b1f3a91931afac479bdc0d8576e42e9913c1c",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "b3fa5a041dd65d3994d723979eea538f9fcadc2d770ab0e0f79bc5c3dad4eca5",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 149409,
+      "neck_sample_alpha_under24": 5,
+      "body_pixel_match": false
+    },
+    "speaking-06": {
+      "sha256": "ba43c6fccca5a7098fea87d0b8988cab3c299b1c977f9bc06dfcb04b622514c9",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "9a5abd6944f24744a7cd55625bec517370872ccdfa5ee0ddf37789e2f7b31833",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 149164,
+      "neck_sample_alpha_under24": 2,
+      "body_pixel_match": false
+    },
+    "speaking-07": {
+      "sha256": "452eb9c5ea86ea8cac362fcaf133bbc2e41e40f43a22b80c563268863d9e9490",
+      "width": 956,
+      "height": 1645,
+      "approved": true,
+      "b10_sha256": "7394b8f18493108518da1e91d9eccc521385971f87848e49ca4cdfb52cd3be0d",
+      "warning": "사용자 승인 · B-12 런타임 적용. Speaking 신체 픽셀 차이는 알려진 특성.",
+      "visible_body_changed_pixels_below_y400": 170109,
+      "neck_sample_alpha_under24": 1,
+      "body_pixel_match": false
+    }
+  }
+}

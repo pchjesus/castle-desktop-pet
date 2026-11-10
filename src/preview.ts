@@ -2,11 +2,12 @@ import {akila,states,type PetState} from './characters/akila';
 import {mountPet} from './renderer/pet';
 import './style.css';
 import './preview.css';
+import './b-proportions-v07';
 const pet=document.querySelector<HTMLElement>('#pet')!;
 const desktop=document.querySelector<HTMLElement>('#desktop')!;
 const dialogue=document.querySelector<HTMLElement>('#dialogue')!;
 const speed=document.querySelector<HTMLSelectElement>('#speed')!;
-const controller=mountPet(pet,akila,()=>Number(speed.value));
+const controller=mountPet(pet,akila,()=>Number(speed.value),{initialState:'smoking'});
 const select=document.querySelector<HTMLSelectElement>('#state')!;
 for(const state of states){const option=document.createElement('option');option.value=state;option.textContent=state;select.append(option);}
 pet.addEventListener('pet-state',ev=>{select.value=(ev as CustomEvent<PetState>).detail;});
@@ -58,7 +59,7 @@ const reviewNotes=document.createElement('section');reviewNotes.className='user-
 reviewNotes.innerHTML='<h2>사용자 시각 검수 기록</h2><p>판단과 의견은 이 기기에만 저장되며, JSON 내보내기는 사용자가 직접 시작합니다.</p><label>항목 <select id="user-review-action"></select></label><label>판단 <select id="user-review-decision"><option value="">선택 안 함</option><option value="needs_revision">수정 필요</option><option value="acceptable">사용자 확인 완료</option></select></label><label>의견 <textarea id="user-review-note" rows="3"></textarea></label><button id="user-review-export">JSON 내보내기</button><p id="user-review-message" aria-live="polite"></p>';
 document.querySelector('main')!.append(reviewNotes);
 const noteAction=reviewNotes.querySelector<HTMLSelectElement>('#user-review-action')!,noteDecision=reviewNotes.querySelector<HTMLSelectElement>('#user-review-decision')!,noteText=reviewNotes.querySelector<HTMLTextAreaElement>('#user-review-note')!;
-for(const name of Object.keys(entries)){const option=document.createElement('option');option.value=name;option.textContent=name;noteAction.append(option);}
+for(const name of [...Object.keys(entries),'b07/idle','b07/smoking','b07/sitting']){const option=document.createElement('option');option.value=name;option.textContent=name.startsWith('b07/')?'07 후보 '+name.slice(4):name;noteAction.append(option);}
 type ReviewNote={decision:string;note:string};let notes:Record<string,ReviewNote>={};
 try{const stored=localStorage.getItem('castle-b-canonical-review-v1');if(stored)notes=JSON.parse(stored);}catch{reviewNotes.querySelector('#user-review-message')!.textContent='이 환경에서 로컬 저장을 사용할 수 없습니다. 내보내기로 기록을 보관하세요.';}
 function loadNote(){noteDecision.value=notes[noteAction.value]?.decision||'';noteText.value=notes[noteAction.value]?.note||'';}
@@ -68,3 +69,7 @@ reviewNotes.querySelector('#user-review-export')!.addEventListener('click',()=>{
 
 const proportion=document.createElement('section');proportion.className='b-proportion';proportion.innerHTML='<h2>Idle / Sitting 비율 비교</h2><p>동일 캔버스 기준이며 얼굴 크기·발 위치는 시각 검수가 필요합니다.</p><div class="b-proportion-panels"><figure><img id="proportion-idle" alt="Idle"><figcaption>Idle</figcaption></figure><figure><img id="proportion-sitting" alt="Sitting"><figcaption>Sitting</figcaption></figure></div>';document.querySelector('main')!.append(proportion);
 for(const name of ['idle','sitting']){const image=proportion.querySelector<HTMLImageElement>('#proportion-'+name)!;const key=Object.keys(revisedImages).find(path=>path.endsWith('/'+name+'.png'));if(key)image.src=revisedImages[key];}
+
+import './b10-review';
+
+import './b11-review';

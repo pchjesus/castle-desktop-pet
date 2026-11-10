@@ -1,0 +1,15 @@
+{
+  "baseline": "b0b7eef",
+  "method": "Execute committed controller with fake timers; same input ordering in both versions",
+  "before": {
+    "requested": "firing",
+    "duplicateResume": "smoking",
+    "hiddenManual": "smoking"
+  },
+  "after": {
+    "requested": "firing",
+    "duplicateResume": "firing",
+    "hiddenManual": "smoking"
+  },
+  "occlusion": "A true native hide must still block; renderer adapter now excludes mere DOM occlusion from the native lifecycle. Browser and native menu QA verify that separate boundary."
+}

@@ -2,8 +2,12 @@ export {};
 declare global {
  interface Window {
   pet?: {
+   nativeWindow?:boolean;
+   reportAction?:(value:Record<string,unknown>)=>void;
+   reportCodexResult?:(value:{id:number;name:string;accepted:boolean})=>void;
    showMenu:()=>void;
-   onAction:(callback:(state:string)=>void)=>()=>void;
+   showSpeech?:(text:string)=>void;
+   onAction:(callback:(state:string|{kind:'manual';id:number;pose:string}|{kind:'codex-event';id:number;name:string})=>void)=>()=>void;
    setPassthrough:(ignore:boolean)=>void;
    dragStart:()=>void;
    dragMove:()=>void;

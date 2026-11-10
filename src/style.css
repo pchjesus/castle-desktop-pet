@@ -54,3 +54,28 @@ html,body,#app { margin:0; width:100%; height:100%; background:transparent; over
 
 /* Pixel hit-testing and custom pointer drag are implemented in JS. */
 html,body,#app,.pet-stage,.pet-stage img { -webkit-app-region: no-drag !important; }
+/* Browser-only fallback. Native Windows speech uses pet-speech.html in a
+   separate non-focusing surface. Keep fallback text away from the face. */
+#pet-speech{position:absolute;bottom:6px;right:4px;max-width:46%;box-sizing:border-box;padding:6px 9px;background:#20242ce8;color:#f3f0e9;border:1px solid #b7a68180;border-radius:12px;font:12px/1.5 system-ui;overflow-wrap:anywhere;pointer-events:none;z-index:10;animation:speech-in 140ms ease}
+#pet-speech[hidden]{display:none}
+@keyframes speech-in{from{opacity:0}to{opacity:1}}
+/* Stable overlapping layers, never side-by-side during the crossfade. */
+#app:has(.b-presentation){position:relative}
+.b-presentation{position:absolute;bottom:0;left:50%;translate:-50% 0}
+.b-presentation.b-enter{animation:b-pose-in 160ms ease-out}
+.b-presentation.b-exit{animation:b-pose-out 160ms ease-out forwards}
+@keyframes b-pose-in{from{opacity:0}to{opacity:1}}
+@keyframes b-pose-out{from{opacity:1}to{opacity:0}}
+.b-presentation[data-pose="idle"] img,.b-presentation[data-pose="smoking"] img{transform-origin:50% 100%;animation:b-breathe 5s ease-in-out infinite}
+@keyframes b-breathe{0%,100%{transform:none}50%{transform:scale(1.0005,1.0015)}}
+.b-presentation[data-pose="sitting"] img,.b-presentation[data-pose="drawing"] img{animation:b-settle 180ms ease-out}
+@keyframes b-settle{from{transform:translateY(.5px)}to{transform:none}}
+.b-presentation[data-pose="speaking"] img{animation:b-speaking-in 160ms ease-out}
+@keyframes b-speaking-in{from{filter:brightness(.97)}to{filter:none}}
+.b-presentation[data-pose="firing"] img,.b-presentation[data-pose="dual_firing"] img,.b-presentation[data-pose="firing_dynamic"] img{animation:b-recoil 350ms ease-out;transform-origin:50% 100%}
+/* At most .45px of whole-image recoil, no rotation or fabricated joints. */
+@keyframes b-recoil{0%,18%,100%{transform:none;filter:none}26%{transform:translateX(-.45px);filter:brightness(1.035)}55%{transform:translateX(.15px)}}
+.b-muzzle-glow{position:absolute;width:5%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;background:radial-gradient(circle,#fff4c799,transparent 70%);opacity:0;pointer-events:none;animation:b-flash 350ms ease-out}
+@keyframes b-flash{0%,18%,55%,100%{opacity:0}26%,36%{opacity:.55}}
+.presentation-paused *{animation-play-state:paused!important}
+@media(prefers-reduced-motion:reduce){.b-presentation,.b-presentation img,.b-muzzle-glow,#pet-speech{animation:none!important;transform:none!important}.b-muzzle-glow{display:none}}

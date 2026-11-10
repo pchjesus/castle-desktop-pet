@@ -1,0 +1,4 @@
+import {readFile} from 'node:fs/promises';import {createHash} from 'node:crypto';import test from 'node:test';import assert from 'node:assert/strict';
+const root='src/characters/candidates/b-mustang-20261107/cleanup-v10/';
+test('B10 candidates have nine distinct recorded PNGs and remain unapproved',async()=>{const manifest=JSON.parse(await readFile(root+'manifest.json','utf8'));assert.equal(Object.keys(manifest.assets).length,9);for(const [name,item] of Object.entries(manifest.assets)){const bytes=await readFile(root+name+'.png');assert.equal(createHash('sha256').update(bytes).digest('hex'),item.sha256);assert.equal(item.approved,false);assert(item.warning.length>10);}});
+test('B10 is isolated from live pet entrypoints',async()=>{for(const p of ['src/characters/akila.ts','src/main.ts','src/characters/outfits.ts','electron/main.ts'])assert.doesNotMatch(await readFile(p,'utf8'),/cleanup-v10|b10-review/);});

@@ -69,3 +69,8 @@ test('Working reselect cancels a customized exit timer and future actions', asyn
   await new Promise(resolve => setTimeout(resolve, 45));
   deepStrictEqual(shown, ['working', 'working']);
 });
+test('repeated Speaking requests do not restart or overlap the active state', () => {
+  const shown = []; const set = createTransition(state => shown.push(state), () => false);
+  set('idle'); set('speaking'); set('speaking'); set('firing_dynamic'); set('idle');
+  deepStrictEqual(shown, ['idle','speaking','firing_dynamic','idle']);
+});

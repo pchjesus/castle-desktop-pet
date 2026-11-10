@@ -1,0 +1,669 @@
+{
+  "passed": true,
+  "environment": "Chromium, native-window bridge simulated; Windows QA is separate",
+  "checks": [
+    "two seamless 2s strands; cigarette source coordinates survive all four sizes",
+    "nine manual poses repeated under simulated menu occlusion and duplicate resume; render acknowledgements match each ID",
+    "true native suspension blocks actions; resume clears old work; manual Working survives stale shot timers",
+    "independent settings and frequency controls reflect restored values and route commands"
+  ],
+  "errors": [],
+  "smokeCoordinates": [
+    {
+      "width": 120,
+      "error": 0.016169454376332146,
+      "duration": "2s",
+      "iterations": "infinite",
+      "strands": 2,
+      "pointer": "none"
+    },
+    {
+      "width": 180,
+      "error": 0.014438790716015894,
+      "duration": "2s",
+      "iterations": "infinite",
+      "strands": 2,
+      "pointer": "none"
+    },
+    {
+      "width": 240,
+      "error": 0.029367484033971852,
+      "duration": "2s",
+      "iterations": "infinite",
+      "strands": 2,
+      "pointer": "none"
+    },
+    {
+      "width": 360,
+      "error": 0.061472664328540434,
+      "duration": "2s",
+      "iterations": "infinite",
+      "strands": 2,
+      "pointer": "none"
+    }
+  ],
+  "commands": [
+    {
+      "pose": "idle",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "idle",
+          "commandId": 1,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "idle",
+          "version": 3,
+          "source": "manual",
+          "commandId": 1
+        },
+        {
+          "phase": "accepted",
+          "pose": "idle",
+          "commandId": 1,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "idle",
+          "version": 3,
+          "source": "manual",
+          "commandId": 1
+        }
+      ]
+    },
+    {
+      "pose": "idle",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "idle",
+          "commandId": 2,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "idle",
+          "version": 4,
+          "source": "manual",
+          "commandId": 2
+        },
+        {
+          "phase": "reused",
+          "pose": "idle",
+          "version": 4,
+          "source": "manual",
+          "commandId": 2
+        },
+        {
+          "phase": "accepted",
+          "pose": "idle",
+          "commandId": 2,
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "pose": "smoking",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "smoking",
+          "commandId": 3,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "smoking",
+          "version": 5,
+          "source": "base",
+          "commandId": 3
+        },
+        {
+          "phase": "accepted",
+          "pose": "smoking",
+          "commandId": 3,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "smoking",
+          "version": 5,
+          "source": "base",
+          "commandId": 3
+        }
+      ]
+    },
+    {
+      "pose": "smoking",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "smoking",
+          "commandId": 4,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "smoking",
+          "version": 6,
+          "source": "base",
+          "commandId": 4
+        },
+        {
+          "phase": "reused",
+          "pose": "smoking",
+          "version": 6,
+          "source": "base",
+          "commandId": 4
+        },
+        {
+          "phase": "accepted",
+          "pose": "smoking",
+          "commandId": 4,
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "pose": "sitting",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "sitting",
+          "commandId": 5,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "sitting",
+          "version": 7,
+          "source": "manual",
+          "commandId": 5
+        },
+        {
+          "phase": "accepted",
+          "pose": "sitting",
+          "commandId": 5,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "sitting",
+          "version": 7,
+          "source": "manual",
+          "commandId": 5
+        }
+      ]
+    },
+    {
+      "pose": "sitting",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "sitting",
+          "commandId": 6,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "sitting",
+          "version": 8,
+          "source": "manual",
+          "commandId": 6
+        },
+        {
+          "phase": "reused",
+          "pose": "sitting",
+          "version": 8,
+          "source": "manual",
+          "commandId": 6
+        },
+        {
+          "phase": "accepted",
+          "pose": "sitting",
+          "commandId": 6,
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "pose": "working",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "working",
+          "commandId": 7,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "working",
+          "version": 9,
+          "source": "manual",
+          "commandId": 7
+        },
+        {
+          "phase": "accepted",
+          "pose": "working",
+          "commandId": 7,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "working",
+          "version": 9,
+          "source": "manual",
+          "commandId": 7
+        }
+      ]
+    },
+    {
+      "pose": "working",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "working",
+          "commandId": 8,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "working",
+          "version": 10,
+          "source": "manual",
+          "commandId": 8
+        },
+        {
+          "phase": "reused",
+          "pose": "working",
+          "version": 10,
+          "source": "manual",
+          "commandId": 8
+        },
+        {
+          "phase": "accepted",
+          "pose": "working",
+          "commandId": 8,
+          "hidden": false
+        }
+      ]
+    },
+    {
+      "pose": "drawing",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "drawing",
+          "commandId": 9,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "drawing",
+          "version": 11,
+          "source": "manual",
+          "commandId": 9
+        },
+        {
+          "phase": "accepted",
+          "pose": "drawing",
+          "commandId": 9,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "drawing",
+          "version": 11,
+          "source": "manual",
+          "commandId": 9
+        }
+      ]
+    },
+    {
+      "pose": "drawing",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "drawing",
+          "commandId": 10,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "drawing",
+          "version": 12,
+          "source": "manual",
+          "commandId": 10
+        },
+        {
+          "phase": "accepted",
+          "pose": "drawing",
+          "commandId": 10,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "drawing",
+          "version": 12,
+          "source": "manual",
+          "commandId": 10
+        }
+      ]
+    },
+    {
+      "pose": "speaking",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "speaking",
+          "commandId": 11,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "speaking",
+          "version": 13,
+          "source": "manual",
+          "commandId": 11
+        },
+        {
+          "phase": "accepted",
+          "pose": "speaking",
+          "commandId": 11,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "speaking",
+          "version": 13,
+          "source": "manual",
+          "commandId": 11
+        }
+      ]
+    },
+    {
+      "pose": "speaking",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "speaking",
+          "commandId": 12,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "speaking",
+          "version": 14,
+          "source": "manual",
+          "commandId": 12
+        },
+        {
+          "phase": "accepted",
+          "pose": "speaking",
+          "commandId": 12,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "speaking",
+          "version": 14,
+          "source": "manual",
+          "commandId": 12
+        }
+      ]
+    },
+    {
+      "pose": "firing",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "firing",
+          "commandId": 13,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "firing",
+          "version": 15,
+          "source": "manual",
+          "commandId": 13
+        },
+        {
+          "phase": "accepted",
+          "pose": "firing",
+          "commandId": 13,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "firing",
+          "version": 15,
+          "source": "manual",
+          "commandId": 13
+        }
+      ]
+    },
+    {
+      "pose": "firing",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "firing",
+          "commandId": 14,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "firing",
+          "version": 16,
+          "source": "manual",
+          "commandId": 14
+        },
+        {
+          "phase": "accepted",
+          "pose": "firing",
+          "commandId": 14,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "firing",
+          "version": 16,
+          "source": "manual",
+          "commandId": 14
+        }
+      ]
+    },
+    {
+      "pose": "dual_firing",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "dual_firing",
+          "commandId": 15,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "dual_firing",
+          "version": 17,
+          "source": "manual",
+          "commandId": 15
+        },
+        {
+          "phase": "accepted",
+          "pose": "dual_firing",
+          "commandId": 15,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "dual_firing",
+          "version": 17,
+          "source": "manual",
+          "commandId": 15
+        }
+      ]
+    },
+    {
+      "pose": "dual_firing",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "dual_firing",
+          "commandId": 16,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "dual_firing",
+          "version": 18,
+          "source": "manual",
+          "commandId": 16
+        },
+        {
+          "phase": "accepted",
+          "pose": "dual_firing",
+          "commandId": 16,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "dual_firing",
+          "version": 18,
+          "source": "manual",
+          "commandId": 16
+        }
+      ]
+    },
+    {
+      "pose": "firing_dynamic",
+      "repeat": 0,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "firing_dynamic",
+          "commandId": 17,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "smoking",
+          "version": 19,
+          "source": "manual",
+          "commandId": 17
+        },
+        {
+          "phase": "accepted",
+          "pose": "firing_dynamic",
+          "commandId": 17,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "smoking",
+          "version": 19,
+          "source": "manual",
+          "commandId": 17
+        },
+        {
+          "phase": "requested",
+          "pose": "firing_dynamic",
+          "version": 20,
+          "source": "manual",
+          "commandId": 17
+        },
+        {
+          "phase": "rendered",
+          "pose": "firing_dynamic",
+          "version": 20,
+          "source": "manual",
+          "commandId": 17
+        }
+      ]
+    },
+    {
+      "pose": "firing_dynamic",
+      "repeat": 1,
+      "trace": [
+        {
+          "phase": "received",
+          "pose": "firing_dynamic",
+          "commandId": 18,
+          "documentHidden": true,
+          "suspended": false
+        },
+        {
+          "phase": "requested",
+          "pose": "smoking",
+          "version": 21,
+          "source": "manual",
+          "commandId": 18
+        },
+        {
+          "phase": "accepted",
+          "pose": "firing_dynamic",
+          "commandId": 18,
+          "hidden": false
+        },
+        {
+          "phase": "rendered",
+          "pose": "smoking",
+          "version": 21,
+          "source": "manual",
+          "commandId": 18
+        },
+        {
+          "phase": "requested",
+          "pose": "firing_dynamic",
+          "version": 22,
+          "source": "manual",
+          "commandId": 18
+        },
+        {
+          "phase": "rendered",
+          "pose": "firing_dynamic",
+          "version": 22,
+          "source": "manual",
+          "commandId": 18
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "status": "user-approved-derivatives",
+  "approval": "B-CANONICAL-12 user-approved pose pack",
+  "assets": {
+    "idle": {
+      "path": "proportions-v07/idle.png",
+      "sha256": "c95006e4e7c05151839bd6f42d35b02b0a24df023ac9014e7c33494645a73b78"
+    },
+    "smoking": {
+      "path": "proportions-v07/smoking.png",
+      "sha256": "b5977a66edc65b4d669e3a2f416e35c37fcb6248bdaefb0512fb0bb67ca86391"
+    },
+    "sitting": {
+      "path": "proportions-v08/sitting.png",
+      "sha256": "002f75af76599a91e93f911581d1a78117119d1c05c5be7a5d62df29c345cfe5"
+    },
+    "dual_firing": {
+      "path": "dual-firing-approved/dual_firing.png",
+      "sha256": "f0436fa255c3490d1d2e5dd1fab63873f2fe72faa2adf1eda4804e28a23a946b",
+      "approval": "user requested revolver casing removal and default dual pose"
+    },
+    "firing_dynamic": {
+      "path": "cleanup-v11/firing_dynamic.png",
+      "sha256": "53b524f61d29983937216ee86926b43b5ab1ef4af2bc8eb465b233b7d0e56025"
+    },
+    "speaking": {
+      "frames": [
+        {
+          "path": "cleanup-v11/speaking-01.png",
+          "sha256": "df862f54f768d2c02a7950a1ed28d40ea21ab3cc0d37cd1e889c9de654957fa5"
+        },
+        {
+          "path": "cleanup-v11/speaking-02.png",
+          "sha256": "5030c68ac4605c552aa1c7b54abbd031a949c2b7e9d8d610d6414a446e9b5b03"
+        },
+        {
+          "path": "cleanup-v11/speaking-03.png",
+          "sha256": "4cde673ad30c6ae11ba977202f5f3869ac6ead69c431d24febe74e9cbe5a04a4"
+        },
+        {
+          "path": "cleanup-v11/speaking-04.png",
+          "sha256": "a8019d93e2e569661ade43c2b4fefed84bb08deeb2c2cb96ac58fce4aa3dcd65"
+        },
+        {
+          "path": "cleanup-v11/speaking-05.png",
+          "sha256": "2088e9176c49876cb6ce1075f38b1f3a91931afac479bdc0d8576e42e9913c1c"
+        },
+        {
+          "path": "cleanup-v11/speaking-06.png",
+          "sha256": "ba43c6fccca5a7098fea87d0b8988cab3c299b1c977f9bc06dfcb04b622514c9"
+        },
+        {
+          "path": "cleanup-v11/speaking-07.png",
+          "sha256": "452eb9c5ea86ea8cac362fcaf133bbc2e41e40f43a22b80c563268863d9e9490"
+        }
+      ]
+    },
+    "drawing": {
+      "path": "action-pack-v04/drawing.png",
+      "sha256": "2d5f2f2156f5dffefe66154c3554ed896d64201982c61cc5fb0ac900e4ee9a0c",
+      "approval": "existing v04 retained"
+    },
+    "firing": {
+      "path": "action-pack-v04/firing.png",
+      "sha256": "f17d4cee28c3f386bb65ea46b2a479a3e71daec0723e9be26213356cdc3c4e58",
+      "approval": "existing v04 retained"
+    },
+    "working": {
+      "path": "action-pack-v04/working.png",
+      "sha256": "0423dc92753c9fe4799ca787038481b227b85bfd74b3942adfffbb19f04fdd38",
+      "approval": "existing v04 retained"
+    }
+  }
+}

@@ -5,7 +5,9 @@ import { playFrames } from './animation';
 import { startEffects } from './effects';
 import { startWorking } from './working';
 import { createTransition } from './transition.mjs';
-export function mountPet(root: HTMLElement, character: Character, getSpeed: () => number = () => 1) {
+import {mountManagedPet} from './managed-presentation';
+export function mountPet(root: HTMLElement, character: Character, getSpeed: () => number = () => 1, options:{managed?:boolean;initialState?:PetState}={}) {
+  if(options.managed && outfitPolicy.active==='mustang')return mountManagedPet(root,character,options.initialState||character.initialState);
   let stop = () => {};
   let previousRenderedState: PetState | undefined;
   const render = (state: PetState) => {
@@ -41,7 +43,7 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
       : isRevolverDrawing
         ? reduced?.matches ? revolverActionFrames.slice(2, 3) : revolverActionFrames.slice(0, 3)
       : state === 'firing' ? animation.frames.slice(0, 1)
-      : state === 'dual_firing' ? animation.frames.slice(1, 2)
+      : state === 'dual_firing' ? animation.frames.slice(outfitPolicy.active === 'mustang' ? 0 : 1, outfitPolicy.active === 'mustang' ? 1 : 2)
       : animation.frames;
     const placeholder = () => { const el = document.createElement('div'); el.className = 'placeholder'; el.textContent = `${character.name}\n${state} 이미지 준비 중`; root.replaceChildren(el); };
     if (!frames.length) { placeholder(); return; }
@@ -66,23 +68,23 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     const visibility = () => stage.classList.toggle('action-paused', document.hidden);
     document.addEventListener('visibilitychange', visibility); visibility();
     root.append(stage);
-    const mode = state === 'firing' || state === 'dual_firing' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
+    const mode = state === 'firing' || state === 'dual_firing' || state === 'firing_dynamic' || state === 'speaking' ? 'once' : state === 'drawing' ? 'hold' : 'loop';
     const frameMs = state === 'working' ? (frames.length > 1 ? 300 : 3000)
       : isRevolverFiring ? 190
       : isRevolverDrawing ? 320
       : state === 'firing' ? 1500
-      : state === 'dual_firing' ? 2400 : animation.frameDurationMs;
+      : state === 'dual_firing' ? 2400 : state === 'firing_dynamic' ? 1500 : animation.frameDurationMs;
     let actionFrameIndex = 0;
     const stopFrames = playFrames(frames, frameMs / Math.max(getSpeed(), 0.2), frame => {
       image.src = reduced?.matches ? frames[0] : frame;
       if (isRevolverFiring) stage.dataset.actionFrame = String(actionFrameIndex++);
       if (isRevolverDrawing) stage.dataset.drawFrame = String(actionFrameIndex++);
-    }, mode, () => { stateController.set('idle'); });
+    }, mode, () => { if(!options.managed)stateController.set('idle'); }, state === 'speaking');
     const stopWorking = isWorking && outfitPolicy.active !== 'mustang' ? startWorking(stage, frames[0]) : () => {};
     const stopEffects = isAkilaEffect ? startEffects(stage, state as 'idle' | 'smoking') : () => {};
     stop = () => { stopFrames(); stopEffects(); stopWorking(); document.removeEventListener('visibilitychange', visibility); };
   };
-  const transition = createTransition(render, () => {
+  const transition = options.managed ? render : createTransition(render, () => {
     const stage = root.querySelector<HTMLElement>('.pet-stage');
     if (!stage || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
     const image = stage.querySelector<HTMLImageElement>('img');
@@ -112,6 +114,6 @@ export function mountPet(root: HTMLElement, character: Character, getSpeed: () =
     stage.classList.add('working-exit');
     return true;
   });
-  const stateController = createState(character.initialState, transition); transition(stateController.get());
-  return stateController;
+  const stateController = createState(options.initialState||character.initialState, transition); transition(stateController.get());
+  return {...stateController,dispose:()=>stop()};
 }

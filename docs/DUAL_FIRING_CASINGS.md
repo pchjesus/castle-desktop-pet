@@ -1,0 +1,5 @@
+> 현재 B-12 상태: Speaking 7컷과 Firing Dynamic은 사용자 승인되어 런타임 및 메뉴에 등록되었다. 아래의 미승인·차단 및 메뉴 항목은 작성 당시 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
+# Dual Firing 탄피 수정
+
+사용자 요청에 따라 B-11 Dual Firing 후보의 이미지 오른쪽 리볼버 주변 탄피를 제거하고, 왼쪽 자동권총 주변 탄피는 보존한 별도 파생 이미지를 Dual Firing 실제 포즈로 등록했다. 승인본 해시는 `approved-runtime.json`에 있다. 재생은 2.4초 후 Idle로 돌아간다. 기존 진단 이미지는 보존하며, 최초 기본 시작 포즈는 Idle이다. 공식 원본과 기존 승인 이미지, Speaking 및 Firing Dynamic 상태는 변경하지 않았다. 이미지 생성 편집으로 일부 세부 재묘사가 발생할 수 있으므로 실기기 시각 확인이 필요하다.

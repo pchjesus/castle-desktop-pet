@@ -5,7 +5,17 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'index.html'
+      - 'electron/pet-speech.html'
+      - 'electron/speech-bounds.mjs'
+      - 'tests/ux-hotfix-browser-qa.mjs'
+      - 'tests/behavior-stability-browser-qa.mjs'
+      - 'tests/ux-polish-browser-qa.mjs'
       - 'tests/browser-qa.mjs'
+      - 'tests/b07-proportions-browser-qa.mjs'
+      - 'tests/b10-browser-qa.mjs'
+      - 'tests/b11-browser-qa.mjs'
+      - 'tests/behavior-browser-qa.mjs'
       - 'preview-entry.html'
       - 'scripts/export-preview.mjs'
       - '.github/workflows/browser-qa.yml'
@@ -32,8 +42,22 @@ jobs:
         run: node tests/browser-qa.mjs
       - name: B action review QA
         run: node tests/b-action-browser-qa.mjs
+      - name: B07 proportion candidates comparison and note isolation
+        run: node tests/b07-proportions-browser-qa.mjs
       - name: Review export and image cancellation QA
         run: node tests/b05-review-browser-qa.mjs
+      - name: B10 candidate review
+        run: node tests/b10-browser-qa.mjs
+      - name: B11 candidate review
+        run: node tests/b11-browser-qa.mjs
+      - name: B13 behavior and pointer interaction
+        run: node tests/behavior-browser-qa.mjs
+      - name: B13.1 transparency side speech and Dynamic timing
+        run: node tests/ux-hotfix-browser-qa.mjs
+      - name: B13.2 independent cadence and manual smoke
+        run: node tests/behavior-stability-browser-qa.mjs
+      - name: B13.3 compact menu posture clicks and visible smoke
+        run: node tests/ux-polish-browser-qa.mjs
       - name: File offline verification
         run: node tests/offline-preview-qa.mjs
       - name: Package offline review
@@ -48,5 +72,12 @@ jobs:
             artifacts/offline-qa/
             artifacts/b-action-qa/
             artifacts/b05-review/
+            artifacts/b07-review/
+            artifacts/b10/
+            artifacts/b11/
+            artifacts/b13/
+            artifacts/b13-1/
+            artifacts/b13-2/
+            artifacts/b13-3/
             preview-offline.zip
           if-no-files-found: warn

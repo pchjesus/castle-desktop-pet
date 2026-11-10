@@ -1,3 +1,5 @@
+> 현재 B-12 상태: Speaking 7컷과 Firing Dynamic은 사용자 승인되어 런타임 및 메뉴에 등록되었다. 아래의 미승인·차단 및 메뉴 항목은 작성 당시 기록이다. [현재 상태](B_CANONICAL_12_RUNTIME.md)
+
 # Windows QA 포터블 검수
 
 GitHub Actions의 Windows build and export smoke가 만드는 `castle-pet-windows-qa-unapproved` 아티팩트를 다운로드하고 전체 폴더를 압축 해제한다. 아티팩트의 `검수 QA/electron.exe`를 실행한다. 서버는 필요 없으며 기본 펫은 **후속 B형 무스탕**이다. 최초 시제품은 현행 실행본에서 제거되었다. 우클릭 → B형 진단 검수에서 미승인 키포즈 팩을 열어 크기, 배경, 반복, 취소, Reduced Motion을 확인한다. 진단 개발자 도구에서 오류를 확인할 수 있고 `%APPDATA%/castle-desktop-pet/qa.log`에 로딩 오류를 기록한다.

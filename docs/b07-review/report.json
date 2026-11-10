@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "checks": [
+    "idle original/candidate/references load at 180px",
+    "idle original/candidate/references load at 240px",
+    "idle original/candidate/references load at 360px",
+    "smoking original/candidate/references load at 180px",
+    "smoking original/candidate/references load at 240px",
+    "smoking original/candidate/references load at 360px",
+    "sitting original/candidate/references load at 180px",
+    "sitting original/candidate/references load at 240px",
+    "sitting original/candidate/references load at 360px"
+  ],
+  "errors": []
+}

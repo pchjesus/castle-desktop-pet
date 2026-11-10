@@ -1,0 +1,18 @@
+{
+  "description": "Castle Pet optional local job-start notification (trusted project only); no network calls.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/codex-hook.mjs",
+            "commandWindows": "node scripts\\codex-hook.mjs",
+            "timeout": 10,
+            "statusMessage": "Notify local Castle Pet of Codex turn start"
+          }
+        ]
+      }
+    ]
+  }
+}

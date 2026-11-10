@@ -1,0 +1,155 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {createBehavior,actionWeights,choose,normalizeSettings,readableMs} from '../src/behavior/controller.mjs';import {dialogues,codexEvents} from '../src/behavior/dialogues.mjs';
+function fixture(random=()=>0,reduced=()=>false){let now=0,next=0;const jobs=new Map(),poses=[],lines=[];const b=createBehavior({render:p=>poses.push(p),speak:(t,d)=>lines.push([t,d?.id]),random,reduced,now:()=>now,setTimer:(fn,ms)=>{jobs.set(++next,{fn,at:now+ms});return next},clearTimer:id=>jobs.delete(id)});return {b,jobs,poses,lines,tick(ms){const end=now+ms;let iterations=0;while(true){const entry=[...jobs].sort((a,b)=>a[1].at-b[1].at)[0];if(!entry||entry[1].at>end)break;if(++iterations>1000)throw Error('timer runaway');now=entry[1].at;jobs.delete(entry[0]);entry[1].fn();}now=end;},now:()=>now};}
+test('weights, cooldown and disabled fire renormalize without changing rest semantics',()=>{for(const base of ['idle','smoking']){const a=actionWeights({base,autoFire:true});assert.equal(a[0][0],base==='idle'?'smoking':'idle');assert.deepEqual(a.map(x=>x[1]),[.1,.18,.3,.12,.18,.06,.06]);for(const r of [actionWeights({base,autoFire:false}),actionWeights({base,autoFire:true},true)]){assert.equal(r.length,4);assert(Math.abs(r.reduce((s,x)=>s+x[1],0)-1)<1e-10);}assert.equal(choose(a,()=>.75),'firing');}});
+test('automatic wait and cooldown start after shooting ends, then exclude shooting',()=>{const f=fixture(()=>.75);assert.equal(f.poses.at(-1),'smoking');assert.equal([...f.jobs.values()][0].at,165000);f.tick(165000);assert.equal(f.poses.at(-1),'firing');f.tick(1500);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().cooldown-f.now(),270000);f.tick(165000);assert.equal(f.poses.at(-1),'speaking');});
+test('settings validation, base restoration and manual held poses',()=>{const f=fixture();f.b.configure({base:'idle',autonomy:false,autoFire:false});assert.equal(f.jobs.size,0);f.b.manual('working');f.tick(9999);assert.equal(f.poses.at(-1),'working');assert.equal(f.b.event('testPassed'),false);f.tick(5001);assert.equal(f.poses.at(-1),'idle');f.b.manual('firing');f.tick(20000);assert.equal(f.poses.at(-1),'idle');assert.deepEqual(normalizeSettings({base:'bad',autonomy:'yes'}),{base:'smoking',autonomy:true,autoFire:true,movementFrequency:'default',dialogueEnabled:true,dialogueFrequency:'default'});});
+test('five clicks silently warn; sixth fixed line locks without firing or timer restart',()=>{const f=fixture();for(let i=0;i<5;i++){f.b.click();f.tick(100);}assert.equal(f.poses.at(-1),'drawing');assert(f.b.snapshot().warning);f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');const pending=[...f.jobs.values()].map(j=>j.at);for(let i=0;i<50;i++)f.b.click();assert.deepEqual([...f.jobs.values()].map(j=>j.at),pending);assert(!f.poses.some(p=>p.includes('firing')));f.tick(20000);assert.equal(f.poses.at(-1),'smoking');assert(!f.b.snapshot().locked);});
+test('rolling window and drag cancel combo; no stale completion overrides user pose',()=>{const f=fixture();for(let i=0;i<4;i++){f.b.click();f.tick(100);}f.tick(3100);f.b.click();assert(!f.b.snapshot().warning);f.b.drag();f.b.dragEnd();f.b.manual('speaking');f.b.manual('working');f.tick(10000);assert.equal(f.poses.at(-1),'working');});
+test('hidden state discards timers and resume starts fresh, disposal stays empty',()=>{const f=fixture();f.b.manual('speaking');f.b.visibility(true);assert.equal(f.jobs.size,0);f.tick(999999);f.b.visibility(false);assert.equal(f.jobs.size,2);assert.deepEqual([...f.jobs.values()].map(j=>j.at-f.now()).sort((a,b)=>a-b),[120000,240000]);f.b.dispose();f.b.configure({});f.b.visibility(false);f.tick(999999);assert.equal(f.jobs.size,0);});
+test('dynamic starts at 1s, ends with 850ms aftermath; readable speech is independent',()=>{const f=fixture();f.b.configure({base:'idle',autonomy:false});f.b.manual('firing_dynamic');assert.equal(f.lines.at(-1)[1],'O-01');const ms=readableMs(f.lines.at(-1)[0]);f.tick(999);assert.equal(f.poses.at(-1),'idle');f.tick(1);assert.equal(f.poses.at(-1),'firing_dynamic');f.tick(1500+849);assert.equal(f.poses.at(-1),'firing_dynamic');assert.equal(f.lines.at(-1)[1],'O-01');f.tick(1);assert.equal(f.poses.at(-1),'idle');assert.equal(f.lines.at(-1)[1],'O-01');f.tick(ms-3350);assert.equal(f.lines.at(-1)[0],'');assert.equal(f.jobs.size,0);});
+test('automatic dynamic cooldown starts at shot end, not text end or aftermath',()=>{const f=fixture(()=>.99);f.tick(179400);assert.equal(f.lines.at(-1)[1],'O-01');f.tick(1000);assert.equal(f.poses.at(-1),'firing_dynamic');f.tick(1500);const cooldown=f.b.snapshot().cooldown;assert.equal(cooldown-f.now(),298800);f.tick(850);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().cooldown,cooldown);assert.equal(f.b.snapshot().mode,'base');});
+test('dynamic interruption in every phase clears speech and prevents late return',()=>{for(const elapsed of [500,1200,2600,3400])for(const interrupt of ['manual','configure','visibility','drag','dispose']){const f=fixture();f.b.manual('firing_dynamic');f.tick(elapsed);if(interrupt==='manual')f.b.manual('working');else if(interrupt==='configure')f.b.configure({base:'idle',autonomy:false});else if(interrupt==='visibility')f.b.visibility(true);else f.b[interrupt]();assert.equal(f.lines.at(-1)[0],'');const pose=f.poses.at(-1);f.tick(20000);assert.equal(f.poses.at(-1),interrupt==='manual'?'smoking':pose,interrupt+' at '+elapsed);}});
+test('registry removes merged lines and preserves independent O03-06 and three event mappings',()=>{for(const id of ['O-08','O-15','C-12','C-13','C-16'])assert(!dialogues.some(d=>d.id===id));assert.equal(dialogues.find(d=>d.id==='C-18').random,false);for(const id of ['O-03','O-04','O-05','O-06'])assert(dialogues.find(d=>d.id===id).random);assert.equal(Object.keys(codexEvents).length,3);const f=fixture();f.b.event('deploymentComplete');f.tick(800);assert.equal(f.lines.at(-1)[0],'여러모로... 나쁘지 않았다. 신입.');assert.equal(f.b.event('jobStart'),false);});
+test('local settings round trip and corrupt file recovery',async()=>{const {mkdtemp,writeFile,rm}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join}=await import('node:path');const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');const dir=await mkdtemp(join(tmpdir(),'castle-settings-'));try{const file=join(dir,'behavior.json');assert.deepEqual(loadSettings(file),normalizeSettings(null));const value={base:'idle',autonomy:false,autoFire:false};saveSettings(file,value);assert.deepEqual(loadSettings(file),{...value,movementFrequency:'default',dialogueEnabled:false,dialogueFrequency:'default'});await writeFile(file,'{broken');assert.deepEqual(loadSettings(file),normalizeSettings(null));}finally{await rm(dir,{recursive:true});}});
+test('silent response ending does not erase clicks still inside the rolling 3-second window',()=>{const f=fixture(()=>.9);f.b.click();f.tick(1200);for(let i=0;i<4;i++){f.b.click();f.tick(200);}assert(f.b.snapshot().warning);assert.equal(f.poses.at(-1),'drawing');});
+test('initial wait bounds cover both ends of uniform random range',()=>{for(const r of [0,.5,.999999]){const f=fixture(()=>r);const delay=[...f.jobs.values()][0].at;assert(delay>=120000&&delay<=180000);assert.equal(delay,120000+r*60000);f.b.dispose();}});
+test('manual firing bypasses cooldown and disabling autonomy clears a pending auto interval',()=>{const f=fixture(()=>.75);f.tick(166500);assert(f.b.snapshot().cooldown>f.now());f.b.manual('firing');assert.equal(f.poses.at(-1),'firing');f.b.configure({base:'smoking',autonomy:false,autoFire:false});assert.equal(f.jobs.size,0);f.tick(999999);assert.equal(f.poses.at(-1),'smoking');});
+test('late timer after OS suspension starts a fresh wait instead of catch-up action',()=>{let clock=0,next=0;const jobs=new Map(),poses=[];const b=createBehavior({render:p=>poses.push(p),speak:()=>{},random:()=>0,now:()=>clock,setTimer:(fn,ms)=>{jobs.set(++next,{fn,ms});return next},clearTimer:id=>jobs.delete(id)});const [id,job]=[...jobs][0];jobs.delete(id);clock=999999;job.fn();assert.deepEqual(poses,['smoking','smoking']);assert.equal(jobs.size,2);assert.deepEqual([...jobs.values()].map(j=>j.ms).sort((a,b)=>a-b),[120000,240000]);b.dispose();});
+test('Reduced Motion preserves Dynamic lead-in, aftermath, readable text and return',()=>{const f=fixture(()=>0,()=>true);f.b.configure({base:'idle',autonomy:false});f.b.manual('firing_dynamic');f.tick(1000);assert.equal(f.poses.at(-1),'firing_dynamic');f.tick(2350);assert.equal(f.poses.at(-1),'idle');assert.equal(f.lines.at(-1)[1],'O-01');f.tick(20000);assert.equal(f.jobs.size,0);});
+
+test('independent movement/dialogue preset bounds and switches',()=>{const intervals={movement:{quiet:[300000,600000],default:[120000,180000],active:[60000,120000]},dialogue:{quiet:[480000,720000],default:[240000,360000],active:[120000,180000]}};for(const name of ['quiet','default','active'])for(const r of [0,.5,.999999]){const f=fixture(()=>r);f.b.configure({autonomy:true,dialogueEnabled:true,movementFrequency:name,dialogueFrequency:name});const s=f.b.snapshot();for(const [kind,field] of [['movement','nextMovement'],['dialogue','nextDialogue']]){const [a,b]=intervals[kind][name];assert.equal(s[field],a+(b-a)*r);}assert.equal(f.jobs.size,2);f.b.dispose();}});
+test('movement OFF and dialogue ON speaks at base without pose changes; inverse is silent',()=>{const f=fixture();f.b.configure({base:'idle',autonomy:false,dialogueEnabled:true});const start=f.poses.length;f.tick(240000);assert(f.lines.at(-1)[0]);assert.equal(f.poses.length,start);assert.equal(f.poses.at(-1),'idle');assert.equal(f.b.snapshot().nextMovement,0);f.b.configure({autonomy:true,dialogueEnabled:false});const lineCount=f.lines.filter(([t])=>t).length;f.tick(120000);assert.equal(f.poses.at(-1),'idle');assert.equal(f.lines.filter(([t])=>t).length,lineCount);});
+test('movement Speaking weight is preserved but random speech obeys its independent cadence',()=>{const f=fixture(()=>.5);const due=f.b.snapshot().nextDialogue;f.tick(150000);assert.equal(f.poses.at(-1),'speaking');assert(!f.lines.some(([t])=>t));assert.equal(f.b.snapshot().nextDialogue,due);f.tick(150000);assert.equal(f.lines.filter(([t])=>t).length,1);const next=f.b.snapshot().nextDialogue;f.tick(3500);assert.equal(f.poses.at(-1),'speaking');assert.equal(f.lines.filter(([t])=>t).length,1);assert.equal(f.b.snapshot().nextDialogue,next);});
+test('manual held pose wins over independent dialogue; skipped slots never accumulate',()=>{const f=fixture();f.b.manual('sitting');f.tick(9000);assert.equal(f.poses.at(-1),'sitting');assert(!f.lines.some(([t])=>t));assert.equal(f.b.snapshot().nextMovement,0);assert(f.b.snapshot().nextDialogue>f.now());f.tick(2000);assert.equal(f.poses.at(-1),'smoking');f.b.manual('smoking');assert.equal(f.b.snapshot().nextMovement-f.now(),120000);f.tick(1);assert(!f.lines.some(([t])=>t));});
+test('autonomous dialogue OFF mutes auto Dynamic but never manual Speaking, Dynamic or click',()=>{const f=fixture(()=>.99);f.b.configure({autonomy:true,dialogueEnabled:false});f.tick(179400);assert(!f.lines.some(([t])=>t));f.tick(1000);assert.equal(f.poses.at(-1),'firing_dynamic');f.b.manual('speaking');assert(f.lines.at(-1)[0]);f.b.manual('firing_dynamic');assert.equal(f.lines.at(-1)[1],'O-01');const c=fixture();c.b.configure({autonomy:false,dialogueEnabled:false});c.b.click();assert(c.lines.at(-1)[0]);});
+test('manual shots finish on action time even with long readable text, text survives normal return',()=>{for(const [pose,ms] of [['firing',1500],['dual_firing',2400]]){const f=fixture();f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual(pose);const record=f.lines.at(-1);assert(record[0]);assert(readableMs(record[0])>ms);f.tick(ms-1);assert.equal(f.poses.at(-1),pose);f.tick(1);assert.equal(f.poses.at(-1),'smoking');assert.deepEqual(f.lines.at(-1),record);f.b.manual('working');assert.equal(f.lines.at(-1)[0],'');f.tick(14999);assert.equal(f.poses.at(-1),'working');f.tick(1);assert.equal(f.poses.at(-1),'smoking');}});
+test('all three manual shots repeat during auto cooldown, latest completion alone returns base',()=>{const f=fixture(()=>.75);f.tick(166500);const cooldown=f.b.snapshot().cooldown;f.b.configure({autonomy:false,autoFire:false,dialogueEnabled:false});for(const [pose,ms] of [['firing',1500],['dual_firing',2400],['firing_dynamic',3350]]){assert.equal(f.b.manual(pose),true);f.tick(300);assert.equal(f.b.manual(pose),true);if(pose==='firing_dynamic')f.tick(1000);assert.equal(f.poses.at(-1),pose);f.tick(pose==='firing_dynamic'?ms-1000-1:ms-1);assert.equal(f.poses.at(-1),pose);f.tick(1);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().cooldown,cooldown);}});
+test('cancelled action, speech and independent scheduler callbacks cannot mutate newer user state',()=>{const f=fixture();const oldSchedulers=[...f.jobs.values()];f.b.manual('speaking');const oldAction=[...f.jobs.values()];f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('working');for(const job of [...oldSchedulers,...oldAction])job.fn();assert.equal(f.poses.at(-1),'working');assert.equal(f.jobs.size,1);assert.equal(f.b.snapshot().pending,1);f.tick(15000);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.jobs.size,0);});
+test('legacy OFF safely migrates both schedulers OFF, independent choices and corrupt presets restore',async()=>{assert.deepEqual(normalizeSettings({base:'idle',autonomy:false,autoFire:false}),{base:'idle',autonomy:false,autoFire:false,movementFrequency:'default',dialogueEnabled:false,dialogueFrequency:'default'});assert.equal(normalizeSettings({autonomy:false,dialogueEnabled:true,movementFrequency:'alien'}).dialogueEnabled,true);assert.equal(normalizeSettings({dialogueFrequency:'alien'}).dialogueFrequency,'default');const {mkdtemp,readFile,rm}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join}=await import('node:path');const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');const dir=await mkdtemp(join(tmpdir(),'castle-frequency-'));try{const path=join(dir,'behavior.json'),settings={base:'smoking',autonomy:false,autoFire:true,movementFrequency:'quiet',dialogueEnabled:true,dialogueFrequency:'active'};saveSettings(path,settings);assert.deepEqual(loadSettings(path),settings);assert.equal(JSON.parse(await readFile(path,'utf8')).settingsVersion,2);}finally{await rm(dir,{recursive:true});}});
+test('rare user candidate preserves adaptation provenance and cannot block firing',()=>{const record=dialogues.find(d=>d.id==='C-19');assert.equal(record.text,'사춘기 소년들의 어깨 싸움은 그걸로 끝이다.');assert.equal(record.approval,'proposed');assert.equal(record.rarity,'rare');assert.equal(record.origin,'original-inspired adaptation');assert(!record.poses.some(p=>p.includes('firing')));assert(!record.triggers.includes('click-combo'));});
+test('duplicate show/resume signal does not cancel a manual command when already visible',()=>{const f=fixture();f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('firing');f.tick(300);f.b.visibility(false);assert.equal(f.poses.at(-1),'firing');f.tick(1199);assert.equal(f.poses.at(-1),'firing');f.tick(1);assert.equal(f.poses.at(-1),'smoking');});
+test('simultaneous Speaking movement and dialogue slots emit one line, not two',()=>{let r=0;const f=fixture(()=>r);f.b.configure({autonomy:true,dialogueEnabled:true,movementFrequency:'default',dialogueFrequency:'active'});assert.equal(f.b.snapshot().nextMovement,f.b.snapshot().nextDialogue);r=.5;f.tick(120000);assert.equal(f.poses.at(-1),'speaking');assert.equal(f.lines.filter(([t])=>t).length,1);f.tick(5000);assert.equal(f.lines.filter(([t])=>t).length,1);});
+test('user input cancels an in-progress autonomous line without its expiry affecting the new pose',()=>{const f=fixture();f.b.configure({autonomy:false,dialogueEnabled:true});f.tick(240000);assert(f.lines.at(-1)[0]);const obsolete=[...f.jobs.values()].filter(job=>job.at===f.b.snapshot().speechUntil);f.b.manual('working');for(const job of obsolete)job.fn();assert.equal(f.lines.at(-1)[0],'');assert.equal(f.poses.at(-1),'working');assert(f.b.snapshot().nextDialogue>f.now());f.b.visibility(true);assert.equal(f.jobs.size,0);});
+test('manual Speaking continues to respond after random-pool cooldowns are exhausted',()=>{const f=fixture();f.b.configure({autonomy:false,dialogueEnabled:false});for(let i=0;i<40;i++){assert(f.b.manual('speaking'));assert.equal(f.poses.at(-1),'speaking');assert(f.lines.at(-1)[0]);}assert.equal(f.lines.at(-1)[1],'C-02');});
+test('ordinary clicks retain Sitting/Working and manual held rest through speech and silence',()=>{for(const value of ['sitting','working','idle'])for(const r of [0,.9]){const f=fixture(()=>r);f.b.manual(value);const before=f.poses.at(-1);f.b.click();assert.equal(f.poses.at(-1),before);f.tick(1000);assert.equal(f.poses.at(-1),before);assert.equal(f.b.snapshot().mode,'manual');assert.equal(f.b.snapshot().nextMovement,0);f.tick(25000);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().mode,'base');assert(f.b.snapshot().nextMovement>f.now());f.b.dispose();}});
+test('fifth/sixth click still warns from Sitting, overrides held posture exactly once',()=>{const f=fixture();f.b.manual('sitting');for(let i=0;i<4;i++){f.b.click();f.tick(200);assert.equal(f.poses.at(-1),'sitting');}f.b.click();assert.equal(f.poses.at(-1),'drawing');f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');for(let i=0;i<20;i++)f.b.click();f.tick(20000);assert.equal(f.poses.at(-1),'smoking');});
+test('clicking an automatic Sitting adopts that pose without its obsolete auto completion',()=>{const f=fixture(()=>.2);f.tick(132000);assert.equal(f.poses.at(-1),'sitting');f.b.click();f.tick(9000);assert.equal(f.poses.at(-1),'sitting');assert.equal(f.b.snapshot().mode,'manual');assert.equal(f.b.snapshot().nextMovement,0);f.tick(20000);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().mode,'base');});
+test('moving a held pose retains it, and a stale drag end cannot override a newer manual action',()=>{for(const pose of ['sitting','working']){const f=fixture();f.b.manual(pose);f.b.drag();f.b.dragEnd();f.tick(1000);assert.equal(f.poses.at(-1),pose);f.tick(25000);assert.equal(f.poses.at(-1),'smoking');}const f=fixture();f.b.drag();f.b.manual('working');f.b.dragEnd();assert.equal(f.poses.at(-1),'working');});
+test('B-14 two new lines are pose-only, confirmed in-app, and not falsely labelled verified comic quotations',()=>{
+ const sitting=dialogues.find(d=>d.id==='B14-SIT-01'),drawing=dialogues.find(d=>d.id==='B14-DRAW-01');
+ assert.equal(sitting.text,'자, 최후변론을 해라');assert.deepEqual(sitting.poses,['sitting']);
+ assert.equal(drawing.text,'웃음이 최후변론인가');assert.deepEqual(drawing.poses,['drawing']);
+ for(const d of [sitting,drawing]){
+  assert.equal(d.approval,'confirmed');assert.equal(d.origin,'original candidate pending verification');
+  assert.deepEqual(d.triggers,['pose-entry']);assert.equal(d.random,false);
+ }
+});
+test('B-14 Sitting entry has silence, old compatible dialogue, or its dedicated line; no loop reroll',()=>{
+ for(const [r,expected] of [[0,undefined],[.25,'O-02'],[.9,'B14-SIT-01']]){
+  const f=fixture(()=>r);f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('sitting');
+  assert.equal(f.lines.filter(([t])=>t).at(-1)?.[1],expected);
+  const spoken=f.lines.filter(([t])=>t).length;f.tick(5000);
+  assert.equal(f.poses.at(-1),'sitting');assert.equal(f.b.snapshot().mode,'manual');
+  f.tick(20000);assert.equal(f.poses.at(-1),'smoking');
+  assert.equal(f.lines.filter(([t])=>t).length,spoken);f.b.dispose();
+ }
+});
+test('B-14 Drawing entry uses its dedicated line only on a normal action, never in five/six-click warning',()=>{
+ for(const [r,kind] of [[0,'silent'],[.25,'existing'],[.9,'special']]){
+  const f=fixture(()=>r);f.b.configure({autonomy:false,dialogueEnabled:false});f.b.manual('drawing');
+  const id=f.lines.filter(([t])=>t).at(-1)?.[1];
+  if(kind==='silent')assert.equal(id,undefined);
+  else if(kind==='special')assert.equal(id,'B14-DRAW-01');
+  else assert(id&&id!=='B14-DRAW-01');
+  f.b.dispose();
+ }
+ const f=fixture(()=>.9);f.b.configure({autonomy:false,dialogueEnabled:false});
+ for(let i=0;i<5;i++){f.b.click();f.tick(100);}
+ assert.equal(f.poses.at(-1),'drawing');assert(!f.lines.some(([,id])=>id==='B14-DRAW-01'));
+ f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');f.b.dispose();
+});
+test('B-14 autonomous Sitting speaks once when automatic dialogue is enabled, without queuing repeats',()=>{
+ const rolls=[.2,.5,.2,.9,0];let i=0;const f=fixture(()=>rolls[i++]??.5);
+ f.tick(132000);assert.equal(f.poses.at(-1),'sitting');
+ assert.equal(f.lines.filter(([t])=>t).at(-1)?.[1],'B14-SIT-01');
+ const count=f.lines.filter(([t])=>t).length;
+ f.tick(15000);assert.equal(f.poses.at(-1),'smoking');
+ assert.equal(f.lines.filter(([t])=>t).length,count);f.b.dispose();
+});
+
+test('menu Idle, Sitting, Working and Smoking non-base poses return to base and restart autonomous waits',()=>{
+ for(const pose of ['idle','sitting','working']){
+  const f=fixture(()=>0);f.b.configure({base:'smoking',autonomy:true,dialogueEnabled:false});
+  f.b.manual(pose);assert.equal(f.poses.at(-1),pose);
+  f.tick(pose==='working'?14999:9999);assert.equal(f.poses.at(-1),pose);
+  f.tick(1);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().mode,'base');
+  assert.equal(f.b.snapshot().nextMovement-f.now(),120000);
+  f.b.dispose();
+ }
+ const f=fixture(()=>0);f.b.configure({base:'idle',autonomy:true,dialogueEnabled:false});
+ f.b.manual('smoking');f.tick(10000);assert.equal(f.poses.at(-1),'idle');
+ f.b.manual('idle');f.tick(200000);assert.notEqual(f.b.snapshot().mode,'manual');f.b.dispose();
+});
+test('held-pose click/drag cannot create an infinite manual lock and stale timers cannot interrupt new pose',()=>{
+ const f=fixture(()=>.9);f.b.configure({autonomy:true,dialogueEnabled:false});
+ f.b.manual('working');f.tick(4000);f.b.click();f.tick(500);assert.equal(f.poses.at(-1),'working');
+ f.b.drag();f.b.dragEnd();f.tick(12000);assert.equal(f.poses.at(-1),'smoking');
+ f.b.manual('sitting');f.b.click();f.b.manual('working');f.tick(14500);assert.equal(f.poses.at(-1),'working');
+ f.tick(500);assert.equal(f.poses.at(-1),'smoking');f.b.dispose();
+});
+
+test('Sitting is a persistable persistent base pose, not a redundant autonomous action',async()=>{
+ const original=normalizeSettings({base:'sitting',autonomy:true});
+ assert.equal(original.base,'sitting');
+ const w=actionWeights(original);assert(!w.some(([pose])=>pose==='sitting'));assert(Math.abs(w.reduce((n,[,p])=>n+p,0)-1)<1e-9);
+ const f=fixture(()=>0);f.b.configure({base:'sitting',autonomy:true,dialogueEnabled:false});
+ assert.equal(f.poses.at(-1),'sitting');f.b.manual('working');f.tick(15000);assert.equal(f.poses.at(-1),'sitting');
+ f.tick(120000);assert.equal(f.poses.at(-1),'smoking');f.tick(10000);assert.equal(f.poses.at(-1),'sitting');f.b.dispose();
+ const {mkdtemp,rm}=await import('node:fs/promises');
+ const {join}=await import('node:path');
+ const {tmpdir}=await import('node:os');
+ const {loadSettings,saveSettings}=await import('../src/behavior/settings-store.mjs');
+ const dir=await mkdtemp(join(tmpdir(),'castle-sitting-'));try{const file=join(dir,'behavior.json');saveSettings(file,original);assert.equal(loadSettings(file).base,'sitting');}finally{await rm(dir,{recursive:true});}
+});
+
+test('per-action weights normalize, save, and never allow invalid or unknown names',async()=>{
+ const normalized=normalizeSettings({base:'smoking',actionWeights:{idle:0,sitting:38,working:20,firing:-2,dual_firing:999,evil:18}});
+ assert.deepEqual(normalized.actionWeights,{idle:0,smoking:10,sitting:38,speaking:30,drawing:12,firing:18,dual_firing:6,firing_dynamic:6,working:20});
+ const rows=actionWeights({...normalized,autoFire:true});
+ assert(!rows.some(([pose])=>pose==='idle'));assert(rows.some(([pose])=>pose==='working'));
+ assert(Math.abs(rows.reduce((sum,[,p])=>sum+p,0)-1)<1e-10);
+ assert(!actionWeights({...normalized,autoFire:false}).some(([pose])=>['firing','dual_firing','firing_dynamic'].includes(pose)));
+ const {mkdtempSync,rmSync}=await import('node:fs'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+ const {saveSettings,loadSettings}=await import('../src/behavior/settings-store.mjs');
+ const dir=mkdtempSync(join(tmpdir(),'castle-weights-'));
+ try{const file=join(dir,'settings.json');saveSettings(file,normalized);assert.deepEqual(loadSettings(file).actionWeights,normalized.actionWeights);}finally{rmSync(dir,{recursive:true,force:true});}
+});
+test('zero chance excludes selected pose and zeroing every action does not crash the scheduler',()=>{
+ const zero={idle:0,smoking:0,sitting:0,speaking:0,drawing:0,firing:0,dual_firing:0,firing_dynamic:0,working:0};
+ assert.deepEqual(actionWeights({base:'smoking',autoFire:true,actionWeights:zero}),[]);
+ const f=fixture(()=>0);f.b.configure({base:'smoking',autonomy:true,dialogueEnabled:false,actionWeights:zero});
+ f.tick(121000);assert.equal(f.poses.at(-1),'smoking');
+ assert.equal(f.b.snapshot().mode,'base');assert(f.b.snapshot().nextMovement>f.now());f.b.dispose();
+});
+test('changing only action frequency preserves an active manual pose and event, then affects later actions',()=>{
+ const f=fixture(()=>0);f.b.manual('working');f.tick(3000);
+ const before=f.poses.length;
+ f.b.configure({...f.b.snapshot().settings,actionWeights:{speaking:0,working:40}});
+ assert.equal(f.poses.length,before);assert.equal(f.poses.at(-1),'working');
+ f.tick(12000);assert.equal(f.poses.at(-1),'smoking');f.b.dispose();
+});
+test('manual dynamic and Codex events do not insert Smoking between current and requested action',()=>{
+ const f=fixture(()=>0);f.b.configure({base:'smoking',autonomy:false,dialogueEnabled:false});
+ f.b.manual('sitting');f.b.manual('firing_dynamic');
+ assert.equal(f.poses.at(-1),'sitting');f.tick(999);assert.equal(f.poses.at(-1),'sitting');
+ f.tick(1);assert.equal(f.poses.at(-1),'firing_dynamic');
+ f.tick(2350);assert.equal(f.poses.at(-1),'smoking');
+ f.b.manual('idle');const pos=f.poses.length;assert.equal(f.b.event('testPassed'),false);
+ f.tick(13000);assert.equal(f.poses.at(-1),'smoking');
+ f.b.manual('sitting');f.tick(20000);
+ // Event starts on idle and holds until a real target pose is ready.
+ f.b.configure({base:'idle',autonomy:false,dialogueEnabled:false});const at=f.poses.length;
+ assert.equal(f.b.event('jobStart'),true);assert.equal(f.poses.length,at);
+ f.tick(799);assert.equal(f.poses.length,at);f.tick(1);assert.equal(f.poses.at(-1),'working');
+ f.b.dispose();
+});

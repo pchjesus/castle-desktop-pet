@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "checks": [
+    "default approved Smoking",
+    "5th silent Drawing, 6th fixed Black Mamba, flood ignored",
+    "real pointer drag does not count as click",
+    "manual held Working survives stale speech completion",
+    "natural speech completion restores configured Idle",
+    "manual Dynamic bypasses auto-fire OFF, O01 precedes shot, returns Smoking",
+    "menu settings reflect persisted query and dispatch explicit changes"
+  ],
+  "errors": []
+}
