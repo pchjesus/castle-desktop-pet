@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('castleMenu',{
  windowControl:(command:string)=>ipcRenderer.send('pet-menu:window-control',command),
  getInfo:()=>ipcRenderer.invoke('pet-menu:get-info'),
  testEvent:(name:string)=>ipcRenderer.invoke('pet-menu:test-event',name),
+ copyBravePairToken:()=>ipcRenderer.invoke('pet-menu:brave-copy-token'),
  setCodexIntegration:(enabled:boolean)=>ipcRenderer.invoke('pet-menu:codex-toggle',enabled)
 });

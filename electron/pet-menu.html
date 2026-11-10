@@ -168,6 +168,13 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 .status-list dt{color:#a9c2da}
 .status-list dd{color:#eef5fc}
 @media (prefers-reduced-motion:reduce){.switch-knob{transition:none}}
+
+.connection-scroll{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding-right:5px}
+.event-connect-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.event-connect-list button{min-height:64px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;text-align:left}
+.event-setting-value{font-size:12px;font-weight:750}
+#brave-copy-token{flex-shrink:0;min-height:42px}
+#brave-result,#external-last{font-size:12px;line-height:1.5}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -198,7 +205,7 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
 <div class="more-view" data-more-view="home">
-<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="connections">외부 연동</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
 </div>
 <div class="more-view" data-more-view="archive" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
@@ -219,6 +226,22 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 <h2>최근 이벤트</h2><div id="codex-logs">아직 수신한 이벤트가 없어요.</div>
 </div>
 </div>
+<div class="more-view" data-more-view="connections" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>외부 연동 · 알림 설정</strong></div>
+<div class="connection-scroll">
+<p>선택한 알림만 표시해요. 다른 동작이나 대사가 진행 중이면 조용히 넘어가요.</p>
+<div class="event-connect-list">
+<button type="button" data-external-key="braveDownload">Brave 다운로드 완료 <span class="event-setting-value">꺼짐</span></button>
+<button type="button" data-external-key="powerAC">전원 연결 <span class="event-setting-value">켜짐</span></button>
+<button type="button" data-external-key="powerBattery">배터리 전환 <span class="event-setting-value">켜짐</span></button>
+<button type="button" data-external-key="unlock">화면 잠금 해제 <span class="event-setting-value">켜짐</span></button>
+</div>
+<h2>Brave 확장 연결</h2>
+<p>검수 ZIP의 <strong>brave-extension</strong> 폴더를 Brave에서 직접 설치한 뒤, 확장 설정에 토큰을 붙여넣어 주세요. 파일명이나 URL은 아킬라로 보내지 않아요.</p>
+<button id="brave-copy-token" type="button">연결 토큰 복사</button>
+<p id="brave-result" role="status" aria-live="polite">다운로드 알림을 켜면 PC 내부 수신기를 시작해요. Brave 확장은 별도 설치가 필요해요.</p>
+<p id="external-last">마지막 알림 없음</p>
+</div></div>
 <div class="more-view" data-more-view="help" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>도움말</strong></div>
 <div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
@@ -228,7 +251,7 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 <p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
 <p>더보기 → 현재 상태에서 세 가지 Codex 이벤트를 직접 시험할 수 있어요. 테스트 버튼은 실제 Codex 연결이나 테스트·배포 성공을 증명하지 않아요.</p>
 <p>더보기 → 현재 상태의 스위치를 오른쪽으로 밀면 로컬 Codex 훅을 설치하고 왼쪽으로 밀면 해제해요. 기존 설정을 보존하며, 로컬 Codex의 /hooks에서 실제 실행을 승인해야 해요. Node.js가 설치돼 있어야 훅이 동작해요.</p>
-<p>클라우드에서 실행되는 Codex는 Windows 로컬 파일에 접근하지 못할 수 있어요. 설치 여부와 실제 이벤트 수신은 다르며, 테스트/배포 성공은 추측하지 않아요. 추가 AI API 호출은 없어요.</p></div>
+<p>클라우드에서 실행되는 Codex는 Windows 로컬 파일에 접근하지 못할 수 있어요. Brave에서 Codex 웹사이트를 이용해도 로컬 Codex 훅이 연결되지는 않아요.</p><p>더보기 → 외부 연동에서 Brave 다운로드·전원 연결·배터리 전환·잠금 해제 알림을 개별로 설정해요. Brave 확장은 직접 설치하고 토큰을 넣어야 해요.</p></div>
 </div>
 <div class="more-view" data-more-view="diagnostics" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>이미지 검수 · 별도 창</strong></div>
@@ -316,7 +339,21 @@ function showFrequencyView(name){
 const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','Codex event':'Codex 연동 예정'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','jobStart':'작업 시작 예정','testPassed':'테스트 통과 예정','deploymentComplete':'배포 완료 예정','repeatedError-candidate':'반복 오류 후보'};
 let archive=[],infoLoaded=false;
-function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
+let externalValues={braveDownload:false,powerAC:true,powerBattery:true,unlock:true};
+function renderConnections(info){
+ const settings=info?.externalSettings||{};
+ for(const key of Object.keys(externalValues))if(typeof settings[key]==='boolean')externalValues[key]=settings[key];
+ for(const button of document.querySelectorAll('[data-external-key]')){
+  const enabled=externalValues[button.dataset.externalKey];
+  button.setAttribute('aria-pressed',String(enabled));
+  button.querySelector('.event-setting-value').textContent=enabled?'켜짐':'꺼짐';
+ }
+ const ready=info?.brave?.ready,err=info?.brave?.error,label=document.querySelector('#brave-result');
+ if(err)label.textContent='Brave 수신기 오류: '+err;
+ else if(externalValues.braveDownload)label.textContent=ready?'PC 내부 수신기 대기 중 · 확장 연결 별도 확인 필요':'PC 내부 수신기 시작 중…';
+ document.querySelector('#external-last').textContent=info?.lastExternal?'최근 알림: '+info.lastExternal.name+' · '+new Date(info.lastExternal.at).toLocaleTimeString('ko-KR'):'마지막 알림 없음';
+}
+function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status'||name==='connections')refreshStatus();}
 function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative',codex:'Codex event'}[kind]===line.origin);}
 function renderArchive(){
  const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
@@ -351,14 +388,14 @@ function renderStatus(status){
   list.append(p);
  }
 }
-function refreshStatus(){return Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{if(info?.status)renderStatus(info.status);}).catch(()=>{});}
+function refreshStatus(){return Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{if(info?.status){renderStatus(info.status);renderConnections(info.status);}}).catch(()=>{});}
 
 for(const input of ['dialogue-search','dialogue-origin','dialogue-pose'])input&&document.getElementById(input).addEventListener(input==='dialogue-search'?'input':'change',renderArchive);
 Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  if(!info||!Array.isArray(info.dialogues))return;
  archive=info.dialogues.filter(line=>typeof line?.id==='string'&&typeof line?.text==='string'&&Array.isArray(line.poses)&&Array.isArray(line.triggers));
  infoLoaded=true;renderArchive();
- if(info.status)renderStatus(info.status);
+ if(info.status){renderStatus(info.status);renderConnections(info.status);}
 }).catch(()=>{});
 function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
 document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
@@ -368,6 +405,20 @@ if(event.target.closest('[data-weights-reset]')){
  document.querySelector('#weights-feedback').textContent='기본 행동 비중으로 되돌렸어요.';return;
 }
 const opener=event.target.closest('[data-more-open]');if(opener){showMoreView(opener.dataset.moreOpen);return;}if(event.target.closest('[data-more-back]')){showMoreView('home');return;}
+const connection=event.target.closest('[data-external-key]');
+if(connection){
+ const key=connection.dataset.externalKey,enabled=!externalValues[key];
+ externalValues[key]=enabled;connection.setAttribute('aria-pressed',String(enabled));
+ connection.querySelector('.event-setting-value').textContent=enabled?'켜짐':'꺼짐';
+ window.castleMenu?.invoke('setting:external:'+key+':'+enabled);
+ setTimeout(refreshStatus,450);return;
+}
+if(event.target.closest('#brave-copy-token')){
+ const label=document.querySelector('#brave-result');
+ Promise.resolve(window.castleMenu?.copyBravePairToken?.()).then(result=>{
+  label.textContent=result?.success?'연결 토큰 복사 완료. Brave 확장 설정에 붙여넣어 주세요.':'복사 실패: '+(result?.error||'상태 확인 필요');
+ }).catch(()=>{label.textContent='토큰 복사에 실패했어요.';});return;
+}
 const toggle=event.target.closest('#codex-toggle');if(toggle){
  if(toggle.disabled)return;
  const enabled=toggle.getAttribute('aria-checked')!=='true';
