@@ -175,6 +175,21 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
  .frequency-entry{grid-template-columns:minmax(0,1fr) 84px;gap:7px;padding:8px}
  .frequency-entry button{min-height:32px;font-size:11px}
 }
+
+/* B-19 personalization & favorites. */
+.pose-option{display:grid;grid-template-columns:minmax(0,1fr) 30px;align-items:stretch;gap:3px;min-width:0}
+.pose-option button[data-action^="pose:"]{min-width:0}
+button.favorite-star{width:30px;min-width:30px;padding:3px;font-size:17px;border:1px solid #66819c}
+button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1b1;border-color:#c9d9f0}
+.favorite-entry{display:grid;grid-template-columns:minmax(0,1fr) 60px 33px;align-items:center;gap:5px;padding:8px;border:1px solid #5b6d80;background:#344255;border-radius:5px}
+.favorite-entry span{min-width:0;overflow-wrap:anywhere;font-size:12px;line-height:1.4}
+.favorite-entry button{min-width:0;width:100%;min-height:32px;padding:5px}
+.favorite-entry .favorite-star{width:33px}
+#favorites-results{overflow-y:auto;min-height:0;display:grid;gap:5px;align-content:start}
+.preference-set{display:grid;gap:7px}
+.preference-set .grid button{min-height:40px}
+.preference-hint{margin:0;font-size:11px;line-height:1.5;color:#cfdae8}
+.archive-item .favorite-star{width:auto;min-height:29px;margin-top:7px;padding:4px 8px;font-size:12px}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -205,7 +220,26 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
 <div class="more-view" data-more-view="home">
-<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+<h2>정보와 도구</h2><div class="grid two more-links"><button data-more-open="archive">대사 도감</button><button data-more-open="status">현재 상태</button><button data-more-open="favorites">즐겨찾기</button><button data-more-open="personalize">개인화</button><button data-more-open="help">사용 도움말</button><button data-more-open="diagnostics">이미지 검수</button></div><p>대사 출처와 연결 상태를 확인할 수 있어요.</p>
+</div>
+
+<div class="more-view" data-more-view="favorites" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>즐겨찾기</strong><small>포즈·대사</small></div>
+<p class="preference-hint">동작 탭의 별표 또는 대사 도감에서 등록할 수 있어요. 즐겨찾기는 이 컴퓨터에만 저장돼요.</p>
+<div id="favorites-results" aria-live="polite"></div>
+</div>
+<div class="more-view" data-more-view="personalize" hidden>
+<div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>개인화</strong></div>
+<div class="preference-set">
+<h2>자리 지키기</h2>
+<button id="position-lock-toggle" aria-pressed="false">현재 자리에 고정: 꺼짐</button>
+<p class="preference-hint">켜면 드래그 이동을 막고 재실행 시 저장된 자리로 돌아와요. 모니터 구성 변경 중에는 화면 안쪽으로 임시 이동할 수 있어요.</p>
+<h2>대사 성향</h2>
+<div class="grid" id="dialogue-styles">
+<button data-style="reserved">담백</button><button data-style="balanced">균형</button><button data-style="original">원작풍</button>
+</div>
+<p class="preference-hint">담백: 짧은 대사 우선 · 균형: 기존 선택 비중 · 원작풍: 원작 기반 대사 우선. 대사 간격은 빈도 탭에서 따로 설정해요.</p>
+</div>
 </div>
 <div class="more-view" data-more-view="archive" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>대사 도감</strong><small id="archive-count">읽는 중</small></div>
@@ -223,7 +257,7 @@ button[aria-pressed=true]{background:#5a7794!important;border:1px solid #bcd4eb!
 <div class="more-view" data-more-view="help" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>도움말</strong></div>
 <div class="more-help"><p>왼쪽 클릭: 아킬라의 짧은 반응을 확인해요. 연속 5회 클릭은 무언 경고, 6회째는 특별 대사예요.</p>
-<p>드래그: 캐릭터를 이동해요. 우클릭: 이 메뉴를 열어요.</p>
+<p>드래그: 캐릭터를 이동해요(자리 지키기 설정 시 고정). 우클릭: 이 메뉴를 열어요.</p><p>더보기 → 즐겨찾기에서는 등록한 포즈와 대사를 바로 실행할 수 있어요. 동작 별표와 대사 도감에서 등록해요.</p><p>더보기 → 개인화에서는 자리 고정과 대사 선택 성향을 설정해요. 기존 빈도 설정과 별개로 저장돼요.</p>
 <p>동작 탭: 특정 동작을 수동 실행해요. 서 있기·앉기·작업은 일정 시간 뒤 평소 자세로 돌아오며 자동 행동이 다시 시작돼요.</p>
 <p>기본/빈도: 평소 자세와 자동 행동·대사 간격, 자동 사격 쿨다운을 각각 1~15분으로 설정해요. 기존 랜덤 범위는 슬라이더 조절 후 지정 분 간격으로 바뀌어요.</p><p>‘행동별 등장 빈도’의 비중은 별개로 0~40까지 조절할 수 있어요. 0이면 자동에서만 제외하고 수동 동작은 유지돼요.</p>
 <p>숨기기·일시 중단 뒤에는 보류된 동작을 한꺼번에 재생하지 않아요.</p>
@@ -317,8 +351,8 @@ function showFrequencyView(name){
 
 const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','retired event':'기존 대사'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','repeatedError-candidate':'반복 오류 후보'};
-let archive=[],infoLoaded=false;
-function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();}
+let archive=[],infoLoaded=false,favorites={pose:[],dialogue:[]},positionLocked=params.get('positionLocked')==='true',dialogueStyle=params.get('dialogueStyle')||'balanced';
+function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();if(name==='favorites')renderFavorites();if(name==='personalize')renderPersonalize();}
 function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative'}[kind]===line.origin);}
 function renderArchive(){
  const q=document.querySelector('#dialogue-search').value.trim().toLocaleLowerCase('ko');
@@ -332,8 +366,45 @@ function renderArchive(){
   const title=document.createElement('strong');title.textContent=line.text;
   const provenance=document.createElement('small');provenance.className='archive-status';provenance.textContent=line.id+' · '+(origins[line.origin]||'출처 미확인')+' · '+(line.approval==='confirmed'?'앱 사용 승인':'후보');
   const context=document.createElement('p');context.textContent='동작: '+(line.poses.length?line.poses.map(v=>poseNames[v]||v).join(', '):'일반 클릭/공통')+' · '+line.triggers.map(v=>triggerNames[v]||v).join(', ');
-  card.append(title,provenance,context);list.append(card);
+  const star=document.createElement('button');star.className='favorite-star';star.dataset.favoriteType='dialogue';star.dataset.favoriteId=line.id;star.setAttribute('aria-label','즐겨찾기 '+line.text);star.textContent=favorites.dialogue.includes(line.id)?'★ 즐겨찾기 해제':'☆ 즐겨찾기';star.setAttribute('aria-pressed',String(favorites.dialogue.includes(line.id)));
+  card.append(title,provenance,context,star);list.append(card);
  }
+}
+function renderPersonalize(){
+ const button=document.querySelector('#position-lock-toggle');button.textContent='현재 자리에 고정: '+(positionLocked?'켜짐':'꺼짐');
+ button.setAttribute('aria-pressed',String(positionLocked));
+ for(const el of document.querySelectorAll('[data-style]'))el.setAttribute('aria-pressed',String(el.dataset.style===dialogueStyle));
+}
+function renderFavorites(){
+ const root=document.querySelector('#favorites-results');root.replaceChildren();
+ const poseList=favorites.pose.map(id=>({type:'pose',id,label:poseNames[id]||id}));
+ const dialogueList=favorites.dialogue.map(id=>({type:'dialogue',id,label:archive.find(line=>line.id===id)?.text||id}));
+ if(!poseList.length&&!dialogueList.length){root.textContent='즐겨찾기가 없어요. 동작 탭과 대사 도감에서 별표를 눌러보세요.';return;}
+ for(const item of [...poseList,...dialogueList]){
+  const row=document.createElement('div');row.className='favorite-entry';
+  const label=document.createElement('span');label.textContent=(item.type==='pose'?'동작 · ':'대사 · ')+item.label;
+  const play=document.createElement('button');play.textContent='실행';play.dataset.favoritePlay=item.type+':'+item.id;
+  const remove=document.createElement('button');remove.className='favorite-star';remove.textContent='★';remove.dataset.favoriteType=item.type;remove.dataset.favoriteId=item.id;remove.setAttribute('aria-label','즐겨찾기 해제');remove.setAttribute('aria-pressed','true');
+  row.append(label,play,remove);root.append(row);
+ }
+}
+function toggleFavorite(type,id){
+ if(!['pose','dialogue'].includes(type)||!(type==='pose'?Object.hasOwn(poseNames,id):archive.some(line=>line.id===id)))return;
+ const items=favorites[type],exists=items.includes(id);
+ favorites[type]=exists?items.filter(value=>value!==id):[...items,id];
+ window.castleMenu?.invoke('favorite:'+(exists?'remove':'add')+':'+type+':'+id);
+ renderPoseFavorites();renderArchive();renderFavorites();
+}
+function renderPoseFavorites(){
+ for(const option of document.querySelectorAll('.pose-option')){
+  const star=option.querySelector('.favorite-star'),id=star?.dataset.favoriteId,selected=favorites.pose.includes(id);
+  if(star){star.textContent=selected?'★':'☆';star.setAttribute('aria-pressed',String(selected));}
+ }
+}
+for(const button of [...document.querySelectorAll('[data-action^="pose:"]')]){
+ const id=button.dataset.action.slice(5),wrapper=document.createElement('div');wrapper.className='pose-option';
+ const star=document.createElement('button');star.className='favorite-star';star.dataset.favoriteType='pose';star.dataset.favoriteId=id;star.setAttribute('aria-label',poseNames[id]+' 즐겨찾기');star.textContent='☆';star.setAttribute('aria-pressed','false');
+ button.replaceWith(wrapper);wrapper.append(button,star);
 }
 function renderStatus(status){
  const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 간격',status.movementIntervalMin?status.movementIntervalMin+'분':'기존 범위'],['대사 간격',status.dialogueIntervalMin?status.dialogueIntervalMin+'분':'기존 범위'],['사격 쿨다운',status.shotCooldownMin?status.shotCooldownMin+'분':'기존 3~5분']];
@@ -350,10 +421,17 @@ Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  if(!info||!Array.isArray(info.dialogues))return;
  archive=info.dialogues.filter(line=>typeof line?.id==='string'&&typeof line?.text==='string'&&Array.isArray(line.poses)&&Array.isArray(line.triggers));
  infoLoaded=true;renderArchive();
- if(info.status)renderStatus(info.status);
+ if(info.favorites)favorites={pose:Array.isArray(info.favorites.pose)?info.favorites.pose:[],dialogue:Array.isArray(info.favorites.dialogue)?info.favorites.dialogue:[]};
+ if(info.status){renderStatus(info.status);positionLocked=info.status.positionLocked===true;dialogueStyle=info.status.dialogueStyle||'balanced';}
+ renderPoseFavorites();renderPersonalize();
 }).catch(()=>{});
 function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
-document.addEventListener('click',event=>{const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
+document.addEventListener('click',event=>{
+ const star=event.target.closest('[data-favorite-type]');if(star){toggleFavorite(star.dataset.favoriteType,star.dataset.favoriteId);return;}
+ const play=event.target.closest('[data-favorite-play]');if(play){window.castleMenu?.invoke('favorite:play:'+play.dataset.favoritePlay);return;}
+ const lock=event.target.closest('#position-lock-toggle');if(lock){positionLocked=!positionLocked;window.castleMenu?.invoke('setting:positionLock:'+positionLocked);renderPersonalize();return;}
+ const style=event.target.closest('[data-style]');if(style){dialogueStyle=style.dataset.style;window.castleMenu?.invoke('setting:dialogueStyle:'+dialogueStyle);renderPersonalize();return;}
+ const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
 if(event.target.closest('[data-frequency-back]')){showFrequencyView('home');return;}
 if(event.target.closest('[data-weights-reset]')){
  weightValues={...weightDefaults};buildWeightRows();window.castleMenu?.invoke('setting:weights:reset');
