@@ -105,6 +105,6 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
    }
   }
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
- return {passed:true,commands,settings:{intervals},smoke,clicks,reducedMotion:true,originalReducedMotion};
+ return {passed:true,commands,settings:{intervals:saved},smoke,clicks,reducedMotion:true,originalReducedMotion};
 
 }
