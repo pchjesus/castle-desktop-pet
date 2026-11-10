@@ -92,6 +92,23 @@ jobs:
           $process = Start-Process -FilePath (Join-Path $incomplete 'CastlePet.exe') -ArgumentList @('--qa-report',"`"$rejected`"") -PassThru
           if (!$process.WaitForExit(10000)) { $process.Kill(); throw 'Incomplete launcher timed out' }
           if ($process.ExitCode -ne 2 -or !(Get-Content $rejected -Raw | ConvertFrom-Json).launcherRejected) { throw 'Incomplete ZIP execution was not rejected' }
+      - name: B13.4 click then outside-focus native caption regression
+        shell: pwsh
+        run: |
+          $qaRoot = Join-Path $PWD 'dist-qa/검수 QA'
+          $focusReport = Join-Path $PWD 'windows-focus-loss.json'
+          $focusProcess = Start-Process -FilePath (Join-Path $qaRoot 'CastlePet.exe') -ArgumentList @('--qa-focus-report',"`"$focusReport`"") -PassThru
+          if (!$focusProcess.WaitForExit(45000)) { $focusProcess.Kill(); throw 'Focus-loss validation timed out' }
+          if (!(Test-Path $focusReport)) { throw 'Focus-loss native report absent' }
+          $result = Get-Content $focusReport -Raw | ConvertFrom-Json
+          Write-Host ($result | ConvertTo-Json -Depth 12 -Compress)
+          if ($focusProcess.ExitCode -ne 0 -or !$result.passed -or @($result.checks).Count -ne 2) { throw 'Windows transparent titlebar after blur validation failed' }
+          foreach ($check in $result.checks) {
+            if (!$check.clear.passed -or $check.caption -ne $false -or !$check.geometryUnchanged -or $check.resizable -or $check.petFocused -or !$check.backdropFocused -or $check.repair.successes -lt 1) {
+              throw "Focus-loss cycle $($check.cycle) failed"
+            }
+          }
+          Write-Host "::notice::Windows titlebar focus-loss compositor check passed: 2 cycles (click -> outside focus)."
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -103,5 +120,7 @@ jobs:
             windows-b13-2-captures/
             windows-b13-3-captures/
             windows-plain-launch.json
+            windows-focus-loss.json
+            focus-loss-captures/
             launcher-incomplete.json
           if-no-files-found: warn
