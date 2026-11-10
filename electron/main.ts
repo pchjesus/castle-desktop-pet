@@ -286,6 +286,7 @@ app.whenReady().then(() => {
   type DragStart={bounds:Electron.Rectangle;point:Electron.Point};
   let drag:DragStart|null=null;
   let correctingDragSize=false;
+  let petPointerHeld=false;
   const detachWindows=watchWindowsEvents(powerMonitor,{suspend,resume,emit:name=>{
    if(win&&!win.isDestroyed()&&!win.webContents.isLoading())win.webContents.send('pet:action',{kind:'windows-event',name});
   }});
@@ -294,7 +295,7 @@ app.whenReady().then(() => {
   const focusChromeRepair=createFocusChromeRepair(win,{
    platform:process.platform,
    workArea:bounds=>screen.getDisplayMatching(bounds).workArea,
-   isDragging:()=>drag!==null,
+   isDragging:()=>petPointerHeld||drag!==null,
    onRepair:({reason})=>log('Windows focus chrome repair: '+reason),
    onError:error=>log('Windows focus chrome repair failed: '+String(error))
   });
@@ -415,6 +416,11 @@ app.whenReady().then(() => {
   ipcMain.on('pet-menu:dismiss',event=>{
     if(menuWindow && !menuWindow.isDestroyed() && event.sender===menuWindow.webContents)closePetMenu();
   });
+  ipcMain.on('pet:pointer-held',(event,held)=>{
+    if(!isPet(event)||typeof held!=='boolean')return;
+    petPointerHeld=held;
+    if(held)focusChromeRepair.cancelPending();
+  });
   ipcMain.on('pet:passthrough',(event,ignore)=>{
     if(!isPet(event)||typeof ignore!=='boolean'||drag)return;
     if(ignore===ignoresPointer)return;
@@ -444,7 +450,7 @@ app.whenReady().then(() => {
     }
   });
   ipcMain.on('pet:drag-end',(event)=>{if(isPet(event))endDrag();});
-  win.on('blur',endDrag);
+  win.on('blur',()=>{petPointerHeld=false;endDrag();});
   win.webContents.on('before-input-event',(event,input)=>{
     if(input.type!=='keyDown'||!input.control) return;
     if(input.key==='-'||input.key==='Subtract'){event.preventDefault();changeSizeBy(-1);}
