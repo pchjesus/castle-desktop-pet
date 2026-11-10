@@ -51,18 +51,18 @@ test('Sitting base choice exists beside Smoking and Idle',async()=>{
  for(const v of ['smoking','idle','sitting'])assert(h.includes('data-action="setting:base:'+v+'"'));
 });
 
-test('B15 event bridge has allowlisted IPC, safe status, and three test buttons',async()=>{
+test('standalone menu contains no Codex integration, and Windows events are local only',async()=>{
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
  const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
  const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
- for(const event of ['jobStart','testPassed','deploymentComplete'])assert(menu.includes('data-codex-test="'+event+'"'));
- assert(main.includes("ipcMain.handle('pet-menu:test-event'"));
- assert(main.includes("ipcMain.on('pet:codex-event-result'"));
- assert(main.includes("watchCodexEvents(filePath"));
- assert(preload.includes("ipcRenderer.invoke('pet-menu:test-event'"));
- assert(menu.includes('codex-logs'));assert(menu.includes('로컬 파일 수신 대기'));
+ assert(!menu.includes('Codex')&&!menu.includes('codex-toggle')&&!menu.includes('data-codex-test'));
+ assert(!main.includes("watchCodexEvents(filePath")&&!main.includes("ipcMain.handle('pet-menu:test-event'"));
+ assert(!preload.includes("ipcRenderer.invoke('pet-menu:test-event'"));
+ assert(main.includes('watchWindowsEvents(powerMonitor'));
+ assert(menu.includes('data-minute-key="movementIntervalMin"'));
+ assert(menu.includes('data-minute-key="dialogueIntervalMin"'));
+ assert(menu.includes('data-minute-key="shotCooldownMin"'));
 });
-
 test('Dark rectangular menu uses one honest outer shape, four corner handles and no native Acrylic',async()=>{
  const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
