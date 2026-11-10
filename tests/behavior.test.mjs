@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {createBehavior,actionWeights,choose,normalizeSettings,readableMs} from '../src/behavior/controller.mjs';import {dialogues,codexEvents} from '../src/behavior/dialogues.mjs';
-function fixture(random=()=>0,reduced=()=>false){let now=0,next=0;const jobs=new Map(),poses=[],lines=[];const b=createBehavior({render:p=>poses.push(p),speak:(t,d)=>lines.push([t,d?.id]),random,reduced,now:()=>now,setTimer:(fn,ms)=>{jobs.set(++next,{fn,at:now+ms});return next},clearTimer:id=>jobs.delete(id)});return {b,jobs,poses,lines,tick(ms){const end=now+ms;let iterations=0;while(true){const entry=[...jobs].sort((a,b)=>a[1].at-b[1].at)[0];if(!entry||entry[1].at>end)break;if(++iterations>1000)throw Error('timer runaway');now=entry[1].at;jobs.delete(entry[0]);entry[1].fn();}now=end;},now:()=>now};}
-test('weights, cooldown and disabled fire renormalize without changing rest semantics',()=>{for(const base of ['idle','smoking']){const a=actionWeights({base,autoFire:true});assert.equal(a[0][0],base==='idle'?'smoking':'idle');assert.deepEqual(a.map(x=>x[1]),[.1,.18,.3,.12,.18,.06,.06]);for(const r of [actionWeights({base,autoFire:false}),actionWeights({base,autoFire:true},true)]){assert.equal(r.length,4);assert(Math.abs(r.reduce((s,x)=>s+x[1],0)-1)<1e-10);}assert.equal(choose(a,()=>.75),'firing');}});
+function fixture(random=()=>0,reduced=()=>false){let now=0,next=0;const jobs=new Map(),poses=[],lines=[];const b=createBehavior({settings:{actionWeights:{working:0}},render:p=>poses.push(p),speak:(t,d)=>lines.push([t,d?.id]),random,reduced,now:()=>now,setTimer:(fn,ms)=>{jobs.set(++next,{fn,at:now+ms});return next},clearTimer:id=>jobs.delete(id)});return {b,jobs,poses,lines,tick(ms){const end=now+ms;let iterations=0;while(true){const entry=[...jobs].sort((a,b)=>a[1].at-b[1].at)[0];if(!entry||entry[1].at>end)break;if(++iterations>1000)throw Error('timer runaway');now=entry[1].at;jobs.delete(entry[0]);entry[1].fn();}now=end;},now:()=>now};}
+test('weights, cooldown and disabled fire renormalize without changing rest semantics',()=>{for(const base of ['idle','smoking']){const a=actionWeights({base,autoFire:true,actionWeights:{working:0}});assert.equal(a[0][0],base==='idle'?'smoking':'idle');assert.deepEqual(a.map(x=>x[1]),[.1,.18,.3,.12,.18,.06,.06]);for(const r of [actionWeights({base,autoFire:false,actionWeights:{working:0}}),actionWeights({base,autoFire:true,actionWeights:{working:0}},true)]){assert.equal(r.length,4);assert(Math.abs(r.reduce((s,x)=>s+x[1],0)-1)<1e-10);}assert.equal(choose(a,()=>.75),'firing');}});
 test('automatic wait and cooldown start after shooting ends, then exclude shooting',()=>{const f=fixture(()=>.75);assert.equal(f.poses.at(-1),'smoking');assert.equal([...f.jobs.values()][0].at,165000);f.tick(165000);assert.equal(f.poses.at(-1),'firing');f.tick(1500);assert.equal(f.poses.at(-1),'smoking');assert.equal(f.b.snapshot().cooldown-f.now(),270000);f.tick(165000);assert.equal(f.poses.at(-1),'speaking');});
 test('settings validation, base restoration and manual held poses',()=>{const f=fixture();f.b.configure({base:'idle',autonomy:false,autoFire:false});assert.equal(f.jobs.size,0);f.b.manual('working');f.tick(9999);assert.equal(f.poses.at(-1),'working');assert.equal(f.b.event('testPassed'),false);f.tick(5001);assert.equal(f.poses.at(-1),'idle');f.b.manual('firing');f.tick(20000);assert.equal(f.poses.at(-1),'idle');assert.deepEqual(normalizeSettings({base:'bad',autonomy:'yes'}),{base:'smoking',autonomy:true,autoFire:true,movementFrequency:'default',dialogueEnabled:true,dialogueFrequency:'default'});});
 test('five clicks silently warn; sixth fixed line locks without firing or timer restart',()=>{const f=fixture();for(let i=0;i<5;i++){f.b.click();f.tick(100);}assert.equal(f.poses.at(-1),'drawing');assert(f.b.snapshot().warning);f.b.click();assert.equal(f.lines.at(-1)[1],'CLICK-06');const pending=[...f.jobs.values()].map(j=>j.at);for(let i=0;i<50;i++)f.b.click();assert.deepEqual([...f.jobs.values()].map(j=>j.at),pending);assert(!f.poses.some(p=>p.includes('firing')));f.tick(20000);assert.equal(f.poses.at(-1),'smoking');assert(!f.b.snapshot().locked);});
@@ -151,5 +151,21 @@ test('manual dynamic and Codex events do not insert Smoking between current and 
  f.b.configure({base:'idle',autonomy:false,dialogueEnabled:false});const at=f.poses.length;
  assert.equal(f.b.event('jobStart'),true);assert.equal(f.poses.length,at);
  f.tick(799);assert.equal(f.poses.length,at);f.tick(1);assert.equal(f.poses.at(-1),'working');
+ f.b.dispose();
+});
+
+test('standalone default random pool includes Working and normal creative coding line',()=>{
+ const values=actionWeights(normalizeSettings({autoFire:true}));
+ assert(values.some(([pose,weight])=>pose==='working'&&weight>0));
+ const coding=dialogues.find(d=>d.text==='코딩 실력은 인정하지. 감탄했다, 오픈AI.');
+ assert(coding);assert.equal(coding.random,true);assert.equal(coding.rarity,'normal');
+ assert.deepEqual(coding.triggers,['autonomous']);
+});
+test('Windows battery phrase and optional AC response preserve normal user action priority',()=>{
+ const f=fixture();f.b.configure({autonomy:false,dialogueEnabled:false});
+ assert.equal(f.b.windowsNotification('powerBattery'),true);
+ assert.equal(f.lines.at(-1)[0],'충전기.. 그놈이 네게 신중함과 유연함을 더해줄 거다.');
+ assert.equal(f.b.windowsNotification('powerBattery'),false);
+ f.b.manual('working');assert.equal(f.b.windowsNotification('powerAC'),false);
  f.b.dispose();
 });
