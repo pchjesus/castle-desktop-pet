@@ -59,11 +59,31 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const settled=await win.webContents.executeJavaScript(`document.querySelector('.pet-stage:not([data-exiting])').dataset.pose`);
   if(after!==pose||settled!==pose)throw Error('Click changed held posture '+pose);clicks.push({pose,after,settled});
  }
- for(const command of ['setting:movementFrequency:quiet','setting:dialogueFrequency:active','setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
+ for(const command of ['setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
- const settings=await menu.webContents.executeJavaScript(`({movement:document.querySelector('[data-action="setting:movementFrequency:quiet"]').getAttribute('aria-pressed'),dialogue:document.querySelector('[data-action="setting:dialogueFrequency:active"]').getAttribute('aria-pressed'),movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
- if(settings.movement!=='true'||settings.dialogue!=='true'||!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored '+JSON.stringify(settings));
- menu.show();for(const tab of ['basic','frequency','poses','more']){await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);if(!fits)throw Error('Roomy menu tab overflow: '+tab);writeFileSync(join(uxEvidence,`menu-${tab}.png`),(await menu.webContents.capturePage()).toPNG());}
+ menu.show();
+ await menu.webContents.executeJavaScript(`(()=>{
+  document.querySelector('[data-tab="frequency"]').click();
+  for(const [key,value] of [['movementIntervalMin',8],['dialogueIntervalMin',2],['shotCooldownMin',15]]){
+   const slider=document.querySelector('[data-minute-key="'+key+'"]');
+   slider.value=String(value);slider.dispatchEvent(new Event('input',{bubbles:true}));
+   slider.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+ })()`);
+ await pause(250);
+ if(menu.isDestroyed())throw Error('Time sliders incorrectly closed the settings panel');
+ const values=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>({move:info.status.movementIntervalMin,dialogue:info.status.dialogueIntervalMin,shot:info.status.shotCooldownMin}))`);
+ if(values.move!==8||values.dialogue!==2||values.shot!==15)throw Error('Native minute settings not saved: '+JSON.stringify(values));
+ const settings=await menu.webContents.executeJavaScript(`({movementOff:document.querySelector('#autonomy-setting').textContent,dialogueOn:document.querySelector('#dialogue-setting').textContent})`);
+ if(!settings.movementOff.endsWith('꺼짐')||!settings.dialogueOn.endsWith('켜짐'))throw Error('Independent native menu settings not restored: '+JSON.stringify(settings));
+ const captureMenu=async(name:string)=>writeFileSync(join(uxEvidence,name),(await menu.webContents.capturePage()).toPNG());
+ await captureMenu('menu-minute-sliders.png');
+ for(const tab of ['basic','frequency','poses','more']){
+  await menu.webContents.executeJavaScript(`document.querySelector('[data-tab="${tab}"]').click()`);
+  const fits=await menu.webContents.executeJavaScript(`(()=>{const p=document.querySelector('[data-panel="${tab}"]');return p.scrollHeight<=p.clientHeight+1})()`);
+  if(!fits&&tab!=='frequency')throw Error('Roomy menu tab overflow: '+tab);
+  await captureMenu('menu-'+tab+'.png');
+ }
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="frequency"]').click();document.querySelector('[data-frequency-open="weights"]').click();const slider=document.querySelector('[data-weight-row="working"] input');slider.value='20';slider.dispatchEvent(new Event('input',{bubbles:true}));slider.dispatchEvent(new Event('change',{bubbles:true}));return true})()`);
  await pause(220);
  if(menu.isDestroyed())throw Error('Frequency slider incorrectly closed the settings panel');
@@ -73,7 +93,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  await menu.webContents.executeJavaScript(`document.querySelector('#weights-reset').click()`);
  await pause(160);
  const resetWeight=await menu.webContents.executeJavaScript(`window.castleMenu.getInfo().then(info=>info?.status?.actionWeights?.working)`);
- if(resetWeight!==0)throw Error('Native per-action weight reset failed: '+resetWeight);
+ if(resetWeight!==12)throw Error('Native per-action weight reset failed: '+resetWeight);
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-tab="more"]').click();document.querySelector('[data-more-open="archive"]').click();})()`);
  writeFileSync(join(uxEvidence,'menu-dialogue-archive.png'),(await menu.webContents.capturePage()).toPNG());
  await menu.webContents.executeJavaScript(`(()=>{document.querySelector('[data-more-view="archive"] [data-more-back]').click();document.querySelector('[data-more-open="help"]').click();})()`);

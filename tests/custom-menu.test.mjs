@@ -43,7 +43,8 @@ test('B-14 menu preserves four top-level tabs and nests safe dialogue/status/hel
  assert(menu.includes('textContent=line.text'));assert(!menu.includes('innerHTML=line.text'));
  assert(main.includes("event.sender!==menuWindow.webContents"));assert(main.includes("ipcMain.handle('pet-menu:get-info'"));
  assert(preload.includes("ipcRenderer.invoke('pet-menu:get-info')"));
- assert(menu.includes('Codex'));assert(menu.includes('연결되지 않음'));
+ assert(!menu.includes('Codex'));assert(menu.includes('현재 상태'));
+
 });
 
 test('Sitting base choice exists beside Smoking and Idle',async()=>{
@@ -51,23 +52,21 @@ test('Sitting base choice exists beside Smoking and Idle',async()=>{
  for(const v of ['smoking','idle','sitting'])assert(h.includes('data-action="setting:base:'+v+'"'));
 });
 
-test('B15 event bridge has allowlisted IPC, safe status, and three test buttons',async()=>{
+test('standalone app never installs Codex or browser bridges; uses native Windows power events',async()=>{
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
- const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
  const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
- for(const event of ['jobStart','testPassed','deploymentComplete'])assert(menu.includes('data-codex-test="'+event+'"'));
- assert(main.includes("ipcMain.handle('pet-menu:test-event'"));
- assert(main.includes("ipcMain.on('pet:codex-event-result'"));
- assert(main.includes("watchCodexEvents(filePath"));
- assert(preload.includes("ipcRenderer.invoke('pet-menu:test-event'"));
- assert(menu.includes('codex-logs'));assert(menu.includes('로컬 파일 수신 대기'));
+ const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
+ assert(!main.includes('watchCodexEvents'));assert(!main.includes("pet-menu:test-event"));
+ assert(!preload.includes("pet-menu:test-event"));assert(!menu.includes('data-codex-test'));
+ assert(!main.includes('brave-download-server'));
+ for(const event of ['on-ac','on-battery','lock-screen','unlock-screen'])
+  assert(main.includes("powerMonitor.on('"+event+"'"));
 });
-
 test('Dark rectangular menu uses one honest outer shape, four corner handles and no native Acrylic',async()=>{
  const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
  const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
  const preload=await readFile(new URL('../electron/menu-preload.ts',import.meta.url),'utf8');
- assert(menu.includes('background:rgba(10,12,16,.95)'));
+ assert(menu.includes('background:rgba(32,39,50,.97)'));
  assert(menu.includes('border-radius:0'));
  assert(menu.includes('backdrop-filter:none'));
  assert(!menu.includes('background:rgba(255,255,255,.085)'));
@@ -107,4 +106,18 @@ test('B16 central popup is large by default, movable and resizable with legacy 3
  assert(main.includes('legacyCompact'));
  assert(menu.includes('data-frequency-view="weights"'));
  assert.equal((menu.match(/<div class="menu-resize-corner" data-resize-corner="(?:nw|ne|sw|se)"/g)||[]).length,4);
+});
+
+test('standalone UI uses fixed minute sliders and keeps approved rectangular menu',async()=>{
+ const menu=await readFile(new URL('../electron/pet-menu.html',import.meta.url),'utf8');
+ const main=await readFile(new URL('../electron/main.ts',import.meta.url),'utf8');
+ for(const key of ['movementIntervalMin','dialogueIntervalMin','shotCooldownMin']){
+  assert(menu.includes('data-minute-key="'+key+'"'));
+  assert(main.includes(key));
+ }
+ assert(menu.includes("setting:interval:'+key+':'+slider.value"));
+ assert(main.includes("command.startsWith('setting:interval:')"));
+ assert(!menu.includes('setting:movementFrequency:quiet'));
+ assert(menu.includes('row.dataset.weightRow=name'));
+ assert(main.includes('validInterval(value)'));
 });
