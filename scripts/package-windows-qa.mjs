@@ -18,6 +18,7 @@ const runtime=JSON.parse(await readFile('node_modules/electron/package.json','ut
 await writeFile(join(dest,'QA_BUILD.json'),JSON.stringify({electron:runtime.version,sourceCommit:process.env.GITHUB_SHA||'local-build',status:'unapproved-qa',defaultOutfit:'mustang'},null,2));
 const app=join(runtimeRoot,'resources/app');await mkdir(app,{recursive:true});
 for(const dir of ['dist','dist-electron','preview-assets'])await cp(dir,join(app,dir),{recursive:true});
+await mkdir(join(app,'scripts'),{recursive:true});await cp('scripts/codex-hook.mjs',join(app,'scripts','codex-hook.mjs'));
 await cp('preview.html',join(app,'preview.html'));await writeFile(join(app,'package.json'),JSON.stringify({name:p.name,version:p.version,main:p.main}));
 await writeFile(join(app,'castle-runtime.json'),JSON.stringify({family:'CastleDesktopPet.Runtime',version:'B-13.3',mainSha256:createHash('sha256').update(await readFile(join(app,'dist-electron/main.cjs'))).digest('hex'),htmlSha256:createHash('sha256').update(await readFile(join(app,'dist/index.html'))).digest('hex')},null,2));
 const compiler=join(process.env.SystemRoot||'C:/Windows','Microsoft.NET/Framework64/v4.0.30319/csc.exe');

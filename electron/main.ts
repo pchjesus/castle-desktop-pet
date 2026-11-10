@@ -7,11 +7,11 @@ import {behaviorQa} from './behavior-qa';
 import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
-import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT} from '../src/behavior/cadence.mjs';
+import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/behavior/cadence.mjs';
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {codexEventNames,watchCodexEvents} from '../src/behavior/codex-bridge.mjs';
-import {inspectCodexIntegration} from '../src/behavior/codex-hook-install.mjs';
+import {inspectCodexIntegration,configureCodexIntegration} from '../src/behavior/codex-hook-install.mjs';
 import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
@@ -130,12 +130,23 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
+ return {status:{pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS,codex:codexSnapshot()},
   dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 ipcMain.handle('pet-menu:test-event',(event,name)=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof name!=='string'||!codexAllowed.has(name))return {sent:false};
  return emitCodexEvent(name,'test');
+});
+// Deliberate user interaction only: never modify the user's Codex hooks at startup.
+ipcMain.handle('pet-menu:codex-toggle',(event,enabled)=>{
+ if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents||typeof enabled!=='boolean')return {success:false,error:'Invalid menu request'};
+ if(process.platform!=='win32')return {success:false,error:'이 버전의 자동 설치는 Windows 전용이에요.'};
+ try{
+  const hookSource=join(__dirname,'..','scripts','codex-hook.mjs');
+  const result=configureCodexIntegration(enabled?'install':'uninstall',{home:app.getPath('home'),hookSource});
+  if(result.configured!==enabled)return {success:false,error:'Codex 훅 상태를 확인할 수 없어요.',configured:result.configured};
+  return {success:true,configured:result.configured,changed:result.changed};
+ }catch(error){log('Codex hook toggle rejected: '+String(error));return {success:false,error:String(error),configured:codexSnapshot().hookConfigured};}
 });
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
 let speechWindow:BrowserWindow|undefined,speechText='',speechHeight=96,speechWidth=236,currentPose='smoking';
@@ -193,6 +204,15 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command.startsWith('setting:interval:')){
+  const parts=command.split(':');
+  if(parts.length!==4)return;
+  const key=parts[2],value=Number(parts[3]);
+  if(!['movementIntervalMin','dialogueIntervalMin','shotCooldownMin'].includes(key)||!validInterval(value)||!/^\d+$/.test(parts[3]))return;
+  behaviorSettings=normalizeSettings({...behaviorSettings,[key]:value});
+  try{saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);}catch(error){log('Interval settings save failed: '+String(error));}
+  win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));return;
+ }
  if(command.startsWith('setting:weight:')){
   const parts=command.split(':');
   if(parts.length!==4)return;
@@ -366,7 +386,7 @@ app.whenReady().then(() => {
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command==='setting:weights:reset'){
+    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
