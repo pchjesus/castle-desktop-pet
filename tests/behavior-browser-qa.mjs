@@ -19,6 +19,9 @@ assert.equal(await page.locator('#app .pet-stage:not([data-exiting])').getAttrib
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='firing_dynamic');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='idle',null,{timeout:5500});
+// O-01's speech can outlive the Dynamic pose; a power event intentionally
+// cannot interrupt it. Wait for the normal speech timeout before asserting.
+await page.waitForFunction(()=>document.querySelector('#pet-speech')?.hidden===true,null,{timeout:15000});
 await page.evaluate(()=>{window.__poseTrace=[];window.__manual({kind:'system-event',name:'powerAC'});});
 await page.waitForFunction(()=>document.querySelector('#app .pet-stage:not([data-exiting])')?.dataset.pose==='working');
 assert(!(await page.evaluate(()=>window.__poseTrace)).includes('smoking'));
