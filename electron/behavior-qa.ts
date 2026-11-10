@@ -61,7 +61,24 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  }
  for(const command of ['setting:autonomy:false','setting:dialogueEnabled:false','setting:dialogueEnabled:true','setting:autoFire:false'])await menuClick(command);
  const menu=openMenu()!;if(menu.webContents.isLoading())await new Promise<void>(resolve=>menu.webContents.once('did-finish-load',()=>resolve()));
- menu.show();await menu.webContents.executeJavaScript(`(()=>{
+ menu.show();
+ const sliderLayout=await menu.webContents.executeJavaScript(`(()=>{
+  document.querySelector('[data-tab="frequency"]').click();
+  const p=document.querySelector('#panel-frequency').getBoundingClientRect();
+  const inputs=[...document.querySelectorAll('.minute-slider')];
+  return {panel:{top:p.top,bottom:p.bottom},rows:inputs.map(input=>{
+   const r=input.getBoundingClientRect(),s=getComputedStyle(input);
+   return {top:r.top,bottom:r.bottom,width:r.width,height:r.height,display:s.display,visibility:s.visibility,appearance:s.appearance};
+  })};
+ })()`);
+ const minuteVisible=sliderLayout.rows.length===3&&sliderLayout.rows.every((row:any)=>
+  row.width>=180&&row.height>=20&&row.top>=sliderLayout.panel.top&&
+  row.bottom<=sliderLayout.panel.bottom+1&&row.display!=='none'&&
+  row.visibility!=='hidden'&&row.appearance==='none');
+ if(menu.getBounds().width>=500&&menu.getBounds().height>=560&&!minuteVisible)
+  throw Error('B18 native minute sliders not visible in normal settings menu: '+JSON.stringify(sliderLayout));
+ writeFileSync(join(uxEvidence,'menu-minute-sliders.png'),(await menu.webContents.capturePage()).toPNG());
+ await menu.webContents.executeJavaScript(`(()=>{
   document.querySelector('[data-tab="frequency"]').click();
   for(const [key,value] of [['movementIntervalMin',8],['dialogueIntervalMin',2],['shotCooldownMin',15]]){
    const input=document.querySelector('[data-minute-key="'+key+'"]');input.value=String(value);
@@ -105,6 +122,6 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
    }
   }
  }finally{await win.webContents.debugger.sendCommand('Emulation.setEmulatedMedia',{features:[]});win.webContents.debugger.detach();}
- return {passed:true,commands,settings:{intervals:saved},smoke,clicks,reducedMotion:true,originalReducedMotion};
+ return {passed:true,commands,settings:{intervals:saved,sliderLayout},smoke,clicks,reducedMotion:true,originalReducedMotion};
 
 }
