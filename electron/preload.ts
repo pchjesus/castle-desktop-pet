@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('pet',{
   return ()=>ipcRenderer.removeListener('pet:action',listener);
  },
  setPassthrough:(ignore:boolean)=>ipcRenderer.send('pet:passthrough',ignore),
+ setPointerHeld:(held:boolean)=>ipcRenderer.send('pet:pointer-held',held),
  dragStart:()=>ipcRenderer.send('pet:drag-start'),
  dragMove:()=>ipcRenderer.send('pet:drag-move'),
  dragEnd:()=>ipcRenderer.send('pet:drag-end')
