@@ -35,7 +35,7 @@ function saveConfig(file,data){
  writeFileSync(temp,JSON.stringify(data,null,2)+'\n',{encoding:'utf8',mode:0o600});
  renameSync(temp,file);
 }
-export function configureCodexIntegration(command,{hookSource=join(dirname(new URL(import.meta.url).pathname),'../../scripts/codex-hook.mjs'),...options}={}){
+export function configureCodexIntegration(command,{hookSource=null,...options}={}){
  if(!['install','uninstall','status'].includes(command))throw Error('Expected install, uninstall or status');
  const paths=codexIntegrationPaths(options);
  const current=inspectCodexIntegration(options);
@@ -52,7 +52,7 @@ export function configureCodexIntegration(command,{hookSource=join(dirname(new U
   return {command,changed:true,...inspectCodexIntegration(options)};
  }
  // Install is opt-in only; no automatic mutation at app startup.
- if(!existsSync(hookSource))throw Error('Missing local Codex hook source: '+hookSource);
+ if(typeof hookSource!=='string'||!existsSync(hookSource))throw Error('Missing local Codex hook source: '+hookSource);
  mkdirSync(dirname(paths.script),{recursive:true});
  copyFileSync(hookSource,paths.script);
  const quoted='node "'+paths.script.replaceAll('"','')+'"';

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,existsSync,rmSync} from 'node:fs';
@@ -5,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {configureCodexIntegration,codexIntegrationPaths,inspectCodexIntegration,HOOK_LABEL} from '../src/behavior/codex-hook-install.mjs';
 
-const source=new URL('../scripts/codex-hook.mjs',import.meta.url).pathname;
+const source=fileURLToPath(new URL('../scripts/codex-hook.mjs',import.meta.url));
 function setup(){
  const root=mkdtempSync(join(tmpdir(),'castle-codex-install-'));
  const options={home:root,codexHome:join(root,'codex'),appData:join(root,'roaming'),platform:'win32'};
