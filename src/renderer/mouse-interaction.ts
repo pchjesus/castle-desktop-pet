@@ -1,7 +1,7 @@
 import {extractAlpha,hitTestAlpha,type AlphaMask} from './alpha-hit-test.mjs';
 // No CSS -webkit-app-region:drag: Electron treats drag regions as non-client
 // surfaces which swallow mouse clicks, context menus and cause Windows chrome.
-export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dragStart?:()=>void;dragEnd?:()=>void}={}) {
+export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dragStart?:()=>void;dragEnd?:()=>void}={},canDrag:()=>boolean=()=>true) {
  let lastPoint: {x:number;y:number}|null=null;
  let lastInteractive: boolean|undefined;
  let dragging=false;
@@ -74,7 +74,7 @@ export function installPetMouse(root:HTMLElement, callbacks:{click?:()=>void;dra
  });
  root.addEventListener('pointermove',ev=>{
   if(ev.pointerId!==pointerId||!origin)return;
-  if(!dragging&&Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)>=6){
+  if(!dragging&&canDrag()&&Math.hypot(ev.clientX-origin.x,ev.clientY-origin.y)>=6){
    dragging=true;callbacks.dragStart?.();window.pet?.dragStart();
   }
   if(dragging){window.pet?.dragMove();ev.preventDefault();}
