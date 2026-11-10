@@ -1,4 +1,5 @@
 import {dialogues,codexEvents} from './dialogues.mjs';
+import {EXTERNAL_EVENTS} from './external-events.mjs';
 import {defaults,normalizeSettings,cadence,frequencies,DEFAULT_ACTION_WEIGHTS} from './cadence.mjs';
 export {defaults,normalizeSettings} from './cadence.mjs';
 export const shots=new Set(['firing','dual_firing','firing_dynamic']);
@@ -23,6 +24,7 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
  const timers=new Set(),used=new Map();
  let speechRevision=0;const scheduleRevision={movement:0,dialogue:0};
  let movementTimer,dialogueTimer,speechTimer,nextMovement=0,nextDialogue=0,speechUntil=0,lastAutoSpeech=-Infinity;
+ const lastExternal=new Map();
  const range=(a,b)=>a+random()*(b-a);
  const cooldownDelay=()=>settings.shotCooldownMin?settings.shotCooldownMin*60000:range(180000,300000);
  const show=value=>{pose=value;render(value,{source:mode});};
@@ -180,7 +182,15 @@ export function createBehavior({render,speak,settings:initial,random=Math.random
   // Smoking frame. The actual action starts from the existing pose.
   later(()=>action(spec.sequence.at(-1),'event',dialogues.find(d=>d.id===spec.dialogue)),spec.sequence.length>1?800:0);return true;
  }
+ function externalNotification(name){
+  if(!Object.hasOwn(EXTERNAL_EVENTS,name)||disposed||hidden||mode!=='base'||now()<speechUntil)return false;
+  if(now()-(lastExternal.get(name)??-Infinity)<20000)return false;
+  lastExternal.set(name,now());
+  const entry=EXTERNAL_EVENTS[name];
+  say({id:'external-'+name,text:entry.text},false);
+  return true;
+ }
  function dispose(){disposed=true;clear();stopDialogue();resetClicks();}
  base();
- return {manual,click,drag,dragEnd,configure,visibility,event,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
+ return {manual,click,drag,dragEnd,configure,visibility,event,externalNotification,dispose,snapshot:()=>({settings:{...settings},mode,pose,hidden,cooldown,pending:timers.size+Number(movementTimer!==undefined)+Number(dialogueTimer!==undefined)+Number(speechTimer!==undefined),nextMovement,nextDialogue,speechUntil,warning,locked})};
 }

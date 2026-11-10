@@ -10,6 +10,7 @@ await mkdir(join(dest,'src','behavior'),{recursive:true});
 for(const name of ['setup-codex-integration.mjs','codex-hook.mjs'])
  await cp(join('scripts',name),join(dest,'scripts',name));
 await cp('src/behavior/codex-hook-install.mjs',join(dest,'src','behavior','codex-hook-install.mjs'));
+await cp('brave-extension',join(dest,'brave-extension'),{recursive:true});
 await writeFile(join(dest,'Codex_연동_방법.txt'),
  'B-15.1 로컬 Codex 연동 (선택 사항)\r\n\r\n설치 전 Node.js와 로컬 Codex 훅 지원 환경이 필요합니다.\r\nWindows PowerShell에서 이 폴더를 열고 실행:\r\nnode .\\scripts\\setup-codex-integration.mjs install\r\n\r\n상태 확인: node .\\scripts\\setup-codex-integration.mjs status\r\n해제: node .\\scripts\\setup-codex-integration.mjs uninstall\r\n\r\nCodex에서 /hooks를 열어 실행할 훅을 직접 검토하고 승인해야 합니다.\r\n개발용 테스트 버튼은 실제 연동을 증명하지 않습니다.\r\n작업 시작 훅만 자동이며, 테스트/배포 성공은 검증된 신호로만 전달합니다.\r\n클라우드 Codex는 로컬 Windows 파일을 직접 수정할 수 없을 수 있습니다.\r\n');
 const runtimeRoot=join(dest,'runtime');await cp('node_modules/electron/dist',runtimeRoot,{recursive:true});
