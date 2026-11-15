@@ -1,11 +1,11 @@
-// Post-prototype design contract. B is the desktop QA default; all nine current B poses are user-approved.
+// Post-prototype design contract. Mustang stays the approved default; blouson adds an independent nine-pose B-20 pack.
 export const outfitPolicy = Object.freeze({
   targetDefault: 'mustang',
   active: 'mustang',
   outfits: {
-    // Later A is a separate approved design in design/references/akila-sheet-02.png.
-    // Never alias the initial prototype to later A. A standalone runtime pack is pending.
-    blouson: { assetRoot: 'design/references/akila-sheet-02.png', ready: false },
+    // Later A/B-20 blouson runtime derives from the user-approved 3×3 concept.
+    // Do not fall back to the initial prototype or the mustang sprite registry.
+    blouson: { assetRoot: 'src/characters/candidates/a-blouson-b20', ready: true },
     mustang: { assetRoot: 'candidates/b-mustang-20261107', ready: true },
   },
 } as const);
