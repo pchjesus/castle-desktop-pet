@@ -155,6 +155,24 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   throw Error('B19 native settings restore failed: '+JSON.stringify(b19restored));
  if(favoritesBefore.pose.includes('working'))await b19menu.webContents.executeJavaScript("window.castleMenu.invoke('favorite:add:pose:working')");
  writeFileSync(join(uxEvidence,'menu-b19-personalization.png'),(await b19menu.webContents.capturePage()).toPNG());
- return {passed:true,commands,settings:{intervals:saved,sliderLayout,b19:true},smoke,clicks,reducedMotion:true,originalReducedMotion};
+ // B-20: exercise the installed Electron renderer's actual sprite hot-swap
+ // and verify the sandbox menu IPC persists appearance independently.
+ const originalSkin=(await b19menu.webContents.executeJavaScript("window.castleMenu.getInfo().then(info=>info.status.skin)"));
+ const originalImage=await win.webContents.executeJavaScript("document.querySelector('.pet-stage:not([data-exiting]) img')?.currentSrc");
+ await b19menu.webContents.executeJavaScript("window.castleMenu.invoke('skin:blouson')");
+ await pause(400);
+ const b20Info=await b19menu.webContents.executeJavaScript("window.castleMenu.getInfo()");
+ const b20Image=await win.webContents.executeJavaScript("(()=>{const img=document.querySelector('.pet-stage:not([data-exiting]) img');return {src:img?.currentSrc,loaded:!!img?.complete&&img.naturalWidth>0}})()");
+ if(b20Info.status.skin!=='blouson'||!b20Image.loaded||(originalSkin!=='blouson'&&b20Image.src===originalImage))
+  throw Error('B20 installed blouson skin IPC / image swap failed: '+JSON.stringify({originalSkin,b20Status:b20Info.status.skin,b20Image}));
+ await b19menu.webContents.executeJavaScript("window.castleMenu.invoke('skin:mustang')");
+ await pause(400);
+ const b20Restored=await b19menu.webContents.executeJavaScript("window.castleMenu.getInfo()");
+ const mustangImage=await win.webContents.executeJavaScript("document.querySelector('.pet-stage:not([data-exiting]) img')?.currentSrc");
+ if(b20Restored.status.skin!=='mustang'||(originalSkin==='mustang'&&mustangImage!==originalImage))
+  throw Error('B20 installed mustang restoration failed');
+ if(originalSkin==='blouson')await b19menu.webContents.executeJavaScript("window.castleMenu.invoke('skin:blouson')");
+ const b20={passed:true,blousonLoaded:b20Image.loaded,selected:b20Info.status.skin,restored:b20Restored.status.skin};
+ return {passed:true,commands,settings:{intervals:saved,sliderLayout,b19:true},b20,smoke,clicks,reducedMotion:true,originalReducedMotion};
 
 }
