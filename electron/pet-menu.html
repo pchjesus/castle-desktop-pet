@@ -231,6 +231,12 @@ button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1
 <div class="more-view" data-more-view="personalize" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>개인화</strong></div>
 <div class="preference-set">
+<h2>스킨 선택</h2>
+<div class="grid two" id="skin-choices" role="group" aria-label="아킬라 스킨">
+<button data-skin="mustang" aria-pressed="true">무스탕</button>
+<button data-skin="blouson" aria-pressed="false">푸른 블루종</button>
+</div>
+<p class="preference-hint">9개 동작과 대사는 그대로 유지하고 복장별 이미지로 바꿔요. 선택은 자동 저장돼요.</p>
 <h2>자리 지키기</h2>
 <button id="position-lock-toggle" aria-pressed="false">현재 자리에 고정: 꺼짐</button>
 <p class="preference-hint">켜면 드래그 이동을 막고 재실행 시 저장된 자리로 돌아와요. 모니터 구성 변경 중에는 화면 안쪽으로 임시 이동할 수 있어요.</p>
@@ -351,7 +357,7 @@ function showFrequencyView(name){
 
 const origins={'user-supplied comic line':'사용자 제공 · 원문 별도 확인','original-inspired adaptation':'원작 기반 각색','original candidate pending verification':'원작 문구 검증 전','original creative':'창작','retired event':'기존 대사'};
 const triggerNames={'autonomous':'자율 행동/대사','pose-entry':'동작 시작 시','click':'일반 클릭','click-combo':'연속 클릭','fixed-before-firing-dynamic':'허리 사격 고정','repeatedError-candidate':'반복 오류 후보'};
-let archive=[],infoLoaded=false,favorites={pose:[],dialogue:[]},positionLocked=params.get('positionLocked')==='true',dialogueStyle=params.get('dialogueStyle')||'balanced';
+let archive=[],infoLoaded=false,favorites={pose:[],dialogue:[]},positionLocked=params.get('positionLocked')==='true',dialogueStyle=params.get('dialogueStyle')||'balanced',skin=params.get('skin')==='blouson'?'blouson':'mustang';
 function showMoreView(name){for(const view of document.querySelectorAll('[data-more-view]'))view.hidden=view.dataset.moreView!==name;document.querySelector('#panel-more').scrollTop=0;if(name==='archive'){renderArchive();document.querySelector('#dialogue-search').focus({preventScroll:true});}if(name==='status')refreshStatus();if(name==='favorites')renderFavorites();if(name==='personalize')renderPersonalize();}
 function lineMatchesOrigin(line,kind){return kind==='all'||({supplied:'user-supplied comic line',adapted:'original-inspired adaptation',unverified:'original candidate pending verification',creative:'original creative'}[kind]===line.origin);}
 function renderArchive(){
@@ -374,6 +380,7 @@ function renderPersonalize(){
  const button=document.querySelector('#position-lock-toggle');button.textContent='현재 자리에 고정: '+(positionLocked?'켜짐':'꺼짐');
  button.setAttribute('aria-pressed',String(positionLocked));
  for(const el of document.querySelectorAll('[data-style]'))el.setAttribute('aria-pressed',String(el.dataset.style===dialogueStyle));
+ for(const el of document.querySelectorAll('[data-skin]'))el.setAttribute('aria-pressed',String(el.dataset.skin===skin));
 }
 function renderFavorites(){
  const root=document.querySelector('#favorites-results');root.replaceChildren();
@@ -407,7 +414,7 @@ for(const button of [...document.querySelectorAll('[data-action^="pose:"]')]){
  button.replaceWith(wrapper);wrapper.append(button,star);
 }
 function renderStatus(status){
- const rows=[['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 간격',status.movementIntervalMin?status.movementIntervalMin+'분':'기존 범위'],['대사 간격',status.dialogueIntervalMin?status.dialogueIntervalMin+'분':'기존 범위'],['사격 쿨다운',status.shotCooldownMin?status.shotCooldownMin+'분':'기존 3~5분']];
+ const rows=[['현재 스킨',status.skin==='blouson'?'푸른 블루종':'무스탕'],['현재 자세',poseNames[status.pose]||'확인 불가'],['평소 자세',poseNames[status.base]||'흡연'],['자동 움직임',status.autonomy?'켜짐':'꺼짐'],['자동 대사',status.dialogueEnabled?'켜짐':'꺼짐'],['자동 사격',status.autoFire?'켜짐':'꺼짐'],['움직임 간격',status.movementIntervalMin?status.movementIntervalMin+'분':'기존 범위'],['대사 간격',status.dialogueIntervalMin?status.dialogueIntervalMin+'분':'기존 범위'],['사격 쿨다운',status.shotCooldownMin?status.shotCooldownMin+'분':'기존 3~5분']];
  
  
     const box=document.querySelector('#status-list');box.replaceChildren();
@@ -422,7 +429,7 @@ Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  archive=info.dialogues.filter(line=>typeof line?.id==='string'&&typeof line?.text==='string'&&Array.isArray(line.poses)&&Array.isArray(line.triggers));
  infoLoaded=true;renderArchive();
  if(info.favorites)favorites={pose:Array.isArray(info.favorites.pose)?info.favorites.pose:[],dialogue:Array.isArray(info.favorites.dialogue)?info.favorites.dialogue:[]};
- if(info.status){renderStatus(info.status);positionLocked=info.status.positionLocked===true;dialogueStyle=info.status.dialogueStyle||'balanced';}
+ if(info.status){renderStatus(info.status);positionLocked=info.status.positionLocked===true;dialogueStyle=info.status.dialogueStyle||'balanced';skin=info.status.skin==='blouson'?'blouson':'mustang';}
  renderPoseFavorites();renderPersonalize();
 }).catch(()=>{});
 function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
@@ -431,6 +438,13 @@ document.addEventListener('click',event=>{
  const play=event.target.closest('[data-favorite-play]');if(play){window.castleMenu?.invoke('favorite:play:'+play.dataset.favoritePlay);return;}
  const lock=event.target.closest('#position-lock-toggle');if(lock){positionLocked=!positionLocked;window.castleMenu?.invoke('setting:positionLock:'+positionLocked);renderPersonalize();return;}
  const style=event.target.closest('[data-style]');if(style){dialogueStyle=style.dataset.style;window.castleMenu?.invoke('setting:dialogueStyle:'+dialogueStyle);renderPersonalize();return;}
+ const choice=event.target.closest('[data-skin]');if(choice){
+  const requested=choice.dataset.skin;
+  if(requested==='mustang'||requested==='blouson'){
+   skin=requested;window.castleMenu?.invoke('skin:'+skin);renderPersonalize();
+  }
+  return;
+ }
  const tab=event.target.closest('[data-tab]');if(tab){selectTab(tab.dataset.tab);return;}const frequencyOpen=event.target.closest('[data-frequency-open]');if(frequencyOpen){showFrequencyView(frequencyOpen.dataset.frequencyOpen);return;}
 if(event.target.closest('[data-frequency-back]')){showFrequencyView('home');return;}
 if(event.target.closest('[data-weights-reset]')){
