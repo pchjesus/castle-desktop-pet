@@ -24,7 +24,8 @@ test('post-prototype A design remains separate from B originals',async()=>{
  const a=await readFile(new URL('../design/references/akila-sheet-02.png',import.meta.url));
  assert(a.length>1000000);
  const runtime=await readFile(new URL('../src/characters/outfits.ts',import.meta.url),'utf8');
- assert(runtime.includes("akila-sheet-02.png"));
+ assert(runtime.includes("src/characters/candidates/a-blouson-b20"));
+ assert(!runtime.includes("initial-prototype"));
 });
 test('B QA pack has complete standalone frame inventory with no A fallback',async()=>{
  const manifest=JSON.parse(await readFile(new URL('../src/characters/candidates/b-mustang-20261107/action-pack-v04/manifest.json',import.meta.url),'utf8'));
