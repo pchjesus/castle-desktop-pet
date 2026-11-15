@@ -35,6 +35,17 @@ function openDiagnostics(show=true) {
 }
 let behaviorSettings=normalizeSettings(null);
 function readBehavior(){behaviorSettings=loadSettings(join(app.getPath('userData'),'behavior.json'));return behaviorSettings;}
+type Skin='mustang'|'blouson';
+let activeSkin:Skin='mustang';
+const skinPath=()=>join(app.getPath('userData'),'appearance.json');
+function loadSkin(){
+ try{activeSkin=JSON.parse(readFileSync(skinPath(),'utf8'))?.skin==='blouson'?'blouson':'mustang';}
+ catch{activeSkin='mustang';}
+}
+function saveSkin(){
+ try{writeFileSync(skinPath(),JSON.stringify({skin:activeSkin}));}
+ catch(error){log('Skin preference save failed: '+String(error));}
+}
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
 let positionLocked=false;
@@ -125,7 +136,7 @@ function openPetMenu(showInSmoke=false) {
  popup.on('closed',()=>{if(menuWindow===popup){menuWindow=undefined;menuGesture=undefined;}});
  if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
- popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),...Object.fromEntries(Object.entries(behaviorSettings).filter(([k])=>k!=='actionWeights').map(([k,v])=>[k,String(v)])),weights:JSON.stringify(behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS)}})
+ popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),skin:activeSkin,...Object.fromEntries(Object.entries(behaviorSettings).filter(([k])=>k!=='actionWeights').map(([k,v])=>[k,String(v)])),weights:JSON.stringify(behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS)}})
   .then(()=>{if((!isSmoke||showInSmoke) && !popup.isDestroyed())popup.show();})
   .catch(error=>log('custom menu exception '+String(error)));
  return popup;
@@ -133,7 +144,7 @@ function openPetMenu(showInSmoke=false) {
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
- return {favorites:loadFavorites(),status:{positionLocked,dialogueStyle:behaviorSettings.dialogueStyle,pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
+ return {favorites:loadFavorites(),status:{skin:activeSkin,positionLocked,dialogueStyle:behaviorSettings.dialogueStyle,pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
  dialogues:dialogues.map(d=>({id:d.id,text:d.text,origin:d.origin,approval:d.approval,poses:d.poses,triggers:d.triggers,rarity:d.rarity,random:d.random}))};
 });
 // Non-focusing, always click-through speech surface. Does not change pet bounds.
@@ -192,6 +203,16 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command==='skin:mustang'||command==='skin:blouson'){
+  const skin=command.slice(5) as Skin;
+  if(skin!==activeSkin){
+   activeSkin=skin;
+   saveSkin();
+   updateSpeech('');
+   win.webContents.send('pet:action',command);
+  }
+  return;
+ }
  if(command==='setting:positionLock:true'||command==='setting:positionLock:false'){
   positionLocked=command.endsWith(':true');
   positionAnchor=positionLocked?win.getBounds():null;
@@ -331,8 +352,8 @@ app.whenReady().then(() => {
   win.on('system-context-menu',event=>{event.preventDefault();log('Windows system context menu suppressed');});
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   log('launch '+JSON.stringify({portable:hasPortableMarker,validated:validPortableLaunch,executable:process.execPath,entry:__filename,resources:process.resourcesPath}));
-  readBehavior();
-  win.loadFile(join(__dirname, '../dist/index.html'),{query:Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)]))});
+  readBehavior();loadSkin();
+  win.loadFile(join(__dirname, '../dist/index.html'),{query:{...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)])),skin:activeSkin}});
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
   win.on('move',()=>positionSpeech());
@@ -407,7 +428,7 @@ app.whenReady().then(() => {
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
     // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')){
+    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')||command==='skin:mustang'||command==='skin:blouson'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
