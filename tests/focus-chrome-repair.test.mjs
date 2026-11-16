@@ -49,3 +49,22 @@ test('repair errors cannot strand the window in resizable state',()=>{
  assert.equal(repair.perform('blur'),false);assert.match(error,/DWM failure/);
  assert.equal(w.resizable,false);assert.equal(w.bounds.height,225);repair.dispose();
 });
+
+test('drag suppresses native 1px DWM nudge even if a focus repair was queued',()=>{
+ const {w,calls}=fixture();
+ let dragging=false,serial=0;const pending=new Map();
+ const repair=createFocusChromeRepair(w,{platform:'win32',isDragging:()=>dragging,
+  setTimer:fn=>{const id=++serial;pending.set(id,fn);return id},
+  clearTimer:id=>pending.delete(id)});
+ assert.equal(repair.schedule('focus'),true);
+ dragging=true;repair.cancelPending();
+ assert.equal(pending.size,0);
+ assert.equal(repair.schedule('blur'),false);
+ assert.equal(repair.perform('drag'),false);
+ assert.deepEqual(calls,[]);
+ dragging=false;
+ assert.equal(repair.perform('blur'),true);
+ assert.equal(w.getBounds().height,225);
+ assert.equal(w.isResizable(),false);
+ repair.dispose();
+});

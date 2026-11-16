@@ -9,6 +9,7 @@ declare global {
    showSpeech?:(text:string)=>void;
    onAction:(callback:(state:string|{kind:'manual';id:number;pose:string}|{kind:'windows-event';name:string}|{kind:'favorite-dialogue';id:string})=>void)=>()=>void;
    setPassthrough:(ignore:boolean)=>void;
+   setPointerHeld?:(held:boolean)=>void;
    dragStart:()=>void;
    dragMove:()=>void;
    dragEnd:()=>void;

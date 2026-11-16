@@ -14,9 +14,9 @@ export function createFocusChromeRepair(
   setTimer?:(handler:()=>void,ms:number)=>ReturnType<typeof setTimeout>;
   clearTimer?:(timer:ReturnType<typeof setTimeout>)=>void;
   onRepair?:(event:{reason:string;bounds:Rectangle;direction:number})=>void;
-  onError?:(error:unknown)=>void;
+  onError?:(error:unknown)=>void;isDragging?:()=>boolean;
  }
 ):{
- schedule:(reason:string)=>boolean;perform:(reason:string)=>boolean;dispose:()=>void;
+ schedule:(reason:string)=>boolean;perform:(reason:string)=>boolean;cancelPending:()=>boolean;dispose:()=>void;
  isRepairing:()=>boolean;stats:()=>FocusChromeStats;
 };
