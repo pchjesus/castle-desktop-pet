@@ -5,10 +5,10 @@ import {transform} from 'esbuild';
 const raw=await readFile(new URL('../src/characters/outfits.ts',import.meta.url),'utf8');
 const {code}=await transform(raw,{loader:'ts',format:'esm'});
 const {outfitPolicy}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
-test('only the later B outfit starts by default in QA and later A is not spoofed',()=>{
+test('B20 enables separately approved blouson while keeping mustang default',()=>{
  assert.equal(outfitPolicy.targetDefault,'mustang');
  assert.equal(outfitPolicy.active,'mustang');
- assert.equal(outfitPolicy.outfits.blouson.ready,false);
+ assert.equal(outfitPolicy.outfits.blouson.ready,true);
  assert.equal(outfitPolicy.outfits.mustang.ready,true); // user-approved B pose pack
  assert.notEqual(outfitPolicy.outfits.blouson.assetRoot,outfitPolicy.outfits.mustang.assetRoot);
 });
@@ -17,7 +17,8 @@ test('runtime source never imports initial prototype sprites',async()=>{
  assert(!/['"]\.\/derived\/akila/.test(runtime));
  assert(!/['"]\.\/assets\/akila/.test(runtime));
  assert(runtime.includes("action-pack-v04"));
- assert(runtime.includes("blouson:Object.fromEntries(states.map(state=>[state,[]]))"));
+ assert(runtime.includes("const approvedA=import.meta.glob('./candidates/a-blouson-b20/*.png'"));
+ assert(runtime.includes('blouson:A,'));
 });
 test('outfit frame loader is isolated and does not substitute missing A/B poses',async()=>{
  const {outfitFrames}=await import('../src/characters/outfit-loader.mjs');

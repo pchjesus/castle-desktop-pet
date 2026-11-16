@@ -81,6 +81,13 @@ try{
  await page.locator('[data-style="original"]').click();
  assert.equal(await page.evaluate(()=>window.__command),'setting:dialogueStyle:original');
  assert.equal(await page.locator('[data-style="original"]').getAttribute('aria-pressed'),'true');
+  await page.locator('[data-skin="blouson"]').click();
+  assert.equal(await page.evaluate(()=>window.__command),'skin:blouson');
+  assert.equal(await page.locator('[data-skin="blouson"]').getAttribute('aria-pressed'),'true');
+  await page.locator('[data-skin="mustang"]').click();
+  assert.equal(await page.evaluate(()=>window.__command),'skin:mustang');
+  assert.equal(await page.locator('[data-skin="mustang"]').getAttribute('aria-pressed'),'true');
+  report.checks.push('B20 right-click skin controls switch blouson/mustang and reflect current selection');
  await page.locator('[data-more-view="personalize"] [data-more-back]').click();
  await page.locator('[data-more-open="archive"]').click();
  await page.waitForFunction(()=>document.querySelector('#archive-count')?.textContent?.includes('3'));
@@ -119,7 +126,14 @@ try{
  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(80);
  const preserved=await page.locator(stage).evaluate(el=>({approvedImage:el.querySelector('img')?.naturalWidth>0,auxiliaryNodes:el.querySelectorAll('.b-smoking-layer,.b-smoking-anchor,.b-smoke-strand').length}));
  assert(preserved.approvedImage);assert.equal(preserved.auxiliaryNodes,0);report.smoke=preserved;report.checks.push('Reduced Motion preserves approved Smoking PNG without auxiliary smoke');
- await page.goto(origin+'/electron/pet-speech.html');await page.evaluate(()=>{window.castleSpeech={onText:()=>{},measure:()=>{}};});
+ await page.goto(origin+'/?skin=blouson&autonomy=false&dialogueEnabled=false');
+  await page.waitForFunction(()=>document.querySelector('.pet-stage:not([data-exiting]) img')?.currentSrc.includes('/a-blouson-b20/smoking.png'));
+  await page.evaluate(()=>window.__manual('working'));
+  await page.waitForFunction(()=>document.querySelector('.pet-stage:not([data-exiting]) img')?.currentSrc.includes('/a-blouson-b20/working.png'));
+  await page.evaluate(()=>window.__manual('skin:mustang'));
+  await page.waitForFunction(()=>document.querySelector('.pet-stage:not([data-exiting]) img')?.currentSrc.includes('/b-mustang-20261107/'));
+  report.checks.push('B20 blouson and working poses load; live switch restores approved mustang');
+  await page.goto(origin+'/electron/pet-speech.html');await page.evaluate(()=>{window.castleSpeech={onText:()=>{},measure:()=>{}};});
  // The same measured width protocol used by the native preload: short text
  // must not retain the long message's empty transparent margin.
  const dimensions=await page.locator('#speech').evaluate(el=>{el.textContent='왜 그러지?';const short=el.getBoundingClientRect();el.textContent='너까지 움직일 필요도 없다. 이 간격 안에선 하나님이 온다 한들 못 피하니까.';const long=el.getBoundingClientRect();return {short:short.width,long:long.width,tail:getComputedStyle(el,'::after').content}});assert(dimensions.short<120&&dimensions.long>dimensions.short);assert.notEqual(dimensions.tail,'none');report.checks.push('tail balloon measures short/long text to its visible width');

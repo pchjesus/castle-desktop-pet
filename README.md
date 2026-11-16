@@ -15,6 +15,14 @@ The initial prototype and all pre-migration runtime sources are preserved on bra
 
 Run `npm start` for B as the visible desktop pet. `preview.html` and `preview-offline.zip` contain B visual comparisons and user-entered notes.
 
+## B-20 blouson skin (Draft PR; not released)
+
+The B-20 work branch adds nine separately mapped transparent **blue/olive blouson** Akila PNGs at `src/characters/candidates/a-blouson-b20/`, derived from the user-selected 3×3 design sheet. Image files are 1024×1600 and checked by SHA-256 in `tests/b20-blouson.test.mjs`; original mustang source and derived images remain unmodified.
+
+Open the right-click menu → **더보기 → 개인화 → 스킨 선택**, then choose **무스탕** or **푸른 블루종**. The appearance preference is saved to `appearance.json` under Electron per-user data; defaults to mustang on fresh installations. Changing skin re-renders the **current pose only** without replacing dialogue/behavior controllers, action weights, cadence, favorites, position lock, or Windows power/unlock handlers. Both outfits use the same nine existing action names; B-20 speaking is one illustration frame rather than B's seven-frame mouth animation.
+
+This B-20 draft is based on the unmerged B-19.1 drag-size safeguard branch `fix/b19-drag-size-dpi-regression` (Draft PR #18), so verify and merge those changes in the correct order once the user approves. **Do not publish new EXE/replace v0.19.0 or merge B-20 before real-device review.**
+
 ## B-19 approved default (2026-11-10)
 
 The user approved the standalone B-19 Windows desktop pet (squash merge PR #16). B-19 includes position lock, favorite poses/dialogues, and selectable dialogue tone. The brown mustang later-B outfit remains the default. Local behavior preferences and favorites are stored per user; no Codex/Brave connection.
