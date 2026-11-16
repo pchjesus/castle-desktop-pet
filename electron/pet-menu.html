@@ -194,6 +194,11 @@ button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
 <section id="panel-basic" role="tabpanel" aria-labelledby="tab-basic" data-panel="basic">
+<h2>스킨 선택</h2>
+<div class="grid two" id="skin-choices" role="group" aria-label="아킬라 스킨">
+<button data-skin="mustang" aria-pressed="true">무스탕</button>
+<button data-skin="blouson" aria-pressed="false">푸른 블루종</button>
+</div>
 <h2>평소 자세</h2><div class="grid"><button data-action="setting:base:smoking">흡연</button><button data-action="setting:base:idle">서 있기</button><button data-action="setting:base:sitting">앉기</button></div>
 <h2>자동으로 할 일</h2><div class="grid toggles"><button id="autonomy-setting">움직임</button><button id="dialogue-setting">대사</button><button id="fire-setting">사격</button></div>
 <h2>펫 크기</h2><div class="row"><button data-action="size:smaller" aria-label="펫 작게">−</button><select id="pet-size" aria-label="펫 크기"><option value="120" data-action="size:120">120 px</option><option value="140" data-action="size:140">140 px</option><option value="160" data-action="size:160">160 px</option><option value="180" data-action="size:180">180 px · 기본</option><option value="200" data-action="size:200">200 px</option><option value="240" data-action="size:240">240 px</option><option value="280" data-action="size:280">280 px</option><option value="320" data-action="size:320">320 px</option><option value="360" data-action="size:360">360 px</option></select><button data-action="size:larger" aria-label="펫 크게">+</button></div>
@@ -231,12 +236,7 @@ button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1
 <div class="more-view" data-more-view="personalize" hidden>
 <div class="more-head"><button class="back" data-more-back>‹ 뒤로</button><strong>개인화</strong></div>
 <div class="preference-set">
-<h2>스킨 선택</h2>
-<div class="grid two" id="skin-choices" role="group" aria-label="아킬라 스킨">
-<button data-skin="mustang" aria-pressed="true">무스탕</button>
-<button data-skin="blouson" aria-pressed="false">푸른 블루종</button>
-</div>
-<p class="preference-hint">9개 동작과 대사는 그대로 유지하고 복장별 이미지로 바꿔요. 선택은 자동 저장돼요.</p>
+
 <h2>자리 지키기</h2>
 <button id="position-lock-toggle" aria-pressed="false">현재 자리에 고정: 꺼짐</button>
 <p class="preference-hint">켜면 드래그 이동을 막고 재실행 시 저장된 자리로 돌아와요. 모니터 구성 변경 중에는 화면 안쪽으로 임시 이동할 수 있어요.</p>
