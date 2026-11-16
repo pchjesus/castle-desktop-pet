@@ -73,7 +73,7 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
   const poseTab=await persistentMenu.webContents.executeJavaScript("document.querySelector('#tab-poses').getAttribute('aria-selected')");
   if(poseTab!=='true')throw Error('B20.1 pose selection reset menu tab');
  }
- writeFileSync(join(uxEvidence,'menu-pose-kept-open.png'),(await persistentMenu.webContents.capturePage()).toPNG());
+ writeFileSync(join(evidence,'menu-pose-kept-open.png'),(await persistentMenu.webContents.capturePage()).toPNG());
  persistentMenu.close();
 
  for(const pose of ['drawing','speaking','firing','dual_firing','firing_dynamic']){
