@@ -427,8 +427,10 @@ app.whenReady().then(() => {
   ipcMain.on('pet-menu:command',(event,command)=>{
     if(!menuWindow || menuWindow.isDestroyed() || event.sender!==menuWindow.webContents || typeof command!=='string')return;
     if(command.startsWith('pose:')&&command.length<40){commandTrace.push({phase:'menu-received',commandId:commandSequence+1,pose:command.slice(5),at:Date.now()});if(commandTrace.length>256)commandTrace.shift();}
-    // Keep the expanded Frequency controls open while tuning multiple weights.
-    if(command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')||command==='skin:mustang'||command==='skin:blouson'){
+    // Manual poses are repeatable commands, not dismiss actions. Keep the
+    // existing menu open so several poses can be inspected in succession.
+    // Explicit Close/Escape, click-away blur, Quit and diagnostics retain their behavior.
+    if(command.startsWith('pose:')||command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')||command==='skin:mustang'||command==='skin:blouson'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
