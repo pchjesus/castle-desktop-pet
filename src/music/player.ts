@@ -1,4 +1,5 @@
 import {createBeatDetector} from './beat-detector.mjs';
+import {createVolumeDialogue} from './volume-dialogue.mjs';
 
 export interface MusicCommand {
  action:'init'|'library'|'play'|'pause'|'stop'|'next'|'previous'|'select'|'volume'|'rhythm'|'repeat';
@@ -28,7 +29,8 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
  let fileUrl:string|null=null,loadToken=0;
  let analyser:AnalyserNode|null=null,ctx:AudioContext|null=null;
  let bins:Uint8Array<ArrayBuffer>|null=null,frame=0;
- let lastShotAt=0,lastLoudLineAt=-Infinity;
+ let lastShotAt=0;
+ const volumeDialogue=createVolumeDialogue();
  let error='';
  const beat=createBeatDetector();
  const snapshot=():MusicStatus=>({index,playing:!audio.paused&&!audio.ended,
@@ -74,11 +76,13 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
  }
  function updateVolume(value:number,userChange=false){
   if(!Number.isFinite(value))return;
+  const previous=volume;
   volume=Math.max(0,Math.min(100,Math.round(value)));
   audio.volume=volume/100;
-  if(userChange&&volume>=90&&Date.now()-lastLoudLineAt>60000){
-   lastLoudLineAt=Date.now();onLine('시끄럽군.');
-  }
+  // Initialization and decreases never trigger speech. Each band has an
+  // independent 60-second cooldown; 80% takes precedence over 50%.
+  const reaction=userChange?volumeDialogue(previous,volume):null;
+  if(reaction)onLine(reaction);
   publish();
  }
  async function loadSong(selected:number,autoPlay=true){
