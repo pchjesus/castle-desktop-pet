@@ -8,11 +8,12 @@ import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
 import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/behavior/cadence.mjs';
-import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog, protocol } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {watchWindowsEvents} from '../src/behavior/windows-event-adapter.mjs';
 import { readFileSync, writeFileSync, appendFileSync, statSync, unlinkSync } from 'node:fs';
-import {readFile} from 'node:fs/promises';
+import {randomBytes} from 'node:crypto';
+import {streamSelectedMp3} from '../src/music/mp3-stream.mjs';
 import {normalizeLibrary,normalizeMusicSettings,trackTitle,MAX_MP3_BYTES} from '../src/music/music-library.mjs';
 import {QA_MP3_BASE64} from './music-qa-tone.mjs';
 import { join, dirname } from 'node:path';
@@ -49,14 +50,16 @@ function saveSkin(){
  try{writeFileSync(skinPath(),JSON.stringify({skin:activeSkin}));}
  catch(error){log('Skin preference save failed: '+String(error));}
 }
-// Music is local-only: paths live in userData; MP3 bytes are available exclusively
-// to the trusted, persistent pet renderer. The disposable menu never receives them.
+// Music is local-only: only native-picker-approved paths are stored in userData.
+// The pet renderer gets a short-lived, random stream ticket, never an arbitrary file path.
+const musicTickets=new Map<string,string>();
 let musicFiles:string[]=[];
 let musicPrefs=normalizeMusicSettings(null);
 let musicState={index:0,playing:false,time:0,duration:0,error:''};
 let musicDialogOpen=false;
 const musicPath=()=>join(app.getPath('userData'),'music-playlist.json');
 function readMusic(){
+ musicTickets.clear();
  try{
   const parsed=JSON.parse(readFileSync(musicPath(),'utf8'));
   musicFiles=normalizeLibrary(parsed?.files);
@@ -259,13 +262,13 @@ function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
  if(command==='music:add'){void selectMusicFiles();return;}
  if(command==='music:clear'){
-  musicFiles=[];musicState={index:0,playing:false,time:0,duration:0,error:''};
+  musicTickets.clear();musicFiles=[];musicState={index:0,playing:false,time:0,duration:0,error:''};
   saveMusic();musicCommand({action:'stop'});syncMusic();return;
  }
  if(command.startsWith('music:remove:')){
   const value=command.slice('music:remove:'.length),idx=Number(value);
   if(!/^\\d+$/.test(value)||!Number.isSafeInteger(idx)||idx<0||idx>=musicFiles.length)return;
-  musicFiles.splice(idx,1);
+  musicTickets.clear();musicFiles.splice(idx,1);
   musicState={index:0,playing:false,time:0,duration:0,error:''};
   saveMusic();musicCommand({action:'stop'});syncMusic();return;
  }
@@ -380,12 +383,25 @@ const hasPortableMarker=(()=>{try{readFileSync(join(__dirname,'../castle-runtime
 const validPortableLaunch=!hasPortableMarker||process.argv.includes('--castle-pet-launcher');
 // Playback only starts following a user action in the local music menu.
 app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required');
+// Must be registered before app.whenReady(), or Chromium will buffer media
+// instead of fetching bounded byte ranges from the local stream handler.
+protocol.registerSchemesAsPrivileged([{scheme:'castle-mp3',privileges:{standard:true,secure:true,stream:true,corsEnabled:true,supportFetchAPI:true}}]);
 const singleInstance=app.requestSingleInstanceLock();
 if(!singleInstance)app.quit();
 app.on('second-instance',()=>{if(win&&!win.isDestroyed()){win.show();dialog.showMessageBox(win,{type:'info',title:'캐슬 펫',message:'이미 실행 중인 펫이 있습니다.',detail:'새 검수 버전은 기존 펫을 우클릭 → 펫 종료로 닫은 뒤 실행해 주세요.'});}});
 app.whenReady().then(() => {
   if(!singleInstance)return;
   if(!validPortableLaunch){dialog.showErrorBox('캐슬 펫 실행 방법','ZIP 전체를 먼저 압축 풀기 한 뒤, 최상위 CastlePet.exe를 실행하세요.');app.quit();return;}
+  protocol.handle('castle-mp3',async request=>{
+   try{
+    const target=new URL(request.url);
+    const ticket=target.pathname.slice(1);
+    if(target.hostname!=='track'||target.search||target.hash||!/^[a-f0-9]{48}$/.test(ticket))return new Response(null,{status:403});
+    const filename=musicTickets.get(ticket);
+    if(!filename||!musicFiles.includes(filename))return new Response(null,{status:403});
+    return await streamSelectedMp3(filename,request.headers.get('range'),request.signal,request.method);
+   }catch(error){log('Local MP3 stream failed: '+String(error));return new Response(null,{status:404});}
+  });
   try{const last=JSON.parse(readFileSync(path(),'utf8'));positionLocked=last?.positionLocked===true;
    if(positionLocked)positionAnchor=restoreWindowBounds(last);
   }catch{positionLocked=false;positionAnchor=null;}
@@ -483,13 +499,16 @@ app.whenReady().then(() => {
    commandTrace.push({phase,pose,commandId,version,documentHidden,hidden,source,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();
   });
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
-  ipcMain.handle('pet:music-file',async(event,index)=>{
+  ipcMain.handle('pet:music-url',(event,index)=>{
    if(!isPet(event)||!Number.isSafeInteger(index)||index<0||index>=musicFiles.length)throw Error('Unauthorized local MP3 request');
    const filename=musicFiles[index];
    const stat=statSync(filename);
    if(!stat.isFile()||stat.size<=0||stat.size>MAX_MP3_BYTES)throw Error('Unsupported or oversized MP3 file');
-   const bytes=await readFile(filename);
-   return {bytes:new Uint8Array(bytes)};
+   // Each selection gets an opaque ticket, and removed tracks lose access.
+   musicTickets.clear();
+   const ticket=randomBytes(24).toString('hex');
+   musicTickets.set(ticket,filename);
+   return 'castle-mp3://track/'+ticket;
   });
   ipcMain.on('pet:music-status',(event,value)=>{
    if(!isPet(event)||!value||typeof value!=='object')return;
@@ -774,7 +793,7 @@ app.whenReady().then(() => {
         try{behavior132=await behaviorQa(win,()=>openPetMenu(true),commandTrace,resizePet,join(dirname(reportFile),'windows-b13-2-captures'));}
         finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
         // B-21 native QA: a small, original synthetic MP3 goes through the
-        // same local trusted IPC + blob decoding pipeline as user files.
+        // same local ticketed, ranged streaming decoder used for selected MP3 files.
         const savedMusicFiles=musicFiles.slice(),savedMusicPrefs={...musicPrefs},savedMusicState={...musicState};
         const qaMp3=join(app.getPath('userData'),'castle-b21-qa-sine.mp3');
         let musicQa:{passed:boolean;duration:number;playing:boolean;stayedPlayingWithAnalysis:boolean};
