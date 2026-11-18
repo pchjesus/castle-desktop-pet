@@ -190,9 +190,27 @@ button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1
 .preference-set .grid button{min-height:40px}
 .preference-hint{margin:0;font-size:11px;line-height:1.5;color:#cfdae8}
 .archive-item .favorite-star{width:auto;min-height:29px;margin-top:7px;padding:4px 8px;font-size:12px}
+
+/* B-21: compact local music controls. Playback never belongs to this menu window. */
+nav{grid-template-columns:repeat(5,minmax(0,1fr))}
+.music-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.music-row button{min-width:0}
+.music-panel{display:flex;flex-direction:column;gap:10px;min-height:0}
+.music-now{padding:10px 12px;background:#303b4b;border:1px solid #657489;border-radius:6px}
+.music-now strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.music-now small{display:block;margin-top:4px}
+.music-list{min-height:70px;max-height:190px;overflow-y:auto;display:grid;gap:5px;align-content:start;scrollbar-width:thin}
+.music-item{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:5px}
+.music-item button{min-width:0;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.music-item [data-music-remove]{text-align:center}
+.music-item button[aria-current=true]{border-color:#c9d7e7;background:#435a76}
+.music-slider{width:100%;accent-color:#b5cbdf;cursor:pointer}
+.music-toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.music-hint{font-size:11px;line-height:1.5;color:#c3cfde;margin:0}
+@media(max-width:395px),(max-height:410px){nav{gap:3px}nav button{padding:4px 2px;font-size:11px}.music-panel{gap:6px}.music-now{padding:7px}.music-list{max-height:110px}}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
-<nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
+<nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-music" data-tab="music" aria-controls="panel-music" aria-selected="false">음악</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
 <section id="panel-basic" role="tabpanel" aria-labelledby="tab-basic" data-panel="basic">
 <h2>스킨 선택</h2>
 <div class="grid two" id="skin-choices" role="group" aria-label="아킬라 스킨">
@@ -222,6 +240,28 @@ button.favorite-star[aria-pressed=true]{background:#5a7794!important;color:#fff1
 </section>
 <section id="panel-poses" role="tabpanel" aria-labelledby="tab-poses" data-panel="poses" hidden>
 <h2>지금 실행할 동작</h2><div class="grid poses"><button data-action="pose:idle">서 있기</button><button data-action="pose:smoking">흡연</button><button data-action="pose:sitting">앉기</button><button data-action="pose:working">작업하기</button><button data-action="pose:speaking">말하기</button><button data-action="pose:drawing">총 꺼내기</button><button data-action="pose:firing">한 발 사격</button><button data-action="pose:dual_firing">양손 사격</button><button data-action="pose:firing_dynamic">허리 사격</button></div><p>수동 동작은 잠시 유지한 뒤 평소 자세로 돌아와요.</p>
+</section>
+<section id="panel-music" role="tabpanel" aria-labelledby="tab-music" data-panel="music" hidden>
+<div class="music-panel">
+<h2>로컬 MP3 플레이리스트</h2>
+<div class="music-now" aria-live="polite"><strong id="music-title">MP3 파일을 추가해 줘.</strong><small id="music-time">재생 대기</small></div>
+<div class="music-row">
+<button data-music="previous" aria-label="이전 곡">◀◀</button>
+<button data-music="play" id="music-play" aria-label="재생">▶ 재생</button>
+<button data-music="next" aria-label="다음 곡">▶▶</button>
+</div>
+<label for="music-volume"><span>볼륨 <output id="music-volume-output">65%</output></span><input id="music-volume" class="music-slider" type="range" min="0" max="100" step="5" value="65" aria-label="음악 볼륨"></label>
+<div class="music-toggles">
+<button id="music-repeat" data-music-toggle="repeat" aria-pressed="false">목록 반복: 끔</button>
+<button id="music-rhythm" data-music-toggle="rhythm" aria-pressed="false">박자 사격: 끔</button>
+</div>
+<div class="music-row" style="grid-template-columns:2fr 1fr">
+<button data-music="add">+ MP3 여러 개 추가</button>
+<button data-music="clear">전체 삭제</button>
+</div>
+<div class="music-list" id="music-list" aria-label="음악 목록">등록된 음악이 없어요.</div>
+<p class="music-hint">파일은 PC에 그대로 두고 목록만 기억해요. 메뉴를 닫아도 재생돼요. 박자 사격은 기존 사격 포즈만 가끔 보여주고 자동 사격이 꺼져 있으면 실행되지 않아요.</p>
+</div>
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
 <div class="more-view" data-more-view="home">
@@ -432,8 +472,77 @@ Promise.resolve(window.castleMenu?.getInfo?.()).then(info=>{
  if(info.status){renderStatus(info.status);positionLocked=info.status.positionLocked===true;dialogueStyle=info.status.dialogueStyle||'balanced';skin=info.status.skin==='blouson'?'blouson':'mustang';}
  renderPoseFavorites();renderPersonalize();
 }).catch(()=>{});
-function selectTab(name){if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
+function selectTab(name){if(name==='music')void refreshMusic();if(name!=='more')showMoreView('home');if(name!=='frequency')showFrequencyView('home');for(const button of document.querySelectorAll('[data-tab]')){const selected=button.dataset.tab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;}for(const panel of document.querySelectorAll('[data-panel]'))panel.hidden=panel.dataset.panel!==name;}
+const musicDefault={tracks:[],index:0,playing:false,time:0,duration:0,volume:65,rhythmFire:false,repeat:false,error:''};
+let lastMusicTracks='';
+let currentMusic={...musicDefault};
+function musicTime(seconds){
+ const t=Math.max(0,Math.floor(Number(seconds)||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+}
+function paintMusic(value){
+ if(!value||!Array.isArray(value.tracks))return;
+ currentMusic={...musicDefault,...value};
+ const item=currentMusic.tracks[currentMusic.index];
+ document.querySelector('#music-title').textContent=item||'MP3 파일을 추가해 줘.';
+ document.querySelector('#music-time').textContent=currentMusic.error||(
+  currentMusic.playing?'재생 중 · '+musicTime(currentMusic.time)+' / '+musicTime(currentMusic.duration):
+  item?'일시 정지 · '+musicTime(currentMusic.time)+' / '+musicTime(currentMusic.duration):'재생 대기');
+ const play=document.querySelector('#music-play');
+ play.dataset.music=currentMusic.playing?'pause':'play';
+ play.textContent=currentMusic.playing?'❚❚ 일시정지':'▶ 재생';
+ const volume=document.querySelector('#music-volume');
+ if(document.activeElement!==volume)volume.value=String(currentMusic.volume);
+ document.querySelector('#music-volume-output').textContent=volume.value+'%';
+ for(const [buttonId,active,label] of [
+  ['#music-repeat',currentMusic.repeat,'목록 반복'],
+  ['#music-rhythm',currentMusic.rhythmFire,'박자 사격']
+ ]){
+  const b=document.querySelector(buttonId);b.setAttribute('aria-pressed',String(active));
+  b.textContent=label+': '+(active?'켬':'끔');
+ }
+ const key=JSON.stringify(currentMusic.tracks);
+ if(key!==lastMusicTracks){
+  lastMusicTracks=key;
+  const list=document.querySelector('#music-list');list.replaceChildren();
+  if(!currentMusic.tracks.length){list.textContent='등록된 MP3가 없어요.';}
+  else currentMusic.tracks.forEach((name,index)=>{
+   const row=document.createElement('div');row.className='music-item';
+   const select=document.createElement('button');select.textContent=(index+1)+'. '+name;
+   select.dataset.musicSelect=String(index);select.title=name;
+   const remove=document.createElement('button');remove.textContent='×';
+   remove.dataset.musicRemove=String(index);remove.setAttribute('aria-label',name+' 목록에서 삭제');
+   row.append(select,remove);list.append(row);
+  });
+ }
+ for(const item of document.querySelectorAll('[data-music-select]'))
+  item.setAttribute('aria-current',String(Number(item.dataset.musicSelect)===currentMusic.index));
+}
+async function refreshMusic(){
+ try{const data=await window.castleMenu?.getMusic?.();if(data)paintMusic(data);}catch{}
+}
+setInterval(()=>{if(!document.querySelector('#panel-music').hidden)void refreshMusic();},900);
+document.querySelector('#music-volume').addEventListener('input',event=>{
+ document.querySelector('#music-volume-output').textContent=event.target.value+'%';
+});
+document.querySelector('#music-volume').addEventListener('change',event=>{
+ window.castleMenu?.invoke('music:volume:'+event.target.value);
+});
 document.addEventListener('click',event=>{
+ const musicButton=event.target.closest('[data-music]');
+ if(musicButton){window.castleMenu?.invoke('music:'+musicButton.dataset.music);void refreshMusic();return;}
+ const selectSong=event.target.closest('[data-music-select]');
+ if(selectSong){window.castleMenu?.invoke('music:select:'+selectSong.dataset.musicSelect);void refreshMusic();return;}
+ const removeSong=event.target.closest('[data-music-remove]');
+ if(removeSong){window.castleMenu?.invoke('music:remove:'+removeSong.dataset.musicRemove);void refreshMusic();return;}
+ const musicToggle=event.target.closest('[data-music-toggle]');
+ if(musicToggle){
+  const kind=musicToggle.dataset.musicToggle;
+  const enabled=musicToggle.getAttribute('aria-pressed')!=='true';
+  window.castleMenu?.invoke('music:'+kind+':'+enabled);
+  musicToggle.setAttribute('aria-pressed',String(enabled));
+  musicToggle.textContent=(kind==='rhythm'?'박자 사격':'목록 반복')+': '+(enabled?'켬':'끔');
+  return;
+ }
  const star=event.target.closest('[data-favorite-type]');if(star){toggleFavorite(star.dataset.favoriteType,star.dataset.favoriteId);return;}
  const play=event.target.closest('[data-favorite-play]');if(play){window.castleMenu?.invoke('favorite:play:'+play.dataset.favoritePlay);return;}
  const lock=event.target.closest('#position-lock-toggle');if(lock){positionLocked=!positionLocked;window.castleMenu?.invoke('setting:positionLock:'+positionLocked);renderPersonalize();return;}
