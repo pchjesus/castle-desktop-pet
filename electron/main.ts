@@ -473,7 +473,7 @@ app.whenReady().then(() => {
    restoreDragSize('drag-end');
    drag=null;save();
   }
-  const isPet=(event:Electron.IpcMainEvent)=>!win.isDestroyed()&&event.sender===win.webContents;
+  const isPet=(event:{sender:Electron.WebContents})=>!win.isDestroyed()&&event.sender===win.webContents;
   ipcMain.on('pet:action-result',(event,value)=>{
    if(!isPet(event)||!value||typeof value!=='object'||!['received','accepted','blocked','requested','rendered','reused','failed','superseded'].includes(value.phase)||!Number.isSafeInteger(value.commandId)||value.commandId<0||value.commandId>commandSequence)return;
    const {phase,pose,commandId,version,documentHidden,hidden,source}=value;
