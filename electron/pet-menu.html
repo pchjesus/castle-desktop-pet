@@ -207,7 +207,18 @@ nav{grid-template-columns:repeat(5,minmax(0,1fr))}
 .music-slider{width:100%;accent-color:#b5cbdf;cursor:pointer}
 .music-toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 .music-hint{font-size:11px;line-height:1.5;color:#c3cfde;margin:0}
-@media(max-width:395px),(max-height:410px){nav{gap:3px}nav button{padding:4px 2px;font-size:11px}.music-panel{gap:6px}.music-now{padding:7px}.music-list{max-height:110px}}
+/* The default 560×610 context menu must show all player controls without
+   forcing the outer panel to scroll; only the song list scrolls. */
+#panel-music .music-panel{gap:5px}
+#panel-music .music-now{padding:6px 9px}
+#panel-music .music-now strong{font-size:12px}
+#panel-music .music-now small{margin-top:1px}
+#panel-music .music-list{min-height:32px;max-height:92px}
+#panel-music .music-item button{min-height:30px;padding:5px 7px}
+#panel-music .music-hint{font-size:10px;line-height:1.32}
+#panel-music h2{margin:0 0 2px}
+#panel-music .music-row button,#panel-music .music-toggles button{min-height:32px;padding:4px 7px}
+@media(max-width:395px),(max-height:410px){nav{gap:3px}nav button{padding:4px 2px;font-size:11px}.music-panel{gap:4px}.music-now{padding:5px}.music-list{max-height:78px}}
 </style></head><body><main>
 <header id="menu-drag-handle" title="드래그하여 메뉴 이동"><strong>아킬라</strong><button id="close-menu" aria-label="메뉴 닫기">×</button></header>
 <nav role="tablist" aria-label="메뉴 분류"><button role="tab" id="tab-basic" data-tab="basic" aria-controls="panel-basic" aria-selected="true">기본</button><button role="tab" id="tab-frequency" data-tab="frequency" aria-controls="panel-frequency" aria-selected="false">빈도</button><button role="tab" id="tab-poses" data-tab="poses" aria-controls="panel-poses" aria-selected="false">동작</button><button role="tab" id="tab-music" data-tab="music" aria-controls="panel-music" aria-selected="false">음악</button><button role="tab" id="tab-more" data-tab="more" aria-controls="panel-more" aria-selected="false">더보기</button></nav>
@@ -260,7 +271,7 @@ nav{grid-template-columns:repeat(5,minmax(0,1fr))}
 <button data-music="clear">전체 삭제</button>
 </div>
 <div class="music-list" id="music-list" aria-label="음악 목록">등록된 음악이 없어요.</div>
-<p class="music-hint">파일은 PC에 그대로 두고 목록만 기억해요. 메뉴를 닫아도 재생돼요. 박자 사격은 기존 사격 포즈만 가끔 보여주고 자동 사격이 꺼져 있으면 실행되지 않아요.</p>
+<p class="music-hint">음악은 PC에 그대로 두고 메뉴를 닫아도 재생해요. 박자 사격은 가끔만 발생하며 자동 사격 OFF 시 멈춰요.</p>
 </div>
 </section>
 <section id="panel-more" role="tabpanel" aria-labelledby="tab-more" data-panel="more" hidden>
