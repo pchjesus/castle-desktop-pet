@@ -11,9 +11,10 @@ import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/b
 import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {watchWindowsEvents} from '../src/behavior/windows-event-adapter.mjs';
-import { readFileSync, writeFileSync, appendFileSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, appendFileSync, statSync, unlinkSync } from 'node:fs';
 import {readFile} from 'node:fs/promises';
 import {normalizeLibrary,normalizeMusicSettings,trackTitle,MAX_MP3_BYTES} from '../src/music/music-library.mjs';
+import {QA_MP3_BASE64} from './music-qa-tone.mjs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
@@ -772,9 +773,41 @@ app.whenReady().then(() => {
         let behavior132;
         try{behavior132=await behaviorQa(win,()=>openPetMenu(true),commandTrace,resizePet,join(dirname(reportFile),'windows-b13-2-captures'));}
         finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
+        // B-21 native QA: a small, original synthetic MP3 goes through the
+        // same local trusted IPC + blob decoding pipeline as user files.
+        const savedMusicFiles=musicFiles.slice(),savedMusicPrefs={...musicPrefs},savedMusicState={...musicState};
+        const qaMp3=join(app.getPath('userData'),'castle-b21-qa-sine.mp3');
+        let musicQa:{passed:boolean;duration:number;playing:boolean;stayedPlayingWithAnalysis:boolean};
+        writeFileSync(qaMp3,Buffer.from(QA_MP3_BASE64,'base64'));
+        try{
+         musicFiles=[qaMp3];
+         musicPrefs={volume:25,rhythmFire:false,repeat:true};
+         musicState={index:0,playing:false,time:0,duration:0,error:''};
+         syncMusic(true);
+         await new Promise(resolve=>setTimeout(resolve,150));
+         musicCommand({action:'play'});
+         let decoded=false;
+         for(let i=0;i<55;i++){
+          await new Promise(resolve=>setTimeout(resolve,100));
+          if(musicState.playing&&musicState.duration>0){decoded=true;break;}
+         }
+         if(!decoded)throw Error('B21 local test MP3 failed to decode/play: '+JSON.stringify(musicState));
+         const duration=musicState.duration;
+         musicCommand({action:'rhythm',rhythmFire:true});
+         await new Promise(resolve=>setTimeout(resolve,300));
+         const stayedPlayingWithAnalysis=musicState.playing;
+         if(!stayedPlayingWithAnalysis)throw Error('B21 MP3 stopped when beat analysis enabled: '+JSON.stringify(musicState));
+         musicCommand({action:'pause'});
+         musicQa={passed:true,duration,playing:decoded,stayedPlayingWithAnalysis};
+        }finally{
+         musicCommand({action:'stop'});
+         musicFiles=savedMusicFiles;musicPrefs=savedMusicPrefs;musicState=savedMusicState;
+         syncMusic(true);
+         try{unlinkSync(qaMp3);}catch{}
+        }
         const windowAudit=nativeWindowAudit([{role:'pet',window:win},...(diagnostics?[{role:'diagnostics',window:diagnostics}]:[]),...(speechWindow?[{role:'speech',window:speechWindow}]:[])]);
         writeFileSync(reportFile,JSON.stringify({passed:true,windowAudit,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dragSizeInvariant,dynamicTiming,compositing,speechEdges,clearRegions,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,musicQa,dragSizeInvariant,dynamicTiming,compositing,speechEdges,clearRegions,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,commandSequence,recentCommandTrace:commandTrace.slice(-16),error:String(error)}));app.exit(1); }
     });
