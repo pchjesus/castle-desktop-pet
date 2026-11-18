@@ -15,6 +15,42 @@ The initial prototype and all pre-migration runtime sources are preserved on bra
 
 Run `npm start` for B as the visible desktop pet. `preview.html` and `preview-offline.zip` contain B visual comparisons and user-entered notes.
 
+## B-21 local MP3 player (Draft, user QA pending)
+
+Right-click Akila → **음악** to choose local MP3 files, play/pause, skip, change
+volume, manage the playlist and toggle list repeat. Audio continues when the
+right-click panel closes: playback runs inside the persistent pet renderer, not
+the disposable menu window. The native file chooser accepts multiple MP3s and
+stores **only local paths plus settings** under Electron userData in
+`music-playlist.json`. Tracks are not copied or uploaded. Maximum: 200 tracks,
+1 GiB per file. Files are read on demand via a private Electron custom protocol
+with HTTP-style byte ranges (64 KiB file-stream chunks): neither the whole MP3
+nor a duplicate copy is kept in memory. Thus single 2+ hour tracks and even
+roughly 6-hour 320 kbps MP3 compilations fit. The original files must remain
+in their selected folders. Only the persistent pet renderer can request a
+short-lived random stream ticket; the menu cannot read file contents.
+
+Optional **박자 사격** is OFF by default, samples low-frequency transients via
+the Web Audio API and briefly displays the existing firing sprite on occasional
+strong beats, with a hard 11-second minimum gap. This does **not** call the
+behavior controller's manual action or change its timers. Respect the existing
+automatic firing OFF preference. Automatic speech lines are otherwise
+untouched; additional music-only lines:
+- End of non-repeating playlist: `오늘은 여기까지다.`
+- Manually raising player volume to 50–79%: `시끄럽군.`
+- Manually raising player volume to 80–100%: `네놈 고막은 티타늄이라도 되나?`
+  The higher band overrides the lower one; each has its own 60-second cooldown.
+  Lowering volume, initial loading, and unchanged volume never trigger a line.
+
+Playlists are not shipped with any music. An original synthetic MP3 in the
+codebase is used solely by Windows automated playback QA; it is never a
+playlist track in production. Long-file range semantics are covered by tests;
+actual uninterrupted multi-hour Windows playback remains to be verified.
+
+This feature is based on **B-20.1 PR #20** (menu stays open + Basic skin choice)
+and is developed separately in **Draft PR #21**. Before approval, neither the
+production `main` branch nor the existing public installer release changes.
+
 ## B-20 blouson skin (Draft PR; not released)
 
 The B-20 work branch adds nine separately mapped transparent **blue/olive blouson** Akila PNGs at `src/characters/candidates/a-blouson-b20/`, derived from the user-selected 3×3 design sheet. Image files are 1024×1600 and checked by SHA-256 in `tests/b20-blouson.test.mjs`; original mustang source and derived images remain unmodified.

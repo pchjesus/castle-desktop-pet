@@ -8,10 +8,14 @@ import {speechBounds} from './speech-bounds.mjs';
 import {loadSettings,saveSettings} from '../src/behavior/settings-store.mjs';
 import {normalizeSettings} from '../src/behavior/controller.mjs';
 import {DEFAULT_ACTION_WEIGHTS,ACTION_WEIGHT_LIMIT,validInterval} from '../src/behavior/cadence.mjs';
-import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, powerMonitor, desktopCapturer, dialog, protocol } from 'electron';
 import {dialogues} from '../src/behavior/dialogues.mjs';
 import {watchWindowsEvents} from '../src/behavior/windows-event-adapter.mjs';
-import { readFileSync, writeFileSync, appendFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, appendFileSync, statSync, unlinkSync } from 'node:fs';
+import {randomBytes} from 'node:crypto';
+import {streamSelectedMp3} from '../src/music/mp3-stream.mjs';
+import {normalizeLibrary,normalizeMusicSettings,trackTitle,MAX_MP3_BYTES} from '../src/music/music-library.mjs';
+import {QA_MP3_BASE64} from './music-qa-tone.mjs';
 import { join, dirname } from 'node:path';
 import { mkdirSync } from 'node:fs';
 import { constrain } from './geometry.mjs';
@@ -45,6 +49,55 @@ function loadSkin(){
 function saveSkin(){
  try{writeFileSync(skinPath(),JSON.stringify({skin:activeSkin}));}
  catch(error){log('Skin preference save failed: '+String(error));}
+}
+// Music is local-only: only native-picker-approved paths are stored in userData.
+// The pet renderer gets a short-lived, random stream ticket, never an arbitrary file path.
+const musicTickets=new Map<string,string>();
+let musicFiles:string[]=[];
+let musicPrefs=normalizeMusicSettings(null);
+let musicState={index:0,playing:false,time:0,duration:0,error:''};
+let musicDialogOpen=false;
+const musicPath=()=>join(app.getPath('userData'),'music-playlist.json');
+function readMusic(){
+ musicTickets.clear();
+ try{
+  const parsed=JSON.parse(readFileSync(musicPath(),'utf8'));
+  musicFiles=normalizeLibrary(parsed?.files);
+  musicPrefs=normalizeMusicSettings(parsed);
+ }catch{musicFiles=[];musicPrefs=normalizeMusicSettings(null);}
+}
+function saveMusic(){
+ try{writeFileSync(musicPath(),JSON.stringify({files:musicFiles,...musicPrefs}));}
+ catch(error){log('MP3 library save failed: '+String(error));}
+}
+function musicSnapshot(){
+ return {tracks:musicFiles.map(trackTitle),...musicState,...musicPrefs};
+}
+function musicCommand(payload:Record<string,unknown>){
+ if(win&&!win.isDestroyed()&&!win.webContents.isLoading())win.webContents.send('pet:music',payload);
+}
+function syncMusic(init=false){
+ musicCommand({action:init?'init':'library',tracks:musicFiles.map(trackTitle),...musicPrefs,index:musicState.index});
+}
+async function selectMusicFiles(){
+ if(musicDialogOpen)return;
+ musicDialogOpen=true;
+ const popup=menuWindow&&!menuWindow.isDestroyed()?menuWindow:win;
+ try{
+  const choice=await dialog.showOpenDialog(popup,{
+   title:'아킬라 플레이리스트 · MP3 파일 선택',
+   filters:[{name:'MP3 음악',extensions:['mp3']}],
+   properties:['openFile','multiSelections']
+  });
+  if(!choice.canceled&&choice.filePaths.length){
+   musicFiles=normalizeLibrary([...musicFiles,...choice.filePaths]);
+   saveMusic();syncMusic();
+  }
+ }catch(error){log('MP3 file picker failed: '+String(error));}
+ finally{
+  musicDialogOpen=false;
+  if(menuWindow&&!menuWindow.isDestroyed()){menuWindow.show();menuWindow.focus();}
+ }
 }
 const defaults = { x: 100, y: 100, ...dimensionsFor(DEFAULT_PET_WIDTH) };
 const path = () => join(app.getPath('userData'), 'window.json');
@@ -134,7 +187,7 @@ function openPetMenu(showInSmoke=false) {
  // Actual near-black panel; no native Acrylic (which appeared opaque white).
  popup.on('system-context-menu',event=>event.preventDefault());
  popup.on('closed',()=>{if(menuWindow===popup){menuWindow=undefined;menuGesture=undefined;}});
- if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup)closePetMenu();});
+ if(!isSmoke||showInSmoke) popup.on('blur',()=>{if(menuWindow===popup&&!musicDialogOpen)closePetMenu();});
  popup.webContents.on('did-fail-load',(_event,code,reason)=>log('custom menu load failed '+code+': '+reason));
  popup.loadFile(join(__dirname,'pet-menu.html'),{query:{size:String(win.getBounds().width),skin:activeSkin,...Object.fromEntries(Object.entries(behaviorSettings).filter(([k])=>k!=='actionWeights').map(([k,v])=>[k,String(v)])),weights:JSON.stringify(behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS)}})
   .then(()=>{if((!isSmoke||showInSmoke) && !popup.isDestroyed())popup.show();})
@@ -142,6 +195,10 @@ function openPetMenu(showInSmoke=false) {
  return popup;
 }
 // Read-only menu snapshot. Only the active sandboxed menu renderer may access it.
+ipcMain.handle('pet-menu:get-music',event=>{
+ if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
+ return musicSnapshot();
+});
 ipcMain.handle('pet-menu:get-info',event=>{
  if(!menuWindow||menuWindow.isDestroyed()||event.sender!==menuWindow.webContents)return null;
  return {favorites:loadFavorites(),status:{skin:activeSkin,positionLocked,dialogueStyle:behaviorSettings.dialogueStyle,pose:currentPose,base:behaviorSettings.base,autonomy:behaviorSettings.autonomy,dialogueEnabled:behaviorSettings.dialogueEnabled,autoFire:behaviorSettings.autoFire,movementFrequency:behaviorSettings.movementFrequency,dialogueFrequency:behaviorSettings.dialogueFrequency,movementIntervalMin:behaviorSettings.movementIntervalMin,dialogueIntervalMin:behaviorSettings.dialogueIntervalMin,shotCooldownMin:behaviorSettings.shotCooldownMin,actionWeights:behaviorSettings.actionWeights||DEFAULT_ACTION_WEIGHTS},
@@ -203,6 +260,39 @@ const commandTrace:Record<string,unknown>[]=[];let commandSequence=0;
 function sendManualPose(pose:string){const id=++commandSequence;commandTrace.push({phase:'sent',commandId:id,pose,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();win.webContents.send('pet:action',{kind:'manual',id,pose});return id;}
 function dispatchPetMenuCommand(command:string) {
  if(!win || win.isDestroyed())return;
+ if(command==='music:add'){void selectMusicFiles();return;}
+ if(command==='music:clear'){
+  musicTickets.clear();musicFiles=[];musicState={index:0,playing:false,time:0,duration:0,error:''};
+  saveMusic();musicCommand({action:'stop'});syncMusic();return;
+ }
+ if(command.startsWith('music:remove:')){
+  const value=command.slice('music:remove:'.length),idx=Number(value);
+  if(!/^\\d+$/.test(value)||!Number.isSafeInteger(idx)||idx<0||idx>=musicFiles.length)return;
+  musicTickets.clear();musicFiles.splice(idx,1);
+  musicState={index:0,playing:false,time:0,duration:0,error:''};
+  saveMusic();musicCommand({action:'stop'});syncMusic();return;
+ }
+ if(command==='music:play'||command==='music:pause'||command==='music:stop'||command==='music:next'||command==='music:previous'){
+  musicCommand({action:command.slice(6)});return;
+ }
+ if(command.startsWith('music:select:')){
+  const value=command.slice('music:select:'.length),idx=Number(value);
+  if(!/^\\d+$/.test(value)||!Number.isSafeInteger(idx)||idx<0||idx>=musicFiles.length)return;
+  musicCommand({action:'select',index:idx});return;
+ }
+ if(command.startsWith('music:volume:')){
+  const value=command.slice('music:volume:'.length),volume=Number(value);
+  if(!/^\\d+$/.test(value)||!Number.isInteger(volume)||volume<0||volume>100)return;
+  musicPrefs.volume=volume;saveMusic();musicCommand({action:'volume',volume});return;
+ }
+ if(command==='music:rhythm:true'||command==='music:rhythm:false'){
+  musicPrefs.rhythmFire=command.endsWith(':true');saveMusic();
+  musicCommand({action:'rhythm',rhythmFire:musicPrefs.rhythmFire});return;
+ }
+ if(command==='music:repeat:true'||command==='music:repeat:false'){
+  musicPrefs.repeat=command.endsWith(':true');saveMusic();
+  musicCommand({action:'repeat',repeat:musicPrefs.repeat});return;
+ }
  if(command==='skin:mustang'||command==='skin:blouson'){
   const skin=command.slice(5) as Skin;
   if(skin!==activeSkin){
@@ -291,12 +381,27 @@ function nativeFrameless() {
 // npm start remains supported; it has no packaged runtime marker.
 const hasPortableMarker=(()=>{try{readFileSync(join(__dirname,'../castle-runtime.json'));return true;}catch{return false;}})();
 const validPortableLaunch=!hasPortableMarker||process.argv.includes('--castle-pet-launcher');
+// Playback only starts following a user action in the local music menu.
+app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required');
+// Must be registered before app.whenReady(), or Chromium will buffer media
+// instead of fetching bounded byte ranges from the local stream handler.
+protocol.registerSchemesAsPrivileged([{scheme:'castle-mp3',privileges:{standard:true,secure:true,stream:true,corsEnabled:true,supportFetchAPI:true}}]);
 const singleInstance=app.requestSingleInstanceLock();
 if(!singleInstance)app.quit();
 app.on('second-instance',()=>{if(win&&!win.isDestroyed()){win.show();dialog.showMessageBox(win,{type:'info',title:'캐슬 펫',message:'이미 실행 중인 펫이 있습니다.',detail:'새 검수 버전은 기존 펫을 우클릭 → 펫 종료로 닫은 뒤 실행해 주세요.'});}});
 app.whenReady().then(() => {
   if(!singleInstance)return;
   if(!validPortableLaunch){dialog.showErrorBox('캐슬 펫 실행 방법','ZIP 전체를 먼저 압축 풀기 한 뒤, 최상위 CastlePet.exe를 실행하세요.');app.quit();return;}
+  protocol.handle('castle-mp3',async request=>{
+   try{
+    const target=new URL(request.url);
+    const ticket=target.pathname.slice(1);
+    if(target.hostname!=='track'||target.search||target.hash||!/^[a-f0-9]{48}$/.test(ticket))return new Response(null,{status:403});
+    const filename=musicTickets.get(ticket);
+    if(!filename||!musicFiles.includes(filename))return new Response(null,{status:403});
+    return await streamSelectedMp3(filename,request.headers.get('range'),request.signal,request.method);
+   }catch(error){log('Local MP3 stream failed: '+String(error));return new Response(null,{status:404});}
+  });
   try{const last=JSON.parse(readFileSync(path(),'utf8'));positionLocked=last?.positionLocked===true;
    if(positionLocked)positionAnchor=restoreWindowBounds(last);
   }catch{positionLocked=false;positionAnchor=null;}
@@ -352,8 +457,9 @@ app.whenReady().then(() => {
   win.on('system-context-menu',event=>{event.preventDefault();log('Windows system context menu suppressed');});
   win.webContents.on('did-fail-load',(_event,code,message)=>log(`pet load ${code}: ${message}`));
   log('launch '+JSON.stringify({portable:hasPortableMarker,validated:validPortableLaunch,executable:process.execPath,entry:__filename,resources:process.resourcesPath}));
-  readBehavior();loadSkin();
-  win.loadFile(join(__dirname, '../dist/index.html'),{query:{...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)])),skin:activeSkin}});
+  readBehavior();loadSkin();readMusic();
+  win.loadFile(join(__dirname, '../dist/index.html'),{query:{...Object.fromEntries(Object.entries(behaviorSettings).map(([k,v])=>[k,String(v)])),skin:activeSkin}})
+    .then(()=>syncMusic(true)).catch(error=>log('Music initialization failed: '+String(error)));
   // Windows setPosition/custom drag emits move; moved is not guaranteed for
   // programmatic movement. Keep speech attached throughout the drag.
   win.on('move',()=>positionSpeech());
@@ -384,7 +490,7 @@ app.whenReady().then(() => {
    restoreDragSize('drag-end');
    drag=null;save();
   }
-  const isPet=(event:Electron.IpcMainEvent)=>!win.isDestroyed()&&event.sender===win.webContents;
+  const isPet=(event:{sender:Electron.WebContents})=>!win.isDestroyed()&&event.sender===win.webContents;
   ipcMain.on('pet:action-result',(event,value)=>{
    if(!isPet(event)||!value||typeof value!=='object'||!['received','accepted','blocked','requested','rendered','reused','failed','superseded'].includes(value.phase)||!Number.isSafeInteger(value.commandId)||value.commandId<0||value.commandId>commandSequence)return;
    const {phase,pose,commandId,version,documentHidden,hidden,source}=value;
@@ -393,6 +499,25 @@ app.whenReady().then(() => {
    commandTrace.push({phase,pose,commandId,version,documentHidden,hidden,source,at:Date.now()});if(commandTrace.length>256)commandTrace.shift();
   });
   ipcMain.on('pet:speech',(event,text)=>{if(isPet(event)&&typeof text==='string'&&text.length<=2000)updateSpeech(text);});
+  ipcMain.handle('pet:music-url',(event,index)=>{
+   if(!isPet(event)||!Number.isSafeInteger(index)||index<0||index>=musicFiles.length)throw Error('Unauthorized local MP3 request');
+   const filename=musicFiles[index];
+   const stat=statSync(filename);
+   if(!stat.isFile()||stat.size<=0||stat.size>MAX_MP3_BYTES)throw Error('Unsupported or oversized MP3 file');
+   // Each selection gets an opaque ticket, and removed tracks lose access.
+   musicTickets.clear();
+   const ticket=randomBytes(24).toString('hex');
+   musicTickets.set(ticket,filename);
+   return 'castle-mp3://track/'+ticket;
+  });
+  ipcMain.on('pet:music-status',(event,value)=>{
+   if(!isPet(event)||!value||typeof value!=='object')return;
+   const index=Number(value.index),time=Number(value.time),duration=Number(value.duration);
+   if(!Number.isSafeInteger(index)||index<0||index>=Math.max(1,musicFiles.length)||typeof value.playing!=='boolean'
+      ||!Number.isFinite(time)||time<0||!Number.isFinite(duration)||duration<0)return;
+   musicState={index,playing:value.playing,time:Math.min(time,1e7),duration:Math.min(duration,1e7),
+    error:typeof value.error==='string'?value.error.slice(0,160):''};
+  });
   ipcMain.on('speech:measure',(event,height,width)=>{
    if(!speechWindow||speechWindow.isDestroyed()||event.sender!==speechWindow.webContents||typeof height!=='number'||!Number.isFinite(height)||height<1||height>2000)return;
    if(typeof width!=='number'||!Number.isFinite(width)||width<1||width>2000)return;
@@ -430,7 +555,7 @@ app.whenReady().then(() => {
     // Manual poses are repeatable commands, not dismiss actions. Keep the
     // existing menu open so several poses can be inspected in succession.
     // Explicit Close/Escape, click-away blur, Quit and diagnostics retain their behavior.
-    if(command.startsWith('pose:')||command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')||command==='skin:mustang'||command==='skin:blouson'){
+    if(command.startsWith('music:')||command.startsWith('pose:')||command.startsWith('setting:weight:')||command.startsWith('setting:interval:')||command==='setting:weights:reset'||command.startsWith('favorite:')||command.startsWith('setting:dialogueStyle:')||command.startsWith('setting:positionLock:')||command==='skin:mustang'||command==='skin:blouson'){
      dispatchPetMenuCommand(command);return;
     }
     closePetMenu();
@@ -667,9 +792,46 @@ app.whenReady().then(() => {
         let behavior132;
         try{behavior132=await behaviorQa(win,()=>openPetMenu(true),commandTrace,resizePet,join(dirname(reportFile),'windows-b13-2-captures'));}
         finally{behaviorSettings=savedBehavior;saveSettings(join(app.getPath('userData'),'behavior.json'),behaviorSettings);win.webContents.send('pet:action','settings:'+JSON.stringify(behaviorSettings));}
+        // B-21 native QA: a small, original synthetic MP3 goes through the
+        // same local ticketed, ranged streaming decoder used for selected MP3 files.
+        const savedMusicFiles=musicFiles.slice(),savedMusicPrefs={...musicPrefs},savedMusicState={...musicState};
+        const qaMp3=join(app.getPath('userData'),'castle-b21-qa-sine.mp3');
+        let musicQa:{passed:boolean;duration:number;playing:boolean;stayedPlayingWithAnalysis:boolean};
+        writeFileSync(qaMp3,Buffer.from(QA_MP3_BASE64,'base64'));
+        try{
+         musicFiles=[qaMp3];
+         musicPrefs={volume:25,rhythmFire:false,repeat:true};
+         musicState={index:0,playing:false,time:0,duration:0,error:''};
+         syncMusic(true);
+         await new Promise(resolve=>setTimeout(resolve,150));
+         musicCommand({action:'play'});
+         let decoded=false;
+         for(let i=0;i<55;i++){
+          await new Promise(resolve=>setTimeout(resolve,100));
+          if(musicState.playing&&musicState.duration>0){decoded=true;break;}
+         }
+         if(!decoded)throw Error('B21 local test MP3 failed to decode/play: '+JSON.stringify(musicState));
+         const duration=musicState.duration;
+         musicCommand({action:'rhythm',rhythmFire:true});
+         let stayedPlayingWithAnalysis=false;
+         // 0.2-second QA sample is replayed on repeat; observe across its
+         // transient load gap instead of sampling precisely between loops.
+         for(let i=0;i<12;i++){
+          await new Promise(resolve=>setTimeout(resolve,100));
+          if(musicState.playing&&musicState.duration>0){stayedPlayingWithAnalysis=true;break;}
+         }
+         if(!stayedPlayingWithAnalysis)throw Error('B21 MP3 stopped when beat analysis enabled: '+JSON.stringify(musicState));
+         musicCommand({action:'pause'});
+         musicQa={passed:true,duration,playing:decoded,stayedPlayingWithAnalysis};
+        }finally{
+         musicCommand({action:'stop'});
+         musicFiles=savedMusicFiles;musicPrefs=savedMusicPrefs;musicState=savedMusicState;
+         syncMusic(true);
+         try{unlinkSync(qaMp3);}catch{}
+        }
         const windowAudit=nativeWindowAudit([{role:'pet',window:win},...(diagnostics?[{role:'diagnostics',window:diagnostics}]:[]),...(speechWindow?[{role:'speech',window:speechWindow}]:[])]);
         writeFileSync(reportFile,JSON.stringify({passed:true,windowAudit,startWidth,resizeChecked,manualPoseChecked,approvedPoseChecked,
-          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,dragSizeInvariant,dynamicTiming,compositing,speechEdges,clearRegions,
+          menuRequests,hitChanges,mouseQa,menuChrome,menuQA,resizedFromMenu,behavior132,musicQa,dragSizeInvariant,dynamicTiming,compositing,speechEdges,clearRegions,
           nativeFrameless:chrome,...result,...interactions}));app.quit();
       } catch(error) { writeFileSync(reportFile,JSON.stringify({passed:false,resizeChecked,nativeFrameless:chrome,qaStage,commandSequence,recentCommandTrace:commandTrace.slice(-16),error:String(error)}));app.exit(1); }
     });

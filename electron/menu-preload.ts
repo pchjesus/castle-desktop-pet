@@ -4,4 +4,5 @@ contextBridge.exposeInMainWorld('castleMenu',{
  dismiss:()=>ipcRenderer.send('pet-menu:dismiss'),
  windowControl:(command:string)=>ipcRenderer.send('pet-menu:window-control',command),
  getInfo:()=>ipcRenderer.invoke('pet-menu:get-info'),
+ getMusic:()=>ipcRenderer.invoke('pet-menu:get-music'),
 });

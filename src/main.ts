@@ -2,6 +2,7 @@ import {createAkila,type PetState} from './characters/akila';
 import {mountPet} from './renderer/pet';
 import {installPetMouse} from './renderer/mouse-interaction';
 import {createBehavior,normalizeSettings} from './behavior/controller.mjs';
+import {createLocalMusicPlayer} from './music/player';
 import './style.css';
 const root=document.querySelector<HTMLDivElement>('#app')!;
 const params=new URL(location.href).searchParams;
@@ -16,6 +17,7 @@ const nativeSpeech=typeof window.pet?.showSpeech==='function';
 bubble.dataset.native=String(nativeSpeech);
 document.body.style.visibility='visible';
 let manualId=0,manualCallActive=false,renderContext={source:'base',commandId:0};
+let musicVisualTimer:number|undefined,musicLineTimer:number|undefined;
 const pendingRenders=new Map<number,typeof renderContext>();
 function trace(value:Record<string,unknown>){window.pet?.reportAction?.(value);root.dispatchEvent(new CustomEvent('pet-qa',{detail:value}));}
 root.addEventListener('pet-render',((event:CustomEvent)=>{
@@ -24,11 +26,45 @@ root.addEventListener('pet-render',((event:CustomEvent)=>{
  const context=pendingRenders.get(value.version)||{source:'base',commandId:0};
  trace({...value,...context});
 }) as EventListener);
-const behavior=createBehavior({settings,render:(pose,context)=>{renderContext={source:context?.source||'base',commandId:manualCallActive||context?.source==='manual'?manualId:0};livePet.set(pose)},speak:(text,record)=>{bubble.textContent=text;bubble.hidden=!text||nativeSpeech;bubble.dataset.dialogue=record?.id||'';if(nativeSpeech)window.pet!.showSpeech!(text);},reduced:()=>matchMedia('(prefers-reduced-motion: reduce)').matches});
+const behavior=createBehavior({settings,render:(pose,context)=>{
+ if(musicVisualTimer!==undefined){clearTimeout(musicVisualTimer);musicVisualTimer=undefined;}
+ renderContext={source:context?.source||'base',commandId:manualCallActive||context?.source==='manual'?manualId:0};
+ livePet.set(pose);
+},speak:(text,record)=>{
+ if(musicLineTimer!==undefined){clearTimeout(musicLineTimer);musicLineTimer=undefined;}
+ bubble.textContent=text;bubble.hidden=!text||nativeSpeech;bubble.dataset.dialogue=record?.id||'';
+ if(nativeSpeech)window.pet!.showSpeech!(text);
+},reduced:()=>matchMedia('(prefers-reduced-motion: reduce)').matches});
 installPetMouse(root,{click:()=>{manualId=0;behavior.click()},dragStart:()=>{manualId=0;behavior.drag()},dragEnd:behavior.dragEnd});
 const permitted=new Set<PetState>(['idle','smoking','working','drawing','firing','sitting','dual_firing','firing_dynamic','speaking']);
 let suspended=false;
 const nativeWindow=window.pet?.nativeWindow===true;
+// MP3 playback has its own lifetime. A beat only overlays an existing firing
+// image briefly; it never calls behavior.manual() or resets autonomy timers.
+const musicPlayer=createLocalMusicPlayer(window.pet,{
+ onBeat:()=>{
+  const state=behavior.snapshot();
+  if(suspended||state.hidden||!state.settings.autoFire||state.mode==='manual'||musicVisualTimer!==undefined)return;
+  if(!['idle','smoking','sitting','working'].includes(state.pose))return;
+  livePet.set('firing');
+  musicVisualTimer=window.setTimeout(()=>{
+   musicVisualTimer=undefined;
+   livePet.set(behavior.snapshot().pose as PetState);
+  },550);
+ },
+ onLine:(line)=>{
+  const state=behavior.snapshot();
+  if(suspended||state.hidden||state.speechUntil>Date.now())return;
+  bubble.textContent=line;bubble.hidden=nativeSpeech;
+  if(nativeSpeech)window.pet?.showSpeech?.(line);
+  if(musicLineTimer!==undefined)clearTimeout(musicLineTimer);
+  musicLineTimer=window.setTimeout(()=>{
+   musicLineTimer=undefined;bubble.hidden=true;
+   if(nativeSpeech)window.pet?.showSpeech?.('');
+  },3700);
+ }
+});
+const unsubscribeMusic=window.pet?.onMusic?.(value=>{void musicPlayer.command(value);});
 const effectivelyHidden=()=>suspended||(!nativeWindow&&document.hidden);
 function updateVisibility(){const hidden=effectivelyHidden();root.dispatchEvent(new CustomEvent('pet-visibility',{detail:hidden}));behavior.visibility(hidden);}
 function manual(pose:PetState,id=0){manualId=id;trace({phase:'received',pose,commandId:id,documentHidden:document.hidden,suspended});manualCallActive=true;let accepted;try{accepted=behavior.manual(pose);}finally{manualCallActive=false;}trace({phase:accepted?'accepted':'blocked',pose,commandId:id,hidden:behavior.snapshot().hidden});}
@@ -57,4 +93,9 @@ const unsubscribe=window.pet?.onAction((state)=>{
  if(permitted.has(state as PetState)) manual(state as PetState);
 });
 document.addEventListener('visibilitychange',updateVisibility);
-window.addEventListener('pagehide',()=>{behavior.dispose();livePet.dispose();unsubscribe?.();});
+window.addEventListener('pagehide',()=>{
+ if(musicVisualTimer!==undefined)clearTimeout(musicVisualTimer);
+ if(musicLineTimer!==undefined)clearTimeout(musicLineTimer);
+ musicPlayer.dispose();unsubscribeMusic?.();
+ behavior.dispose();livePet.dispose();unsubscribe?.();
+});
