@@ -1,6 +1,6 @@
 import {basename,extname,normalize,isAbsolute,win32} from 'node:path';
 export const MAX_TRACKS=200;
-export const MAX_MP3_BYTES=80*1024*1024;
+export const MAX_MP3_BYTES=1024*1024*1024; // 1 GiB; handled by ranged streaming, not memory copying.
 export function validMp3Path(file){return typeof file==='string'&&file.length>0&&file.length<4096&&(isAbsolute(file)||win32.isAbsolute(file))&&!file.startsWith('\\\\')&&extname(file).toLowerCase()==='.mp3';}
 export function trackTitle(file){return basename(file).replace(/\.mp3$/i,'').slice(0,130);}
 export function normalizeLibrary(source){
