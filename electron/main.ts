@@ -794,8 +794,13 @@ app.whenReady().then(() => {
          if(!decoded)throw Error('B21 local test MP3 failed to decode/play: '+JSON.stringify(musicState));
          const duration=musicState.duration;
          musicCommand({action:'rhythm',rhythmFire:true});
-         await new Promise(resolve=>setTimeout(resolve,300));
-         const stayedPlayingWithAnalysis=musicState.playing;
+         let stayedPlayingWithAnalysis=false;
+         // 0.2-second QA sample is replayed on repeat; observe across its
+         // transient load gap instead of sampling precisely between loops.
+         for(let i=0;i<12;i++){
+          await new Promise(resolve=>setTimeout(resolve,100));
+          if(musicState.playing&&musicState.duration>0){stayedPlayingWithAnalysis=true;break;}
+         }
          if(!stayedPlayingWithAnalysis)throw Error('B21 MP3 stopped when beat analysis enabled: '+JSON.stringify(musicState));
          musicCommand({action:'pause'});
          musicQa={passed:true,duration,playing:decoded,stayedPlayingWithAnalysis};
