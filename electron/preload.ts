@@ -3,7 +3,7 @@ contextBridge.exposeInMainWorld('pet',{
  nativeWindow:true,
  reportAction:(value:Record<string,unknown>)=>ipcRenderer.send('pet:action-result',value),
  showSpeech:(text:string)=>ipcRenderer.send('pet:speech',text),
- musicFile:(index:number)=>ipcRenderer.invoke('pet:music-file',index),
+ musicUrl:(index:number)=>ipcRenderer.invoke('pet:music-url',index),
  musicStatus:(value:Record<string,unknown>)=>ipcRenderer.send('pet:music-status',value),
  onMusic:(callback:(value:Record<string,unknown>)=>void)=>{
   const listener=(_event:Electron.IpcRendererEvent,value:Record<string,unknown>)=>callback(value);
