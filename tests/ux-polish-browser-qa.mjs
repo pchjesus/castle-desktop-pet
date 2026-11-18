@@ -5,11 +5,30 @@ const report={passed:false,environment:'Chromium browser; native Windows is a se
 try{
  browser=await chromium.launch({executablePath:process.env.CASTLE_CHROMIUM||undefined});const page=await browser.newPage({viewport:{width:560,height:610}});const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  page.on('pageerror',error=>report.errors.push(String(error)));
- await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
+ await page.addInitScript(()=>{Math.random=()=>.1;window.pet={nativeWindow:true,onAction:fn=>{window.__manual=fn;return()=>{}},showSpeech:text=>{window.__line=text},showMenu:()=>{},setPassthrough:()=>{},dragStart:()=>{},dragMove:()=>{},dragEnd:()=>{}};window.castleMenu={getMusic:async()=>({tracks:['Castle Theme','Working Mix'],index:0,playing:false,time:12,duration:180,volume:65,rhythmFire:false,repeat:false,error:''}),invoke:command=>{window.__command=command},dismiss:()=>{window.__dismissed=true},windowControl:command=>{window.__windowControl=command},getInfo:async()=>({status:{pose:'sitting',base:'smoking',autonomy:false,dialogueEnabled:true,autoFire:false,movementFrequency:'default',dialogueFrequency:'active',movementIntervalMin:3,dialogueIntervalMin:5,shotCooldownMin:4},dialogues:[{id:'B14-SIT-01',text:'자, 최후변론을 해라',origin:'original candidate pending verification',approval:'confirmed',poses:['sitting'],triggers:['pose-entry']},{id:'B14-DRAW-01',text:'웃음이 최후변론인가',origin:'original candidate pending verification',approval:'confirmed',poses:['drawing'],triggers:['pose-entry']},{id:'C-08',text:'왜 그러지?',origin:'original creative',approval:'proposed',poses:[],triggers:['click']}]})};});
  await page.goto(origin+'/electron/pet-menu.html?autonomy=false&dialogueEnabled=true');
- for(const tab of ['basic','frequency','poses','more']){
+ for(const tab of ['basic','frequency','poses','music','more']){
   await page.locator('[data-tab="'+tab+'"]').click();const metrics=await page.locator('[data-panel="'+tab+'"]').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,buttons:el.querySelectorAll('button').length}));report.menu.push({tab,...metrics});await page.screenshot({path:output+'/menu-'+tab+'-browser.png'});assert(metrics.height>0&&(tab==='frequency'||metrics.scroll<=metrics.height+1));if(tab==='more')assert.equal(await page.locator('[data-more-view="home"] [data-more-open]').count(),6);
  }
+ await page.locator('#tab-music').click();
+ await page.waitForFunction(()=>document.querySelectorAll('#music-list [data-music-select]').length===2);
+ assert.equal(await page.locator('#music-title').innerText(),'Castle Theme');
+ await page.locator('[data-music="play"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:play');
+ await page.locator('[data-music="next"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:next');
+ await page.locator('[data-music-select="1"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:select:1');
+ await page.locator('#music-rhythm').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:rhythm:true');
+ await page.locator('#music-repeat').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:repeat:true');
+ await page.locator('#music-volume').fill('95');
+ await page.locator('#music-volume').dispatchEvent('change');
+ assert.equal(await page.evaluate(()=>window.__command),'music:volume:95');
+ await page.locator('[data-music="add"]').click();
+ assert.equal(await page.evaluate(()=>window.__command),'music:add');
+ report.checks.push('B21 music menu controls and local song titles, no network required');
  const panel=await page.locator('main').evaluate(el=>{const style=getComputedStyle(el);return {background:style.backgroundColor,radius:style.borderRadius,opacity:parseFloat(style.backgroundColor.split(',').at(-1)),blur:style.backdropFilter}});
  assert(panel.background.includes('rgba('));assert(panel.opacity>=.9);assert.equal(panel.radius,'0px');assert.equal(panel.blur,'none');
  for(const corner of ['nw','ne','sw','se']){
