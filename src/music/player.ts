@@ -25,7 +25,7 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
  const audio=new Audio();
  audio.preload='auto';
  let tracks:string[]=[],index=0,volume=65,rhythmFire=false,repeat=false;
- let fileUrl:string|null=null,playToken=0,loadToken=0;
+ let fileUrl:string|null=null,loadToken=0;
  let analyser:AnalyserNode|null=null,ctx:AudioContext|null=null;
  let bins:Uint8Array<ArrayBuffer>|null=null,frame=0;
  let lastShotAt=0,lastLoudLineAt=-Infinity;
@@ -128,8 +128,14 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
   await loadSong(next,true);
  }
  function setLibrary(next:string[]){
+  const previous=tracks[index];
   tracks=Array.isArray(next)?next.filter(x=>typeof x==='string').slice(0,200):[];
-  if(index>=tracks.length){audio.pause();audio.removeAttribute('src');revokeFile();index=0;stopBeatLoop();}
+  // If the playing item was removed or shifted, never keep its orphaned blob
+  // alive under another track's title. Appending tracks preserves playback.
+  if(index>=tracks.length||tracks[index]!==previous){
+   loadToken++;audio.pause();audio.removeAttribute('src');audio.load();
+   revokeFile();index=0;stopBeatLoop();beat.reset();
+  }
   publish();
  }
  async function command(value:MusicCommand){
@@ -149,7 +155,7 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
    case 'previous':await step(-1);return;
    case 'next':await step(1);return;
    case 'select':
-    if(Number.isInteger(value.index)&&value.index!>=0)await loadSong(value.index!,true);
+    if(Number.isInteger(value.index)&&typeof value.index==='number'&&value.index>=0&&value.index<tracks.length)await loadSong(value.index,true);
     return;
    case 'volume':updateVolume(value.volume??volume,true);return;
    case 'rhythm':
