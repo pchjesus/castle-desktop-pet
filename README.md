@@ -23,7 +23,12 @@ right-click panel closes: playback runs inside the persistent pet renderer, not
 the disposable menu window. The native file chooser accepts multiple MP3s and
 stores **only local paths plus settings** under Electron userData in
 `music-playlist.json`. Tracks are not copied or uploaded. Maximum: 200 tracks,
-80 MB per file. The originals must remain in their selected folders.
+1 GiB per file. Files are read on demand via a private Electron custom protocol
+with HTTP-style byte ranges (64 KiB file-stream chunks): neither the whole MP3
+nor a duplicate copy is kept in memory. Thus single 2+ hour tracks and even
+roughly 6-hour 320 kbps MP3 compilations fit. The original files must remain
+in their selected folders. Only the persistent pet renderer can request a
+short-lived random stream ticket; the menu cannot read file contents.
 
 Optional **박자 사격** is OFF by default, samples low-frequency transients via
 the Web Audio API and briefly displays the existing firing sprite on occasional
@@ -39,7 +44,8 @@ untouched; additional music-only lines:
 
 Playlists are not shipped with any music. An original synthetic MP3 in the
 codebase is used solely by Windows automated playback QA; it is never a
-playlist track in production.
+playlist track in production. Long-file range semantics are covered by tests;
+actual uninterrupted multi-hour Windows playback remains to be verified.
 
 This feature is based on **B-20.1 PR #20** (menu stays open + Basic skin choice)
 and is developed separately in **Draft PR #21**. Before approval, neither the
