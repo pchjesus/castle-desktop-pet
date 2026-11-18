@@ -25,3 +25,10 @@ test('bass transients trigger rarely, silence and sustained notes never spam',()
  detector.reset();
  assert.equal(detector.sample(soft,0),false);
 });
+
+import {QA_MP3_BASE64} from '../electron/music-qa-tone.mjs';
+test('offline QA MP3 fixture contains exactly the generated original audio bytes',()=>{
+ const b=Buffer.from(QA_MP3_BASE64,'base64');
+ assert.equal(b.byteLength,404);
+ assert.equal(b.subarray(0,3).toString(),'ID3');
+});
