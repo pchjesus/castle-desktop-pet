@@ -44,6 +44,38 @@ export async function behaviorQa(win:BrowserWindow,openMenu:()=>BrowserWindow|un
  if(transient.length)throw Error('Unexpected intermediate Smoking during manual action: '+JSON.stringify(transient));
  const commands=[];
  for(const pose of ['idle','smoking','sitting','working','drawing','speaking','firing','dual_firing','firing_dynamic'])for(let repeat=0;repeat<2;repeat++)commands.push({...await menuClick('pose:'+pose),repeat});
+ // Regression B-20.1: a real right-click context panel must remain the SAME
+ // visible window while multiple manual poses are chosen in succession.
+ const persistentMenu=openMenu();
+ if(!persistentMenu)throw Error('B20.1 pose menu unavailable');
+ if(persistentMenu.webContents.isLoading())await new Promise<void>(resolve=>persistentMenu.webContents.once('did-finish-load',()=>resolve()));
+ const nativePet=win.getBounds(),nativeWork=screen.getDisplayMatching(nativePet).workArea;
+ persistentMenu.setBounds(constrain({...persistentMenu.getBounds(),x:nativePet.x-20,y:nativePet.y+nativePet.height-persistentMenu.getBounds().height},[nativeWork]));
+ persistentMenu.show();persistentMenu.focus();
+ await pause(80);
+ await persistentMenu.webContents.executeJavaScript("document.querySelector('[data-tab=poses]').click()");
+ const persistentSelections=['idle','working','sitting'];
+ for(const pose of persistentSelections){
+  const point=await persistentMenu.webContents.executeJavaScript(`(()=>{
+   const button=document.querySelector('button[data-action="pose:${pose}"]');
+   if(!button)return null;
+   button.scrollIntoView({block:'center'});
+   const r=button.getBoundingClientRect();
+   return {x:Math.round(r.x+r.width/2),y:Math.round(r.y+r.height/2)};
+  })()`);
+  if(!point)throw Error('B20.1 pose button missing: '+pose);
+  const previous=trace.filter(item=>item.phase==='sent').at(-1)?.commandId||0;
+  persistentMenu.webContents.sendInputEvent({type:'mouseDown',...point,button:'left',clickCount:1});
+  persistentMenu.webContents.sendInputEvent({type:'mouseUp',...point,button:'left',clickCount:1});
+  await wait(()=>trace.some(item=>item.phase==='sent'&&item.pose===pose&&item.commandId>previous),'persistent pose '+pose);
+  await pause(130);
+  if(persistentMenu.isDestroyed()||!persistentMenu.isVisible())throw Error('B20.1 menu closed while selecting '+pose);
+  const poseTab=await persistentMenu.webContents.executeJavaScript("document.querySelector('#tab-poses').getAttribute('aria-selected')");
+  if(poseTab!=='true')throw Error('B20.1 pose selection reset menu tab');
+ }
+ writeFileSync(join(evidence,'menu-pose-kept-open.png'),(await persistentMenu.webContents.capturePage()).toPNG());
+ persistentMenu.close();
+
  for(const pose of ['drawing','speaking','firing','dual_firing','firing_dynamic']){
   const rows=commands.filter(row=>'pose' in row&&row.pose===pose);
   if(rows.some(row=>!('entries' in row)||!row.entries!.some((entry:any)=>entry.phase==='rendered'&&entry.pose===pose)))throw Error('Repeat did not create a fresh action '+pose);
