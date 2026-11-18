@@ -32,8 +32,10 @@ behavior controller's manual action or change its timers. Respect the existing
 automatic firing OFF preference. Automatic speech lines are otherwise
 untouched; additional music-only lines:
 - End of non-repeating playlist: `오늘은 여기까지다.`
-- Manually increasing the player volume to 90% or above: `시끄럽군.`
-  (no more than once a minute)
+- Manually raising player volume to 50–79%: `시끄럽군.`
+- Manually raising player volume to 80–100%: `네놈 고막은 티타늄이라도 되나?`
+  The higher band overrides the lower one; each has its own 60-second cooldown.
+  Lowering volume, initial loading, and unchanged volume never trigger a line.
 
 Playlists are not shipped with any music. An original synthetic MP3 in the
 codebase is used solely by Windows automated playback QA; it is never a
