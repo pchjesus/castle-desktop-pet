@@ -16,17 +16,18 @@ type MusicStatus={
 type Bridge=NonNullable<Window['pet']>;
 
 /** Audio lives in the persistent PET renderer, never in the ephemeral right-click menu.
- * The main process only opens trusted local MP3 files and returns their bytes; blob:
- * media playback remains same-origin so the WebAudio analyser cannot silently mute
- * cross-origin file:// content. No external streams or network URLs are supported.
+ * The main process exposes only ticketed local MP3 byte-range streams (no
+ * disk paths or full-file IPC copies). CORS-enabled local media lets the WebAudio
+ * analyser hear the track. No HTTP server, upload, or external network.
  */
 export function createLocalMusicPlayer(bridge:Bridge|undefined,{
  onBeat=()=>{},onLine=(_text:string)=>{}
 }:{onBeat?:()=>void;onLine?:(text:string)=>void}={}){
  const audio=new Audio();
- audio.preload='auto';
+ audio.crossOrigin='anonymous'; // Enables WebAudio analysis of the local ticketed scheme.
+ audio.preload='metadata';
  let tracks:string[]=[],index=0,volume=65,rhythmFire=false,repeat=false;
- let fileUrl:string|null=null,loadToken=0;
+ let loadToken=0;
  let analyser:AnalyserNode|null=null,ctx:AudioContext|null=null;
  let bins:Uint8Array<ArrayBuffer>|null=null,frame=0;
  let lastShotAt=0;
@@ -38,7 +39,6 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
   duration:Number.isFinite(audio.duration)?Math.max(0,audio.duration):0,
   volume,rhythmFire,repeat,error});
  const publish=()=>bridge?.musicStatus?.(snapshot());
- function revokeFile(){if(fileUrl){URL.revokeObjectURL(fileUrl);fileUrl=null;}}
  function stopBeatLoop(){if(frame)cancelAnimationFrame(frame);frame=0;}
  function beatLoop(){
   frame=0;
@@ -59,8 +59,8 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
     analyser=ctx.createAnalyser();
     analyser.fftSize=1024;
     analyser.smoothingTimeConstant=.65;
-    // Audio was loaded from a same-origin blob: URL. This is essential:
-    // MediaElementAudioSourceNode otherwise may yield silence for local file://.
+    // Local protocol responses include explicit CORS headers for WebAudio.
+    // Without these, cross-origin media source analysis may yield silence.
     const source=ctx.createMediaElementSource(audio);
     source.connect(analyser);
     analyser.connect(ctx.destination);
@@ -89,16 +89,13 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
   if(selected<0||selected>=tracks.length){error='MP3 파일을 먼저 추가해 줘.';publish();return;}
   const token=++loadToken;
   index=selected;
-  stopBeatLoop();audio.pause();audio.removeAttribute('src');audio.load();revokeFile();
+  stopBeatLoop();audio.pause();audio.removeAttribute('src');audio.load();
   beat.reset();error='';publish();
   try{
-   const data=await bridge?.musicFile?.(selected);
+   const mediaUrl=await bridge?.musicUrl?.(selected);
    if(token!==loadToken)return;
-   const raw=data?.bytes;
-   const bytes=raw instanceof Uint8Array?raw:new Uint8Array(Array.isArray(raw)?raw:[]);
-   if(!bytes.length)throw Error('empty or missing MP3');
-   fileUrl=URL.createObjectURL(new Blob([bytes as BlobPart],{type:'audio/mpeg'}));
-   audio.src=fileUrl;audio.load();
+   if(typeof mediaUrl!=='string'||!/^castle-mp3:\/\/track\/[a-f0-9]{48}$/.test(mediaUrl))throw Error('invalid local MP3 ticket');
+   audio.src=mediaUrl;audio.load();
    audio.volume=volume/100;
    if(autoPlay)await startPlay();
    else publish();
@@ -138,7 +135,7 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
   // alive under another track's title. Appending tracks preserves playback.
   if(index>=tracks.length||tracks[index]!==previous){
    loadToken++;audio.pause();audio.removeAttribute('src');audio.load();
-   revokeFile();index=0;stopBeatLoop();beat.reset();
+   index=0;stopBeatLoop();beat.reset();
   }
   publish();
  }
@@ -178,7 +175,7 @@ export function createLocalMusicPlayer(bridge:Bridge|undefined,{
  audio.addEventListener('ended',()=>{stopBeatLoop();void step(1,true);});
  audio.addEventListener('error',()=>{if(audio.src){error='선택한 MP3를 디코딩할 수 없어요.';publish();}});
  return {command,snapshot,dispose:()=>{
-  loadToken++;stopBeatLoop();audio.pause();audio.removeAttribute('src');revokeFile();
+  loadToken++;stopBeatLoop();audio.pause();audio.removeAttribute('src');audio.load();
   if(ctx)void ctx.close();
  }};
 }
